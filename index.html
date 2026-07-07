@@ -39,6 +39,7 @@
       🐾 Mila &amp; Jasper <span class="bg-gradient-to-r from-blue-600 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">English</span>
     </h1>
     <p class="text-slate-500 font-medium text-sm md:text-base">Pega el código que te da una IA y practica inglés con quizzes súper interactivos</p>
+    <p id="player-chip" class="mt-1 text-sm font-medium text-indigo-700"></p>
   </header>
 
   <!-- ============ INICIO: 2 VENTANAS ============ -->
@@ -123,7 +124,14 @@
       "texto":"I am a carpenter. I wake up at six...\n\nI work with wood every day...",
       "traduccion":"Soy carpintero. Me despierto a las seis...\n\nTrabajo con madera todos los días...",
       "glosario":[{"palabra":"carpenter","es":"carpintero","tipo":"sustantivo","pron":"cárpenter"}],
-      "frases":[{"frase":"wake up","es":"despertarse","pron":"uéik ap"}] }
+      "frases":[{"frase":"wake up","es":"despertarse","pron":"uéik ap"}],
+      "preguntas":[
+        { "formato":"opcion","q":"What time does he wake up?",
+          "opciones":[
+            {"texto":"At six","correcta":true,"razon":"El texto lo dice."},
+            {"texto":"At nine","correcta":false,"razon":"Relee el texto."}
+          ] }
+      ] }
   ]
 }</pre>
       </div>
@@ -172,6 +180,12 @@
       <div class="mb-3"><span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span></div>
       <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-4 text-slate-800 leading-snug"></h3>
 
+      <!-- Texto de referencia para preguntas de comprensión de lectura -->
+      <div id="ref-text-box" class="hidden mb-4">
+        <button id="ref-text-btn" onclick="toggleRefText()" class="bg-sky-100 hover:bg-sky-200 text-sky-800 border-2 border-dashed border-sky-400 font-bold py-2 px-5 rounded-lg text-sm w-full md:w-auto">📖 Ver el texto de la lectura</button>
+        <div id="ref-text-content" class="hidden mt-2 bg-amber-50/70 border border-amber-200 rounded-2xl p-4 space-y-3 text-sm md:text-base leading-relaxed text-slate-800 shadow-inner slide-down"></div>
+      </div>
+
       <div class="mb-4 text-center">
         <button id="hint-btn" onclick="toggleHint()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-dashed border-amber-400 font-bold py-2 px-6 rounded-lg text-sm w-full md:w-auto">💡 Ver Pista</button>
       </div>
@@ -210,7 +224,7 @@
   <div id="end-screen" class="hidden bg-white rounded-2xl shadow-xl p-8 text-center fade-in mt-6 mb-10 max-w-2xl w-full mx-auto">
     <div id="end-emoji" class="text-7xl mb-4">🏆</div>
     <h2 class="text-3xl font-extrabold text-slate-800 mb-2">¡Misión Cumplida!</h2>
-    <p class="text-slate-600 text-lg mb-6">Terminaste tu reto, Diego.</p>
+    <p id="end-player" class="text-slate-600 text-lg mb-6">Terminaste tu reto.</p>
     <div class="bg-indigo-50 border-4 border-indigo-100 rounded-3xl p-8 max-w-sm mx-auto mb-6">
       <div class="text-6xl font-black text-blue-600" id="final-score">0 / 0</div>
       <div class="text-slate-500 font-bold mt-2 text-xl" id="final-percentage">0%</div>
@@ -454,6 +468,24 @@ const EXTRA_FORMATS=[
    trad:"Me llamo Diego y soy carpintero. Tengo 39 años y vivo en Soacha con mi familia. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis perros Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
    pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".'}
 ];
+// preguntas de comprensión de la lectura del demo (con botón para volver a ver el texto)
+(function(){
+  const lect=EXTRA_FORMATS.find(x=>x.formato==='lectura');
+  EXTRA_FORMATS.push(
+    {formato:'opcion', q:'Comprensión: How old is Diego?', refText:lect.text,
+     opts:shuffle([{t:'He is 39 years old.',c:1,r:'¡Correcto! El texto dice "I am 39 years old".'},
+       {t:'He is 29 years old.',c:0,r:'Vuelve al texto: dice 39.'},
+       {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 39.'},
+       {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 39.'}]),
+     sentence:'Diego is 39 years old.', trad:'Diego tiene 39 años.', pron:'Diego is zérti-náin íars óuld', form:'Comprensión de lectura', cat:'lectura', extra:''},
+    {formato:'opcion', q:'Comprensión: What does Diego make in his workshop?', refText:lect.text,
+     opts:shuffle([{t:'Tables, chairs and kitchen cabinets.',c:1,r:'¡Correcto! "I make tables, chairs and kitchen cabinets."'},
+       {t:'Cars and bicycles.',c:0,r:'El texto habla de muebles, no de vehículos.'},
+       {t:'Bread and pizza.',c:0,r:'Eso es comida; él hace muebles.'},
+       {t:'Books and letters.',c:0,r:'El texto dice muebles de madera.'}]),
+     sentence:'Diego makes tables, chairs and kitchen cabinets.', trad:'Diego hace mesas, sillas y gabinetes de cocina.', pron:'Diego méiks téibols, chers and kíchen cábinets', form:'Comprensión de lectura', cat:'lectura', extra:''}
+  );
+})();
 
 /* ============================================================ IMPORTAR CÓDIGO DE UNA IA ============================================================ */
 const AI_PROMPT = `Actúa como profesor experto de inglés para un hispanohablante principiante.
@@ -489,13 +521,21 @@ Cada pregunta lleva un campo "formato". Formatos disponibles:
 8) "emparejar" (unir inglés con español): "pares":
 { "formato":"emparejar","q":"Une cada palabra con su significado:","pares":[{"en":"dog","es":"perro"},{"en":"wood","es":"madera"}] }
 
-9) "lectura" (texto para LEER, de 1 a 8 párrafos cortos; el alumno toca las palabras para ver su significado):
+9) "lectura" (texto para LEER, de 1 a 8 párrafos cortos; el alumno toca las palabras para ver su significado). SIEMPRE agrégale "preguntas" de comprensión (2 a 5) sobre el texto:
 { "formato":"lectura","q":"Lee el texto: My Day",
   "texto":"I am a carpenter. I wake up at six in the morning...\n\nI work with wood every day...",
   "traduccion":"Soy carpintero. Me despierto a las seis de la mañana...\n\nTrabajo con madera todos los días...",
   "glosario":[{"palabra":"carpenter","es":"carpintero","tipo":"sustantivo","pron":"cárpenter"}],
-  "frases":[{"frase":"wake up","es":"despertarse","pron":"uéik ap"},{"frase":"in the morning","es":"en la mañana","pron":"in de mórning"}] }
+  "frases":[{"frase":"wake up","es":"despertarse","pron":"uéik ap"},{"frase":"in the morning","es":"en la mañana","pron":"in de mórning"}],
+  "preguntas":[
+    { "formato":"opcion","q":"What time does he wake up?",
+      "opciones":[{"texto":"At six in the morning","correcta":true,"razon":"El texto dice 'I wake up at six'."},
+                  {"texto":"At nine","correcta":false,"razon":"Vuelve a leer el texto."},
+                  {"texto":"At noon","correcta":false,"razon":"Vuelve a leer el texto."}],
+      "frase":"He wakes up at six in the morning.","traduccion":"Él se despierta a las seis de la mañana." }
+  ] }
 - En "lectura": párrafos separados por línea en blanco (\n\n). Usa inglés sencillo y temas de la vida del alumno.
+- Las "preguntas" de comprensión aparecen DESPUÉS del texto y el alumno tiene un botón para volver a ver la lectura mientras responde.
 
 REGLAS:
 - Inglés 100% correcto y natural.
@@ -543,7 +583,7 @@ function normalizeImported(text){
   if(data && !Array.isArray(data)){ collectGlossary(glossary, data.glosario||data.glossary); collectPhrases(phrases, data.frases||data.phrases); }
   let arr=Array.isArray(data)?data:(data.preguntas||data.questions||data.quiz||data.items||[]);
   if(!Array.isArray(arr)||!arr.length) throw new Error('No encontré la lista de "preguntas".');
-  const qs=arr.map((it,i)=>{
+  function parseItem(it,i){
     const q=it.q||it.pregunta||it.question||it.enunciado; if(!q) throw new Error('La pregunta '+(i+1)+' no tiene texto ("q").');
     collectGlossary(glossary, it.glosario||it.glossary); collectPhrases(phrases, it.frases||it.phrases);
     const meta=baseMeta(it); const fmt=(it.formato||it.modo||it.tipoPregunta||'opcion').toLowerCase();
@@ -589,6 +629,15 @@ function normalizeImported(text){
     if(!opts.some(o=>o.c===1)&&answerKey!=null){ if(typeof answerKey==='number'&&opts[answerKey])opts[answerKey].c=1; else opts.forEach(o=>{ if(norm(o.t)===norm(answerKey))o.c=1; }); }
     if(!opts.some(o=>o.c===1)) throw new Error('La pregunta '+(i+1)+' no marca la opción correcta.');
     return Object.assign({formato:'opcion', q:String(q), opts:shuffle(opts)}, meta, {sentence:frase});
+  }
+  const qs=[];
+  arr.forEach((it,i)=>{
+    const item=parseItem(it,i); qs.push(item);
+    // una lectura puede traer preguntas de comprensión: se muestran después del texto
+    if(item.formato==='lectura'){
+      const subs=it.preguntas||it.comprension||it['comprensión']||it.questions;
+      if(Array.isArray(subs)) subs.forEach(s=>{ const sq=parseItem(s,i); sq.refText=item.text; qs.push(sq); });
+    }
   });
   return {titulo,qs,glossary,phrases};
 }
@@ -723,6 +772,14 @@ function loadQuestion(){
   answered=false; const q=quiz[idx]; const fmt=q.formato||'opcion';
   ui.badge.textContent=FORMAT_LABELS[fmt]||'';
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
+  // pregunta de comprensión de lectura: botón para volver a ver el texto (con palabras tocables)
+  const refBox=document.getElementById('ref-text-box');
+  if(q.refText){
+    refBox.classList.remove('hidden');
+    document.getElementById('ref-text-content').innerHTML=String(q.refText).split(/\n{2,}/).map(p=>'<p>'+wordSpanify(p.trim())+'</p>').join('');
+    document.getElementById('ref-text-content').classList.add('hidden');
+    document.getElementById('ref-text-btn').textContent='📖 Ver el texto de la lectura';
+  } else refBox.classList.add('hidden');
   ui.hTrad.textContent=q.trad||''; ui.hPron.textContent=q.pron?`(${q.pron})`:''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
   show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-extra-wrap'),!!q.extra); show(document.getElementById('hint-form-wrap'),!!q.form);
   ui.hint.classList.add('hidden'); ui.hintBtn.classList.remove('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista';
@@ -740,6 +797,17 @@ function loadQuestion(){
   else renderChoice(q);
 }
 function toggleHint(){ if(ui.hint.classList.contains('hidden')){ ui.hint.classList.remove('hidden'); ui.hintBtn.innerHTML='👀 Pista abierta'; } else { ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista'; } }
+function toggleRefText(){ const c=document.getElementById('ref-text-content'); const b=document.getElementById('ref-text-btn'); c.classList.toggle('hidden'); b.textContent=c.classList.contains('hidden')?'📖 Ver el texto de la lectura':'👀 Ocultar el texto'; }
+
+/* ---- Nombre del alumno ---- */
+function getName(){ try{ return localStorage.getItem('mj_name')||''; }catch(e){ return ''; } }
+function setName(){ const n=prompt('¿Cómo te llamas?', getName()||''); if(n&&n.trim()){ try{ localStorage.setItem('mj_name', n.trim().slice(0,30)); }catch(e){} } renderName(); }
+function renderName(){
+  const el=document.getElementById('player-chip'); const n=getName();
+  el.innerHTML = n
+    ? '👋 ¡Hola, <b>'+escapeHtml(n)+'</b>! <button onclick="setName()" class="text-xs underline text-slate-400 hover:text-indigo-600">✏️ cambiar</button>'
+    : '<button onclick="setName()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-1 px-4 rounded-full text-xs">👤 Escribe tu nombre aquí</button>';
+}
 
 /* opción múltiple (1 correcta) */
 function renderChoice(q){
@@ -885,17 +953,20 @@ function showEnd(){
   document.getElementById('final-score').textContent=`${score} / ${quiz.length}`; const pct=Math.round((score/quiz.length)*100);
   document.getElementById('final-percentage').textContent=`${pct}% de acierto`;
   document.getElementById('final-streak').textContent=`🔥 Racha máxima: ${maxStreak}`;
+  const nm=getName();
+  document.getElementById('end-player').textContent = nm ? ('Terminaste tu reto, '+nm+'.') : 'Terminaste tu reto.';
   const msg=document.getElementById('final-message'), em=document.getElementById('end-emoji');
-  if(pct>=90){ em.textContent='👑'; msg.textContent='¡Impecable! Dominas este quiz. Sube otro código con temas nuevos.'; }
-  else if(pct>=70){ em.textContent='🚀'; msg.textContent='¡Muy bien, Diego! Vas sólido. Repite para afinar los detalles.'; }
-  else if(pct>=50){ em.textContent='💪'; msg.textContent='¡Buen esfuerzo! Usa "Ver Pista" y lee la tarjeta de cada respuesta.'; }
-  else { em.textContent='📚'; msg.textContent='Este quiz necesita más práctica. Repite y usa las pistas sin miedo.'; }
+  const saludo = nm||'crack';
+  if(pct>=90){ em.textContent='👑'; msg.textContent='¡Impecable, '+saludo+'! Dominas este quiz. Sube otro código con temas nuevos.'; }
+  else if(pct>=70){ em.textContent='🚀'; msg.textContent='¡Muy bien, '+saludo+'! Vas sólido. Repite para afinar los detalles.'; }
+  else if(pct>=50){ em.textContent='💪'; msg.textContent='¡Buen esfuerzo, '+saludo+'! Usa "Ver Pista" y lee la tarjeta de cada respuesta.'; }
+  else { em.textContent='📚'; msg.textContent='Este quiz necesita más práctica, '+saludo+'. Repite y usa las pistas sin miedo.'; }
   window.scrollTo(0,0);
 }
 document.getElementById('import-file').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; document.getElementById('import-input').value=await f.text(); });
 
-// Arranque: mostrar avance pendiente y quizzes guardados
-renderResume(); renderSaved();
+// Arranque: nombre del alumno, avance pendiente y quizzes guardados
+renderName(); renderResume(); renderSaved();
 </script>
 </body>
 </html>

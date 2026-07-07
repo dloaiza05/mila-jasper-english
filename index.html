@@ -8,7 +8,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root { color-scheme: light; }
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2ff; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(160deg,#e0e7ff 0%,#eef2ff 45%,#fce7f3 100%); background-attachment: fixed; }
+  #progress-bar { background: linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899); }
+  .pop { animation: pop .3s ease-out; }
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1)} }
   .fade-in { animation: fadeIn .4s ease-in; }
   .slide-down { animation: slideDown .3s ease-out; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
@@ -30,7 +33,7 @@
 
   <header class="text-center py-4 md:py-6">
     <h1 class="text-3xl md:text-5xl font-extrabold text-indigo-900 mb-1 tracking-tight">
-      🐾 Mila &amp; Jasper <span class="text-blue-600">English</span>
+      🐾 Mila &amp; Jasper <span class="bg-gradient-to-r from-blue-600 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">English</span>
     </h1>
     <p class="text-slate-500 font-medium text-sm md:text-base">Pega el código que te da una IA y practica inglés con quizzes súper interactivos</p>
   </header>
@@ -43,7 +46,7 @@
       <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 border border-indigo-100 flex flex-col">
         <h3 class="font-extrabold text-indigo-700 text-lg mb-1">📖 Instructivo y ejemplo del código</h3>
         <p class="text-xs text-slate-500 mb-3">Pídele a <b>Claude, Gemini o ChatGPT</b> las preguntas con este formato y pégalas en la ventana de la derecha. Hay 8 tipos de pregunta interactivos.</p>
-        <button onclick="copyAIPrompt()" class="mb-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full text-sm w-full md:w-auto">📋 Copiar instrucciones para la IA</button>
+        <button onclick="copyAIPrompt()" class="mb-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-2 px-4 rounded-full text-sm w-full md:w-auto shadow-md">📋 Copiar instrucciones para la IA</button>
         <pre class="bg-slate-900 text-emerald-200 p-3 rounded-lg overflow-auto text-[11px] leading-relaxed scroll-soft flex-1 max-h-[340px]">{
   "titulo": "Mi quiz de inglés",
   "preguntas": [
@@ -115,14 +118,14 @@
         <textarea id="import-input" class="w-full flex-1 min-h-[240px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-emerald-400 outline-none scroll-soft" placeholder='Pega aquí tu código...'></textarea>
         <input id="import-file" type="file" accept=".json,.txt" class="block w-full mt-2 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-emerald-100 file:text-emerald-700 file:font-bold"/>
         <div class="text-right mt-3">
-          <button onclick="startCustomImport()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow">⚡ Generar quiz</button>
+          <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">⚡ Generar quiz</button>
         </div>
       </div>
     </div>
 
     <div class="bg-white rounded-2xl shadow p-4 border border-blue-100 text-center">
       <p class="text-slate-600 text-sm mb-3">¿Quieres probar sin pegar nada? Carga un quiz de ejemplo con los 8 tipos de pregunta.</p>
-      <button onclick="loadDemo()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-base shadow">🎯 Cargar quiz de ejemplo</button>
+      <button onclick="loadDemo()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">🎯 Cargar quiz de ejemplo</button>
     </div>
   </div>
 
@@ -132,6 +135,7 @@
       <div class="flex justify-between items-center text-sm md:text-base font-bold text-slate-600 mb-2 gap-2">
         <button onclick="goHome()" class="text-slate-400 hover:text-slate-700 text-xs font-bold">✕ Salir</button>
         <span id="question-counter" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">1/20</span>
+        <span id="streak-counter" class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full">🔥 0</span>
         <span id="score-counter" class="bg-green-100 text-green-800 px-3 py-1 rounded-full">Puntaje: 0</span>
       </div>
       <div class="w-full bg-slate-200 rounded-full h-3">
@@ -186,6 +190,7 @@
     <div class="bg-indigo-50 border-4 border-indigo-100 rounded-3xl p-8 max-w-sm mx-auto mb-6">
       <div class="text-6xl font-black text-blue-600" id="final-score">0 / 0</div>
       <div class="text-slate-500 font-bold mt-2 text-xl" id="final-percentage">0%</div>
+      <div class="text-orange-600 font-bold mt-2" id="final-streak">🔥 Racha máxima: 0</div>
     </div>
     <p id="final-message" class="text-lg font-medium text-slate-700 mb-8 max-w-2xl mx-auto"></p>
     <div class="flex flex-col md:flex-row gap-3 justify-center">
@@ -361,6 +366,10 @@ function normalizeImported(text){
       const ans=toBool(it.respuesta!=null?it.respuesta:(it.answer!=null?it.answer:it.correcta)); if(ans===null) throw new Error('La pregunta '+(i+1)+' (vf) necesita "respuesta": true/false.');
       return Object.assign({formato:'vf', q:String(q), answer:ans, r:it.razon||it.r||''}, meta, {sentence:frase});
     }
+    if(fmt.indexOf('escrib')>=0 || fmt==='write' || fmt==='texto'){
+      const ans=(it.respuesta!=null?it.respuesta:it.answer); if(ans==null) throw new Error('La pregunta '+(i+1)+' (escribir) necesita "respuesta".');
+      return Object.assign({formato:'escribir', q:String(q), answer:String(ans), respuestas:(it.respuestas||it.alternativas||[]).map(String)}, meta, {sentence:frase});
+    }
     if(fmt.indexOf('complet')>=0){
       const answers=it.respuestas||it.answers; if(!Array.isArray(answers)||!answers.length) throw new Error('La pregunta '+(i+1)+' (completar) necesita "respuestas" (arreglo).');
       const tpl=frase||String(q); return Object.assign({formato:'completar', q:String(q), template:tpl, answers:answers.map(String), sentence:fillBlanks(tpl,answers)}, meta);
@@ -391,7 +400,7 @@ function normalizeImported(text){
 }
 
 /* ============================================================ ESTADO Y RENDER ============================================================ */
-let quiz=[],idx=0,score=0,answered=false,customQuestions=null;
+let quiz=[],idx=0,score=0,answered=false,customQuestions=null,streak=0,maxStreak=0;
 const screens={home:document.getElementById('home-screen'),quiz:document.getElementById('quiz-screen'),end:document.getElementById('end-screen')};
 const ui={ qText:document.getElementById('question-text'), area:document.getElementById('answer-area'), badge:document.getElementById('format-badge'),
   feedback:document.getElementById('feedback-box'), fTitle:document.getElementById('feedback-title'), fRat:document.getElementById('feedback-rationale'),
@@ -410,7 +419,8 @@ function startCustomImport(){
   quiz=res.qs.slice(0,300); customQuestions=quiz; launchQuiz(res.titulo+' ('+res.qs.length+' preguntas)');
 }
 function repeatQuiz(){ if(customQuestions){ quiz=shuffle(customQuestions); launchQuiz(ui.topicLabel.textContent);} else goHome(); }
-function launchQuiz(label){ idx=0; score=0; screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; loadQuestion(); window.scrollTo(0,0); }
+function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; loadQuestion(); window.scrollTo(0,0); }
+function updateStreak(animate){ const el=document.getElementById('streak-counter'); el.textContent='🔥 '+streak; if(animate){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } }
 function goHome(){ screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.home.classList.remove('hidden'); window.scrollTo(0,0); }
 
 function loadQuestion(){
@@ -542,8 +552,8 @@ function renderWrite(q){
 /* cierre común */
 function finalize(ok, explanation, q){
   answered=true; ui.hintBtn.classList.add('hidden');
-  if(ok){ score++; ui.feedback.className='mt-4 p-4 rounded-xl border bg-green-50 border-green-200 fade-in'; ui.fTitle.textContent='¡Excelente!'; ui.fTitle.className='font-bold text-green-700'; }
-  else { ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
+  if(ok){ score++; streak++; if(streak>maxStreak)maxStreak=streak; updateStreak(true); ui.feedback.className='mt-4 p-4 rounded-xl border bg-green-50 border-green-200 fade-in'; ui.fTitle.textContent=streak>=3?('¡Excelente! 🔥 Racha de '+streak):'¡Excelente!'; ui.fTitle.className='font-bold text-green-700'; }
+  else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
   ui.learnSent.textContent=q.sentence||''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
   show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-extra-wrap'),!!q.extra);
@@ -554,7 +564,9 @@ function nextQuestion(){ idx++; if(idx<quiz.length){ loadQuestion(); window.scro
 function showEnd(){
   screens.quiz.classList.add('hidden'); screens.end.classList.remove('hidden');
   document.getElementById('final-score').textContent=`${score} / ${quiz.length}`; const pct=Math.round((score/quiz.length)*100);
-  document.getElementById('final-percentage').textContent=`${pct}% de acierto`; const msg=document.getElementById('final-message'), em=document.getElementById('end-emoji');
+  document.getElementById('final-percentage').textContent=`${pct}% de acierto`;
+  document.getElementById('final-streak').textContent=`🔥 Racha máxima: ${maxStreak}`;
+  const msg=document.getElementById('final-message'), em=document.getElementById('end-emoji');
   if(pct>=90){ em.textContent='👑'; msg.textContent='¡Impecable! Dominas este quiz. Sube otro código con temas nuevos.'; }
   else if(pct>=70){ em.textContent='🚀'; msg.textContent='¡Muy bien, Diego! Vas sólido. Repite para afinar los detalles.'; }
   else if(pct>=50){ em.textContent='💪'; msg.textContent='¡Buen esfuerzo! Usa "Ver Pista" y lee la tarjeta de cada respuesta.'; }

@@ -45,10 +45,46 @@
   <!-- ============ INICIO: 2 VENTANAS ============ -->
   <div id="home-screen" class="fade-in flex-1 flex flex-col">
     <div id="resume-card" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl shadow p-4 mb-5"></div>
+
+    <!-- ===== GENERADOR DE INSTRUCTIVO PERSONALIZADO ===== -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-extrabold text-violet-700 text-lg">🧙 Genera tu instructivo personalizado</h3>
+        <button id="eye-btn" onclick="toggleInstructivo()" title="Mostrar / ocultar la ventana del instructivo" class="text-2xl hover:scale-110 transition-transform">👁️</button>
+      </div>
+
+      <p class="text-xs font-bold text-slate-600 mb-1">👥 ¿Quién va a estudiar?</p>
+      <div id="students-row" class="flex flex-wrap gap-2 mb-3"></div>
+
+      <p class="text-xs font-bold text-slate-600 mb-1">📝 Sobre <span id="about-name" class="text-violet-700">el estudiante</span> — gustos, trabajo, familia (la IA personaliza TODAS las preguntas con esto)</p>
+      <textarea id="student-about" rows="2" class="w-full border-2 border-slate-200 rounded-xl p-2 text-sm focus:border-violet-400 outline-none mb-3" placeholder="Ej: Soy carpintero, hago cocinas y clósets en madera, vivo en Soacha, tengo dos perros llamados Mila y Jasper..."></textarea>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        <div>
+          <p class="text-xs font-bold text-slate-600 mb-1">🔢 Cantidad de preguntas</p>
+          <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
+            <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-xs font-bold text-slate-600 mb-1">✏️ Tema del quiz</p>
+          <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be en presente simple / pasado simple / vocabulario de carpintería"/>
+        </div>
+      </div>
+
+      <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">⚡ Generar instructivo y copiarlo</button>
+      <p id="gen-status" class="hidden text-center text-xs text-emerald-700 font-bold mt-2">✅ ¡Instructivo copiado! Ábrelo en tu IA y pégalo (Ctrl+V):</p>
+      <div class="flex flex-wrap justify-center gap-2 mt-3">
+        <a href="https://gemini.google.com/app" target="_blank" rel="noopener" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-full text-sm">🔮 Abrir Gemini</a>
+        <a href="https://claude.ai/new" target="_blank" rel="noopener" class="bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-2 px-4 rounded-full text-sm">🤖 Abrir Claude</a>
+        <a href="https://chatgpt.com" target="_blank" rel="noopener" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 px-4 rounded-full text-sm">💬 Abrir ChatGPT</a>
+      </div>
+    </div>
+
     <div class="grid md:grid-cols-2 gap-4 mb-5">
 
       <!-- VENTANA IZQUIERDA: INSTRUCTIVO -->
-      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 border border-indigo-100 flex flex-col">
+      <div id="instructivo-panel" class="bg-white rounded-2xl shadow-lg p-4 md:p-5 border border-indigo-100 flex flex-col">
         <h3 class="font-extrabold text-indigo-700 text-lg mb-1">📖 Instructivo y ejemplo del código</h3>
         <p class="text-xs text-slate-500 mb-3">Pídele a <b>Claude, Gemini o ChatGPT</b> las preguntas con este formato y pégalas en la ventana de la derecha. Hay 9 tipos de pregunta interactivos, incluida 📚 lectura de textos.</p>
         <p class="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-2 mb-3">✅ El botón de abajo copia instrucciones que <b>obligan a la IA a mandar el código completo</b>: glosario con todas las palabras, frases conectadas, traducción, pronunciación, regla, dato y razones de cada opción — en los 9 tipos de pregunta.</p>
@@ -179,7 +215,9 @@
 
     <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 flex-1 flex flex-col mb-4">
       <div class="mb-3"><span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span></div>
-      <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-4 text-slate-800 leading-snug"></h3>
+      <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-2 text-slate-800 leading-snug"></h3>
+      <!-- Estructura de cómo responder, siempre visible -->
+      <p id="structure-line" class="hidden mb-4 text-xs md:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5"></p>
 
       <!-- Texto de referencia para preguntas de comprensión de lectura -->
       <div id="ref-text-box" class="hidden mb-4">
@@ -419,9 +457,30 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
 DICT.forEach(d=>{ addG(d.en,d.es,d.c,d.p); if(d.en.indexOf('to ')===0) addG(d.en.slice(3),d.es,'verbo',(d.p||'').replace(/^tu /,'')); });
 let extraGlossary={}; // glosario extra que viene en el código de la IA
 function lookupWord(w){ const k=norm(w); if(!k) return null; return extraGlossary[k]||GLOSSARY[k]||null; }
+/* Diccionario español -> inglés (palabras de instrucciones y vida diaria) */
+const SPANISH_EXTRA={};
+function addS(es,en,pron){ const k=norm(es); if(k && !SPANISH_EXTRA[k]) SPANISH_EXTRA[k]={en:en, tipo:'', pron:pron||''}; }
+[
+ ['lee','read','rid'],['leer','to read','tu rid'],['sobre','about / on','abáut / on'],['tu','your','iór'],['tus','your','iór'],
+ ['educación','education','eduquéishon'],['escribe','write','ráit'],['escribir','to write','tu ráit'],['ordena','order / sort','órder'],
+ ['completa','complete','complít'],['completar','to complete','tu complít'],['une','match / join','match / yóin'],['marca','mark / check','mark'],
+ ['escoge','choose','chus'],['elige','choose','chus'],['selecciona','select','seléct'],['toca','tap / touch','tap'],
+ ['pregunta','question','cuéstion'],['preguntas','questions','cuéstions'],['respuesta','answer','ánser'],['respuestas','answers','ánsers'],
+ ['texto','text','text'],['palabra','word','uérd'],['palabras','words','uérds'],['frase','sentence / phrase','séntens'],
+ ['oración','sentence','séntens'],['según','according to','acórding tu'],['vida','life','láif'],['ejemplo','example','igsámpol'],
+ ['tema','topic','tópic'],['ayuda','help','jelp'],['empieza','start','start'],['termina','finish','fínish'],
+ ['siguiente','next','next'],['anterior','previous','prívius'],['verdadero','true','tru'],['falso','false','fols'],
+ ['correcto','correct','corréct'],['incorrecto','incorrect','incorréct'],['bien','well / good','uél / gud'],['mal','wrong / bad','rong / bad'],
+ ['edad','age','éish'],['nombre','name','néim'],['apellido','last name','last néim'],['ciudad','city','síti'],
+ ['país','country','cántri'],['escuela','school','skul'],['estudiante','student','stiúdent'],['profesor','teacher','tícher'],
+ ['amigo','friend','frend'],['carpintero','carpenter','cárpenter'],['taller','workshop','uérkshop'],['muebles','furniture','férnicher'],
+ ['gustos','likes','láiks'],['espacio','blank / space','blank'],['ficha','tile / chip','táil'],['significa','means','mins'],
+ ['cuál','which / what','uích'],['cuáles','which ones','uích uáns'],['este','this','dis'],['ese','that','dat'],['aquí','here','jíar'],['allá','there','der']
+].forEach(a=>addS(a[0],a[1],a[2]));
 /* búsqueda inversa: palabra en ESPAÑOL -> cómo se dice en inglés */
 function lookupSpanish(w){
   const k=norm(w); if(!k) return null;
+  if(SPANISH_EXTRA[k]) return SPANISH_EXTRA[k];
   function scan(obj){
     for(const key in obj){
       const parts=String(obj[key].es).replace(/\(.*?\)/g,'').split(/[\/·,;]/);
@@ -574,6 +633,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
 5. "glosario": TODAS las palabras importantes de la pregunta Y de sus respuestas (sustantivos, verbos, adjetivos, conectores, posesivos, pronombres, preposiciones, adverbios), cada una con:
    {"palabra":"dog","es":"perro","tipo":"sustantivo","pron":"dog"}
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
+   Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
 
 B) POR FORMATO:
@@ -625,6 +685,27 @@ function collectPhrases(target, arr){
   if(!Array.isArray(arr)) return;
   arr.forEach(p=>{ if(!p) return; const f=p.frase||p.phrase||p.en; const es=p.es||p.traduccion||p['traducción']||p.significado; if(!f||!es) return;
     target[norm(f)]={frase:String(f), es:String(es), pron:String(p.pron||p.pronunciacion||p['pronunciación']||'')}; });
+}
+/* Red de seguridad: si una lectura llega sin preguntas, se generan 2-3 desde el propio texto */
+function autoLecturaQuestions(text){
+  const sentences=String(text).replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).filter(s=>s.split(' ').length>=4);
+  const allWords=Array.from(new Set(String(text).toLowerCase().match(/[a-z']{4,}/g)||[]));
+  const stop=new Set(['this','that','with','have','they','their','there','from','your','about','which','would','could','because','these','those','were','been','into','also','when','what','where','than','then','every','always']);
+  const out=[];
+  const mixed=shuffle(sentences);
+  for(let s=0;s<mixed.length && out.length<3;s++){
+    const sent=mixed[s]; const words=sent.split(' ');
+    const candidates=words.filter(w=>{ const c=w.replace(/[^a-zA-Z']/g,''); return c.length>=4 && !stop.has(c.toLowerCase()); });
+    if(!candidates.length) continue;
+    const target=pick(candidates); const clean=target.replace(/[^a-zA-Z']/g,'');
+    const distract=shuffle(allWords.filter(w=>w!==clean.toLowerCase())).slice(0,3);
+    if(distract.length<3) continue;
+    const blanked=sent.replace(target,'_____');
+    out.push({formato:'opcion', q:'Según el texto, completa: "'+blanked+'"',
+      opts:shuffle([{t:clean,c:1,r:'¡Correcto! El texto dice: "'+sent+'"'}].concat(distract.map(d=>({t:d,c:0,r:'La palabra del texto era "'+clean+'". Relee: "'+sent+'"'})))),
+      sentence:sent, trad:'', pron:'', form:'Vuelve a ver el texto si lo necesitas.', cat:'lectura', extra:'Pregunta de comprensión generada desde el texto.'});
+  }
+  return out;
 }
 function normalizeImported(text){
   const data=extractJson(text);
@@ -683,10 +764,15 @@ function normalizeImported(text){
   const qs=[];
   arr.forEach((it,i)=>{
     const item=parseItem(it,i); qs.push(item);
-    // una lectura puede traer preguntas de comprensión: se muestran después del texto
+    // una lectura SIEMPRE debe traer preguntas para responder
     if(item.formato==='lectura'){
-      const subs=it.preguntas||it.comprension||it['comprensión']||it.questions;
-      if(Array.isArray(subs)) subs.forEach(s=>{ const sq=parseItem(s,i); sq.refText=item.text; qs.push(sq); });
+      let subs=it.preguntas||it.comprension||it['comprensión']||it.questions||it.ejercicios||it.actividades||it.quiz;
+      // si la IA incrustó opciones directamente en la lectura, se vuelven una pregunta
+      if(!Array.isArray(subs) && Array.isArray(it.opciones||it.options)) subs=[{formato:'opcion', q:it.q, opciones:it.opciones||it.options, frase:it.frase, traduccion:it.traduccion, pronunciacion:it.pronunciacion, regla:it.regla, dato:it.dato}];
+      let added=0;
+      if(Array.isArray(subs)) subs.forEach(s=>{ try{ const sq=parseItem(s,i); sq.refText=item.text; qs.push(sq); added++; }catch(e){} });
+      // red de seguridad: si no llegaron preguntas, la app las genera desde el texto
+      if(!added){ autoLecturaQuestions(item.text).forEach(sq=>{ sq.refText=item.text; qs.push(sq); }); }
     }
   });
   return {titulo,qs,glossary,phrases};
@@ -762,7 +848,7 @@ document.addEventListener('click', e=>{
 function saveProgress(nextIdx){
   try{
     if(nextIdx>=quiz.length){ clearProgress(); return; }
-    localStorage.setItem('mj_progress', JSON.stringify({title:ui.topicLabel.textContent, quiz:quiz, idx:nextIdx, score:score, streak:streak, maxStreak:maxStreak, glossary:extraGlossary, phrases:extraPhrases, ts:Date.now()}));
+    localStorage.setItem('mj_progress', JSON.stringify({title:ui.topicLabel.textContent, player:getName(), quiz:quiz, idx:nextIdx, score:score, streak:streak, maxStreak:maxStreak, glossary:extraGlossary, phrases:extraPhrases, ts:Date.now()}));
   }catch(e){}
 }
 function clearProgress(){ try{ localStorage.removeItem('mj_progress'); }catch(e){} }
@@ -771,7 +857,7 @@ function renderResume(){
   const card=document.getElementById('resume-card'); const p=getProgress();
   if(!p || !Array.isArray(p.quiz) || p.idx==null || p.idx>=p.quiz.length){ card.classList.add('hidden'); return; }
   card.classList.remove('hidden');
-  card.innerHTML='<p class="font-bold text-amber-800">⏸️ Tienes un quiz sin terminar: <span class="text-slate-800">'+escapeHtml(p.title)+'</span></p>'+
+  card.innerHTML='<p class="font-bold text-amber-800">⏸️ '+(p.player?('<span class="text-violet-700">'+escapeHtml(p.player)+'</span>, tienes'):'Tienes')+' un quiz sin terminar: <span class="text-slate-800">'+escapeHtml(p.title)+'</span></p>'+
     '<p class="text-sm text-amber-700 mb-2">Vas en la pregunta '+(p.idx+1)+' de '+p.quiz.length+' · Puntaje: '+p.score+'</p>'+
     '<div class="flex flex-wrap gap-2">'+
     '<button onclick="resumeSaved(false)" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-2 px-5 rounded-full text-sm shadow">▶️ Continuar</button>'+
@@ -782,6 +868,7 @@ function renderResume(){
 function resumeSaved(restart){
   const p=getProgress(); if(!p) return;
   quiz=p.quiz; customQuestions=quiz; extraGlossary=p.glossary||{}; extraPhrases=p.phrases||{};
+  if(p.player) selectStudent(p.player); // restaura quién lo estaba haciendo
   if(restart){ launchQuiz(p.title); return; }
   idx=p.idx; score=p.score||0; streak=p.streak||0; maxStreak=p.maxStreak||0;
   screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden');
@@ -826,6 +913,9 @@ function loadQuestion(){
   answered=false; const q=quiz[idx]; const fmt=q.formato||'opcion';
   ui.badge.textContent=FORMAT_LABELS[fmt]||'';
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
+  // estructura de cómo responder, siempre visible bajo la pregunta
+  const stLine=document.getElementById('structure-line');
+  if(q.form){ stLine.textContent='⚙️ Estructura: '+q.form; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
   // pregunta de comprensión de lectura: botón para volver a ver el texto (con palabras tocables)
   const refBox=document.getElementById('ref-text-box');
   if(q.refText){
@@ -874,6 +964,53 @@ function renderName(){
   el.innerHTML = n
     ? '👋 ¡Hola, <b>'+escapeHtml(n)+'</b>! <button onclick="setName()" class="text-xs underline text-slate-400 hover:text-indigo-600">✏️ cambiar</button>'
     : '<button onclick="setName()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-1 px-4 rounded-full text-xs">👤 Escribe tu nombre aquí</button>';
+}
+
+/* ============================================================
+   GENERADOR DE INSTRUCTIVO (estudiantes, cantidad, tema)
+============================================================ */
+function getStudents(){ try{ const s=JSON.parse(localStorage.getItem('mj_students')||'null'); if(Array.isArray(s)&&s.length) return s; }catch(e){} return ['Diego','Leidy']; }
+function setStudents(l){ try{ localStorage.setItem('mj_students', JSON.stringify(l)); }catch(e){} }
+function getAbout(name){ try{ return (JSON.parse(localStorage.getItem('mj_about')||'{}'))[name]||''; }catch(e){ return ''; } }
+function setAbout(name,txt){ try{ const o=JSON.parse(localStorage.getItem('mj_about')||'{}'); o[name]=txt; localStorage.setItem('mj_about', JSON.stringify(o)); }catch(e){} }
+function selectStudent(name){
+  if(!name) return;
+  const l=getStudents(); if(l.indexOf(name)<0){ l.push(name); setStudents(l); }
+  try{ localStorage.setItem('mj_name', name); }catch(e){}
+  renderName(); renderStudents();
+  const ta=document.getElementById('student-about'); if(ta) ta.value=getAbout(name);
+  const an=document.getElementById('about-name'); if(an) an.textContent=name;
+}
+function selectStudentIdx(i){ selectStudent(getStudents()[i]); }
+function addStudent(){ const n=prompt('Nombre del nuevo estudiante:'); if(!n||!n.trim()) return; selectStudent(n.trim().slice(0,30)); }
+function renderStudents(){
+  const row=document.getElementById('students-row'); if(!row) return;
+  const active=getName();
+  row.innerHTML=getStudents().map((n,i)=>
+    '<button onclick="selectStudentIdx('+i+')" class="font-bold py-2 px-4 rounded-full text-sm '+(n===active?'bg-violet-600 text-white shadow':'bg-slate-100 text-slate-600 hover:bg-slate-200')+'">'+(n===active?'✓ ':'')+escapeHtml(n)+'</button>'
+  ).join('')+'<button onclick="addStudent()" class="font-bold py-2 px-4 rounded-full text-sm bg-white border-2 border-dashed border-violet-300 text-violet-600 hover:bg-violet-50">＋ Otro</button>';
+}
+function toggleInstructivo(){
+  const p=document.getElementById('instructivo-panel');
+  p.classList.toggle('hidden');
+  document.getElementById('eye-btn').textContent=p.classList.contains('hidden')?'🙈':'👁️';
+}
+function generatePrompt(){
+  const name=getName()||'el estudiante';
+  const count=document.getElementById('gen-count').value;
+  const topic=(document.getElementById('gen-topic').value||'').trim();
+  if(!topic){ alert('✏️ Escribe el tema del quiz (ej: verbo to be en presente simple).'); document.getElementById('gen-topic').focus(); return; }
+  const about=(document.getElementById('student-about').value||'').trim();
+  setAbout(name, about);
+  // solo cambia el renglón final del instructivo; el resto queda intacto
+  const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'.'+
+    (about?(' Información sobre '+name+': '+about+'. PERSONALIZA todas las preguntas, frases, lecturas y ejemplos con esta información (sus gustos, su trabajo, su familia, su vida).'):'');
+  const base=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'');
+  const full=base+finalLine;
+  const done=()=>{ const st=document.getElementById('gen-status'); st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 10000); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(full).then(done).catch(()=>{ document.getElementById('import-input').value=full; alert('No se pudo copiar automático. Dejé el instructivo en el recuadro de la derecha: selecciónalo y cópialo con Ctrl+C, luego borra el recuadro.'); });
+  } else { document.getElementById('import-input').value=full; alert('Copia el instructivo del recuadro derecho (Ctrl+C) y luego bórralo de ahí.'); }
 }
 
 /* opción múltiple (1 correcta) */
@@ -929,8 +1066,8 @@ function renderComplete(q){
   parts.forEach((part,i)=>{ wrap.appendChild(document.createTextNode(part)); if(i<parts.length-1){ const inp=document.createElement('input'); inp.type='text'; inp.autocomplete='off'; inp.spellcheck=false; inp.className='inline-block mx-1 px-2 py-1 border-2 border-slate-300 rounded-lg text-center focus:border-indigo-400 outline-none'; inp.style.width='120px'; inputs.push(inp); wrap.appendChild(inp); } });
   ui.area.appendChild(wrap);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  chk.onclick=()=>{ if(answered)return; let ok=true; inputs.forEach((inp,i)=>{ inp.disabled=true; const good=norm(inp.value)===norm(q.answers[i]||''); inp.classList.remove('border-slate-300'); inp.classList.add(good?'border-green-500':'border-red-500', good?'bg-green-50':'bg-red-50'); if(!good)ok=false; });
-    chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto! Todos los espacios correctos.':('Respuestas correctas: '+q.answers.join('  ·  ')), q);
+  chk.onclick=()=>{ if(answered)return; let ok=true; const detail=[]; inputs.forEach((inp,i)=>{ inp.disabled=true; const good=norm(inp.value)===norm(q.answers[i]||''); inp.classList.remove('border-slate-300'); inp.classList.add(good?'border-green-500':'border-red-500', good?'bg-green-50':'bg-red-50'); detail.push('Espacio '+(i+1)+(good?' ✓':': escribiste "'+(inp.value.trim()||'(vacío)')+'" → está mal, era "'+q.answers[i]+'"')); if(!good)ok=false; });
+    chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto! Todos los espacios correctos.':detail.join(' · '), q);
   };
   ui.area.appendChild(chk); setTimeout(()=>inputs[0]&&inputs[0].focus(),50);
 }
@@ -943,7 +1080,7 @@ function renderHuecos(q){
   function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ sentWrap.appendChild(document.createTextNode(part)); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; slot.onclick=()=>{ if(answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }; sentWrap.appendChild(slot); } }); }
   function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; b.onclick=()=>{ if(answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }; bankWrap.appendChild(b); }); }
   ui.area.appendChild(sentWrap); ui.area.appendChild(bankWrap); ui.area.appendChild(chk);
-  chk.onclick=()=>{ if(answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; slots.forEach((s,i)=>{ if(norm(s.w)!==norm(q.answers[i]))ok=false; }); chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto!':('Lo correcto: "'+q.sentence+'".'), q); };
+  chk.onclick=()=>{ if(answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const good=norm(s.w)===norm(q.answers[i]); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, era "'+q.answers[i]+'"'); } }); chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Frase correcta: "'+q.sentence+'".'), q); };
   drawSentence(); drawBank();
 }
 /* ordenar palabras */
@@ -954,7 +1091,7 @@ function renderOrder(q){
   const ansRow=document.getElementById('order-answer'), bankRow=document.getElementById('order-bank'), checkBtn=document.getElementById('order-check');
   function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML=wordSpanify(w); return b; }
   function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); c.onclick=()=>{ if(answered)return; ans.splice(pos,1); bank.push(it); draw(); }; ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); c.onclick=()=>{ if(answered)return; bank.splice(pos,1); ans.push(it); draw(); }; bankRow.appendChild(c); }); }
-  checkBtn.onclick=()=>{ if(answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const ok=ans.map(a=>a.w).join(' ').toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); finalize(ok, ok?'¡Excelente orden!':('El orden correcto es: "'+correct.join(' ')+'".'), q); };
+  checkBtn.onclick=()=>{ if(answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const userOrder=ans.map(a=>a.w).join(' '); const ok=userOrder.toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); finalize(ok, ok?'¡Excelente orden!':('Tu orden: "'+userOrder+'" → está mal. El correcto es: "'+correct.join(' ')+'".'), q); };
   draw();
 }
 /* emparejar / unir columnas */
@@ -997,7 +1134,7 @@ function renderLectura(q){
 function renderWrite(q){
   const wrap=document.createElement('div'); wrap.innerHTML=`<input id="write-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" class="w-full p-3 md:p-4 rounded-xl border-2 border-slate-300 text-base focus:border-indigo-400 outline-none" placeholder="Escribe tu respuesta en inglés..."/><button id="write-check" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto">Comprobar ✅</button>`;
   ui.area.appendChild(wrap); const inp=document.getElementById('write-input'), btn=document.getElementById('write-check');
-  function check(){ if(answered)return; const val=inp.value.trim(); if(!val){ inp.focus(); return; } const list=[q.answer].concat(q.respuestas||[]); const ok=list.some(a=>norm(a)===norm(val)); inp.disabled=true; btn.disabled=true; btn.classList.add('btn-disabled'); inp.classList.remove('border-slate-300'); inp.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); finalize(ok, ok?'¡Perfecto! Lo escribiste bien.':('La respuesta correcta es: "'+q.answer+'".'), q); }
+  function check(){ if(answered)return; const val=inp.value.trim(); if(!val){ inp.focus(); return; } const list=[q.answer].concat(q.respuestas||[]); const ok=list.some(a=>norm(a)===norm(val)); inp.disabled=true; btn.disabled=true; btn.classList.add('btn-disabled'); inp.classList.remove('border-slate-300'); inp.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); finalize(ok, ok?'¡Perfecto! Lo escribiste bien.':('Escribiste "'+val+'" → está mal. La forma correcta es "'+q.answer+'".'), q); }
   btn.onclick=check; inp.addEventListener('keydown',e=>{ if(e.key==='Enter')check(); }); setTimeout(()=>inp.focus(),50);
 }
 
@@ -1032,8 +1169,12 @@ function showEnd(){
 }
 document.getElementById('import-file').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; document.getElementById('import-input').value=await f.text(); });
 
-// Arranque: nombre del alumno, avance pendiente y quizzes guardados
-renderName(); renderResume(); renderSaved();
+// Guardar el "sobre mí" del estudiante mientras escribe
+document.getElementById('student-about').addEventListener('input', e=>{ if(getName()) setAbout(getName(), e.target.value); });
+
+// Arranque: estudiante activo, avance pendiente y quizzes guardados
+selectStudent(getName()||getStudents()[0]);
+renderResume(); renderSaved();
 </script>
 </body>
 </html>

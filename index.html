@@ -72,15 +72,17 @@
           </div>
         </div>
 
-        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">⚡ Generar instructivo y copiarlo</button>
-        <p id="gen-status" class="hidden text-center text-xs text-emerald-700 font-bold">✅ ¡Instructivo copiado!</p>
-
-        <div class="border-t border-slate-100 pt-3">
-          <p class="text-sm font-bold text-slate-700 mb-2 text-center">4️⃣ Pégalo (Ctrl+V) en tu IA favorita:</p>
-          <div class="flex flex-wrap justify-center gap-2">
-            <a href="https://gemini.google.com/app" target="_blank" rel="noopener" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-full text-sm">🔮 Abrir Gemini</a>
-            <a href="https://claude.ai/new" target="_blank" rel="noopener" class="bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-2 px-4 rounded-full text-sm">🤖 Abrir Claude</a>
-            <a href="https://chatgpt.com" target="_blank" rel="noopener" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 px-4 rounded-full text-sm">💬 Abrir ChatGPT</a>
+        <div class="border-t border-slate-100 pt-4">
+          <p class="text-sm font-bold text-slate-700 mb-1 text-center">4️⃣ Genera y abre tu IA (el código se copia solo)</p>
+          <p class="text-xs text-slate-400 mb-3 text-center">Se abre la página con el código ya copiado — solo pega con <b>Ctrl+V</b> (o mantén presionado → Pegar) y envía.</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <button onclick="openIA('claude')" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 px-4 rounded-full text-sm shadow">🤖 Generar y abrir Claude</button>
+            <button onclick="openIA('chatgpt')" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-4 rounded-full text-sm shadow">💬 Generar y abrir ChatGPT</button>
+            <button onclick="openIA('gemini')" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-full text-sm shadow">🔮 Generar y abrir Gemini</button>
+          </div>
+          <p id="gen-status" class="hidden text-center text-xs text-emerald-700 font-bold mt-3">✅ ¡Copiado! Ya se abrió tu IA — pega con Ctrl+V y envía.</p>
+          <div class="text-center mt-2">
+            <button onclick="generatePrompt()" class="text-xs text-violet-600 underline hover:text-violet-800">o solo copiar el instructivo sin abrir nada</button>
           </div>
         </div>
       </div>
@@ -109,6 +111,7 @@
       "traduccion":"El perro está ocupado.",
       "pronunciacion":"de dog is bísi",
       "regla":"He/She/It -> is", "dato":"To be = ser y estar.",
+      "estructura":"Sujeto + verbo to be + adjetivo",
       "glosario":[
         {"palabra":"dog","es":"perro",
          "tipo":"sustantivo","pron":"dog"},
@@ -328,7 +331,7 @@ function toBeFactory(){
   const d=pick(BE_SUBJ),c=pick(BE_COMP); const adj=d.pl?c.p:c.s; const conj=c.v==='ser'?d.ser:d.estar;
   return { formato:'opcion', q:`${d.s} ___ ${c.en}.`,
     opts:makeOptions(d.be,['am','is','are','be'],`¡Correcto! "${d.s}" usa "${d.be}".`,`"${d.s}" usa "${d.be}". I→am · He/She/It→is · You/We/They→are.`),
-    sentence:`${d.s} ${d.be} ${c.en}.`, trad:`${d.sub} ${conj} ${adj}.`, pron:`${d.pron} ${BE_PRON[d.be]} ${c.pron}`, form:'I → am · He/She/It → is · You/We/They → are', cat:'', extra:'' };
+    sentence:`${d.s} ${d.be} ${c.en}.`, trad:`${d.sub} ${conj} ${adj}.`, pron:`${d.pron} ${BE_PRON[d.be]} ${c.pron}`, form:'I → am · He/She/It → is · You/We/They → are', cat:'', extra:'', estructura:'Sujeto + verbo to be + complemento' };
 }
 const R_PS3='He/She/It + verbo + -s', R_PSB='I/You/We/They + verbo base';
 const PRESENT=[
@@ -337,14 +340,14 @@ const PRESENT=[
   {q:'They ___ in Soacha. (live)',a:'live',o:['lives','living','lived'],s:'They live in Soacha.',t:'Ellos viven en Soacha.',p:'déi liv in Sóacha.',f:R_PSB},
   {q:'I ___ with wood every day. (work)',a:'work',o:['works','working','worked'],s:'I work with wood every day.',t:'Yo trabajo con madera todos los días.',p:'ái uérk uíd wud évri déi.',f:R_PSB}
 ];
-const presentFactory=()=>fromBank(pick(PRESENT));
+const presentFactory=()=>{ const q=fromBank(pick(PRESENT)); q.estructura='Sujeto + verbo en presente (He/She/It añade -s)'; return q; };
 const R_PAST='Verbos irregulares NO usan -ed.';
 const PAST=[
   {q:'Yesterday, I ___ to work. (go)',a:'went',o:['goed','go','gone'],s:'Yesterday, I went to work.',t:'Ayer, yo fui a trabajar.',p:'iésterdei, ái uént tu uérk.',f:R_PAST},
   {q:'Yesterday, he ___ wood. (buy)',a:'bought',o:['buyed','buy','buys'],s:'Yesterday, he bought wood.',t:'Ayer, él compró madera.',p:'iésterdei, ji bot wud.',f:R_PAST},
   {q:'Yesterday, we ___ a table. (make)',a:'made',o:['maked','make','makes'],s:'Yesterday, we made a table.',t:'Ayer, nosotros hicimos una mesa.',p:'iésterdei, uí méid a téibol.',f:R_PAST}
 ];
-const pastFactory=()=>fromBank(pick(PAST));
+const pastFactory=()=>{ const q=fromBank(pick(PAST)); q.estructura='Sujeto + verbo en pasado + complemento'; return q; };
 const DICT=[
   {en:'pizza',es:'pizza',p:'pítsa',c:'sustantivo',n:'Palabra italiana que el inglés tomó tal cual; suena "pítsa".'},
   {en:'wood',es:'madera',p:'wud',c:'sustantivo'},{en:'hammer',es:'martillo',p:'jámer',c:'sustantivo'},{en:'table',es:'mesa',p:'téibol',c:'sustantivo'},
@@ -576,6 +579,9 @@ const EXTRA_FORMATS=[
      sentence:'Diego makes tables, chairs and kitchen cabinets.', trad:'Diego hace mesas, sillas y gabinetes de cocina.', pron:'Diego méiks téibols, chers and kíchen cábinets', form:'Comprensión de lectura', cat:'lectura', extra:''}
   );
 })();
+// estructura GENÉRICA por formato (no revela la respuesta) para el quiz de ejemplo
+const DEFAULT_EST={completar:'Sujeto + verbo + complemento', huecos:'Sujeto + verbo + complemento', ordenar:'Sujeto + verbo + complemento', emparejar:'Une cada palabra con su significado', vf:'Decide si la oración está bien o mal', escribir:'Escribe la palabra o forma correcta', multiple:'Marca todas las que cumplan la condición'};
+EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estructura=DEFAULT_EST[q.formato]; });
 
 /* ============================================================ IMPORTAR CÓDIGO DE UNA IA ============================================================ */
 const AI_PROMPT = `Actúa como profesor experto de inglés para un hispanohablante principiante.
@@ -640,6 +646,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
+7. "estructura": la fórmula gramatical GENÉRICA de cómo se responde, con nombres de categorías: "Sujeto + verbo to be + adjetivo", "Sujeto + verbo (+ -s con He/She/It)", "¿Cuál es el plural del sustantivo?", "Artículo + sustantivo". NUNCA reveles la respuesta exacta (no pongas "She→is"), solo el patrón con Sujeto/verbo/sustantivo/adjetivo/etc.
 
 B) POR FORMATO:
 - "opcion": exactamente 4 opciones, SOLO una con "correcta":true, y CADA opción con su "razon" (por qué está bien o mal). Incluye "frase" (la oración correcta completa).
@@ -675,7 +682,7 @@ function copyAIPrompt(){
   function fb(){ const ta=document.getElementById('import-input'); ta.value=AI_PROMPT; ta.focus(); ta.select(); alert('Copia el texto del recuadro (Ctrl+C) y pégalo en la IA. Luego bórralo y pega ahí el JSON que te devuelva.'); }
 }
 function extractJson(text){ let t=text.trim(); const iC=t.indexOf('{'),iB=t.indexOf('['); let start=Infinity; if(iC>=0)start=Math.min(start,iC); if(iB>=0)start=Math.min(start,iB); const end=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']')); if(start!==Infinity&&end>start)t=t.slice(start,end+1); return JSON.parse(t); }
-function baseMeta(it){ return { trad: it.traduccion||it['traducción']||it.trad||it.translation||'', pron: it.pronunciacion||it['pronunciación']||it.pron||it.pronunciation||'', form: it.regla||it.form||it.formula||it['fórmula']||it.rule||'', cat: it.tipo||it.categoria||it['categoría']||it.cat||'', extra: it.dato||it.contexto||it.extra||it.nota||it.note||'' }; }
+function baseMeta(it){ return { trad: it.traduccion||it['traducción']||it.trad||it.translation||'', pron: it.pronunciacion||it['pronunciación']||it.pron||it.pronunciation||'', form: it.regla||it.form||it.formula||it['fórmula']||it.rule||'', cat: it.tipo||it.categoria||it['categoría']||it.cat||'', extra: it.dato||it.contexto||it.extra||it.nota||it.note||'', estructura: it.estructura||it.structure||'' }; }
 function toBool(v){ if(v===true||v===1)return true; if(v===false||v===0)return false; const s=String(v).toLowerCase().trim(); if(['true','1','si','sí','verdadero','v','yes'].indexOf(s)>=0)return true; if(['false','0','no','falso','f'].indexOf(s)>=0)return false; return null; }
 function parseOpts(it,i){
   let raw=it.opciones||it.opts||it.options||it.choices||it.answer_options||it.answerOptions; if(!Array.isArray(raw)||raw.length<2) throw new Error('La pregunta '+(i+1)+' no tiene opciones válidas.');
@@ -918,9 +925,9 @@ function loadQuestion(){
   answered=false; const q=quiz[idx]; const fmt=q.formato||'opcion';
   ui.badge.textContent=FORMAT_LABELS[fmt]||'';
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
-  // estructura de cómo responder, siempre visible bajo la pregunta
+  // estructura GENÉRICA de cómo responder (no revela la respuesta), siempre visible
   const stLine=document.getElementById('structure-line');
-  if(q.form){ stLine.textContent='⚙️ Estructura: '+q.form; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
+  if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
   // pregunta de comprensión de lectura: botón para volver a ver el texto (con palabras tocables)
   const refBox=document.getElementById('ref-text-box');
   if(q.refText){
@@ -1000,15 +1007,24 @@ function generatePrompt(){
   const name=getName()||'el estudiante';
   const count=document.getElementById('gen-count').value;
   const topic=(document.getElementById('gen-topic').value||'').trim();
-  if(!topic){ alert('✏️ Escribe el tema del quiz (ej: verbo to be en presente simple).'); document.getElementById('gen-topic').focus(); return; }
+  if(!topic){ alert('✏️ Escribe el tema del quiz (ej: verbo to be en presente simple).'); document.getElementById('gen-topic').focus(); return null; }
   // solo cambia el renglón final del instructivo; el resto queda intacto
   const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'.';
   const base=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'');
   const full=base+finalLine;
-  const done=()=>{ const st=document.getElementById('gen-status'); st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 10000); };
+  const done=()=>{ const st=document.getElementById('gen-status'); st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 12000); };
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(full).then(done).catch(()=>{ document.getElementById('import-input').value=full; alert('No se pudo copiar automático. Dejé el instructivo en el recuadro de la derecha: selecciónalo y cópialo con Ctrl+C, luego borra el recuadro.'); });
-  } else { document.getElementById('import-input').value=full; alert('Copia el instructivo del recuadro derecho (Ctrl+C) y luego bórralo de ahí.'); }
+    navigator.clipboard.writeText(full).then(done).catch(()=>{ document.getElementById('import-input').value=full; done(); });
+  } else { document.getElementById('import-input').value=full; done(); }
+  return full;
+}
+/* Genera + copia + abre la IA elegida (solo falta pegar con Ctrl+V) */
+function openIA(which){
+  const full=generatePrompt(); if(!full) return; // sin tema, ya avisó
+  const url = which==='gemini' ? 'https://gemini.google.com/app'
+            : which==='claude' ? 'https://claude.ai/new'
+            : 'https://chatgpt.com';
+  window.open(url,'_blank','noopener');
 }
 
 /* opción múltiple (1 correcta) */
@@ -1061,7 +1077,7 @@ function renderVF(q){
 /* completar espacios (escritos) */
 function renderComplete(q){
   const parts=String(q.template).split(/_{2,}/); const wrap=document.createElement('div'); wrap.className='text-base md:text-lg leading-loose'; const inputs=[];
-  parts.forEach((part,i)=>{ wrap.appendChild(document.createTextNode(part)); if(i<parts.length-1){ const inp=document.createElement('input'); inp.type='text'; inp.autocomplete='off'; inp.spellcheck=false; inp.className='inline-block mx-1 px-2 py-1 border-2 border-slate-300 rounded-lg text-center focus:border-indigo-400 outline-none'; inp.style.width='120px'; inputs.push(inp); wrap.appendChild(inp); } });
+  parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); wrap.appendChild(sp); if(i<parts.length-1){ const inp=document.createElement('input'); inp.type='text'; inp.autocomplete='off'; inp.spellcheck=false; inp.className='inline-block mx-1 px-2 py-1 border-2 border-slate-300 rounded-lg text-center focus:border-indigo-400 outline-none'; inp.style.width='120px'; inputs.push(inp); wrap.appendChild(inp); } });
   ui.area.appendChild(wrap);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   chk.onclick=()=>{ if(answered)return; let ok=true; const detail=[]; inputs.forEach((inp,i)=>{ inp.disabled=true; const good=norm(inp.value)===norm(q.answers[i]||''); inp.classList.remove('border-slate-300'); inp.classList.add(good?'border-green-500':'border-red-500', good?'bg-green-50':'bg-red-50'); detail.push('Espacio '+(i+1)+(good?' ✓':': escribiste "'+(inp.value.trim()||'(vacío)')+'" → está mal, era "'+q.answers[i]+'"')); if(!good)ok=false; });
@@ -1075,7 +1091,7 @@ function renderHuecos(q){
   const bank=(q.bank&&q.bank.length?q.bank:q.answers).map((w,i)=>({w:String(w),used:false,id:i}));
   const sentWrap=document.createElement('div'); sentWrap.className='text-base md:text-lg leading-loose mb-3'; const bankWrap=document.createElement('div'); bankWrap.className='flex flex-wrap gap-2 mb-3';
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ sentWrap.appendChild(document.createTextNode(part)); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; slot.onclick=()=>{ if(answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }; sentWrap.appendChild(slot); } }); }
+  function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; slot.onclick=()=>{ if(answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }; sentWrap.appendChild(slot); } }); }
   function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; b.onclick=()=>{ if(answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }; bankWrap.appendChild(b); }); }
   ui.area.appendChild(sentWrap); ui.area.appendChild(bankWrap); ui.area.appendChild(chk);
   chk.onclick=()=>{ if(answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const good=norm(s.w)===norm(q.answers[i]); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, era "'+q.answers[i]+'"'); } }); chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Frase correcta: "'+q.sentence+'".'), q); };

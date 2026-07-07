@@ -48,36 +48,41 @@
 
     <!-- ===== GENERADOR DE INSTRUCTIVO PERSONALIZADO ===== -->
     <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="font-extrabold text-violet-700 text-lg">🧙 Genera tu instructivo personalizado</h3>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-extrabold text-violet-700 text-lg">🧙 Genera tu instructivo</h3>
         <button id="eye-btn" onclick="toggleInstructivo()" title="Mostrar / ocultar la ventana del instructivo" class="text-2xl hover:scale-110 transition-transform">👁️</button>
       </div>
 
-      <p class="text-xs font-bold text-slate-600 mb-1">👥 ¿Quién va a estudiar?</p>
-      <div id="students-row" class="flex flex-wrap gap-2 mb-3"></div>
-
-      <p class="text-xs font-bold text-slate-600 mb-1">📝 Sobre <span id="about-name" class="text-violet-700">el estudiante</span> — gustos, trabajo, familia (la IA personaliza TODAS las preguntas con esto)</p>
-      <textarea id="student-about" rows="2" class="w-full border-2 border-slate-200 rounded-xl p-2 text-sm focus:border-violet-400 outline-none mb-3" placeholder="Ej: Soy carpintero, hago cocinas y clósets en madera, vivo en Soacha, tengo dos perros llamados Mila y Jasper..."></textarea>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+      <div class="space-y-4">
         <div>
-          <p class="text-xs font-bold text-slate-600 mb-1">🔢 Cantidad de preguntas</p>
-          <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
-            <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
-          </select>
+          <p class="text-sm font-bold text-slate-700 mb-2">1️⃣ ¿Quién va a estudiar?</p>
+          <div id="students-row" class="flex flex-wrap gap-2"></div>
         </div>
-        <div class="md:col-span-2">
-          <p class="text-xs font-bold text-slate-600 mb-1">✏️ Tema del quiz</p>
-          <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be en presente simple / pasado simple / vocabulario de carpintería"/>
-        </div>
-      </div>
 
-      <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">⚡ Generar instructivo y copiarlo</button>
-      <p id="gen-status" class="hidden text-center text-xs text-emerald-700 font-bold mt-2">✅ ¡Instructivo copiado! Ábrelo en tu IA y pégalo (Ctrl+V):</p>
-      <div class="flex flex-wrap justify-center gap-2 mt-3">
-        <a href="https://gemini.google.com/app" target="_blank" rel="noopener" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-full text-sm">🔮 Abrir Gemini</a>
-        <a href="https://claude.ai/new" target="_blank" rel="noopener" class="bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-2 px-4 rounded-full text-sm">🤖 Abrir Claude</a>
-        <a href="https://chatgpt.com" target="_blank" rel="noopener" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 px-4 rounded-full text-sm">💬 Abrir ChatGPT</a>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <p class="text-sm font-bold text-slate-700 mb-2">2️⃣ Cantidad de preguntas</p>
+            <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
+              <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <p class="text-sm font-bold text-slate-700 mb-2">3️⃣ Tema del quiz</p>
+            <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be / pasado simple / vocabulario de carpintería"/>
+          </div>
+        </div>
+
+        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">⚡ Generar instructivo y copiarlo</button>
+        <p id="gen-status" class="hidden text-center text-xs text-emerald-700 font-bold">✅ ¡Instructivo copiado!</p>
+
+        <div class="border-t border-slate-100 pt-3">
+          <p class="text-sm font-bold text-slate-700 mb-2 text-center">4️⃣ Pégalo (Ctrl+V) en tu IA favorita:</p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <a href="https://gemini.google.com/app" target="_blank" rel="noopener" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-full text-sm">🔮 Abrir Gemini</a>
+            <a href="https://claude.ai/new" target="_blank" rel="noopener" class="bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-2 px-4 rounded-full text-sm">🤖 Abrir Claude</a>
+            <a href="https://chatgpt.com" target="_blank" rel="noopener" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 px-4 rounded-full text-sm">💬 Abrir ChatGPT</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -971,15 +976,11 @@ function renderName(){
 ============================================================ */
 function getStudents(){ try{ const s=JSON.parse(localStorage.getItem('mj_students')||'null'); if(Array.isArray(s)&&s.length) return s; }catch(e){} return ['Diego','Leidy']; }
 function setStudents(l){ try{ localStorage.setItem('mj_students', JSON.stringify(l)); }catch(e){} }
-function getAbout(name){ try{ return (JSON.parse(localStorage.getItem('mj_about')||'{}'))[name]||''; }catch(e){ return ''; } }
-function setAbout(name,txt){ try{ const o=JSON.parse(localStorage.getItem('mj_about')||'{}'); o[name]=txt; localStorage.setItem('mj_about', JSON.stringify(o)); }catch(e){} }
 function selectStudent(name){
   if(!name) return;
   const l=getStudents(); if(l.indexOf(name)<0){ l.push(name); setStudents(l); }
   try{ localStorage.setItem('mj_name', name); }catch(e){}
   renderName(); renderStudents();
-  const ta=document.getElementById('student-about'); if(ta) ta.value=getAbout(name);
-  const an=document.getElementById('about-name'); if(an) an.textContent=name;
 }
 function selectStudentIdx(i){ selectStudent(getStudents()[i]); }
 function addStudent(){ const n=prompt('Nombre del nuevo estudiante:'); if(!n||!n.trim()) return; selectStudent(n.trim().slice(0,30)); }
@@ -1000,11 +1001,8 @@ function generatePrompt(){
   const count=document.getElementById('gen-count').value;
   const topic=(document.getElementById('gen-topic').value||'').trim();
   if(!topic){ alert('✏️ Escribe el tema del quiz (ej: verbo to be en presente simple).'); document.getElementById('gen-topic').focus(); return; }
-  const about=(document.getElementById('student-about').value||'').trim();
-  setAbout(name, about);
   // solo cambia el renglón final del instructivo; el resto queda intacto
-  const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'.'+
-    (about?(' Información sobre '+name+': '+about+'. PERSONALIZA todas las preguntas, frases, lecturas y ejemplos con esta información (sus gustos, su trabajo, su familia, su vida).'):'');
+  const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'.';
   const base=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'');
   const full=base+finalLine;
   const done=()=>{ const st=document.getElementById('gen-status'); st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 10000); };
@@ -1168,9 +1166,6 @@ function showEnd(){
   window.scrollTo(0,0);
 }
 document.getElementById('import-file').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; document.getElementById('import-input').value=await f.text(); });
-
-// Guardar el "sobre mí" del estudiante mientras escribe
-document.getElementById('student-about').addEventListener('input', e=>{ if(getName()) setAbout(getName(), e.target.value); });
 
 // Arranque: estudiante activo, avance pendiente y quizzes guardados
 selectStudent(getName()||getStudents()[0]);

@@ -56,23 +56,31 @@
       <h3 class="font-extrabold text-violet-700 text-lg mb-4">🧙 1) Arma el instructivo para tu IA</h3>
       <div class="space-y-4">
         <div>
+          <p class="text-sm font-bold text-slate-700 mb-2">🎛️ ¿Qué tipo de código quieres?</p>
+          <select id="gen-type" onchange="onGenType()" class="w-full border-2 border-violet-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none font-bold">
+            <option value="normal">📝 Quiz normal — para practicar solo</option>
+            <option value="dialogo">💬 Diálogos — para jugar de a dos (multijugador)</option>
+          </select>
+          <p id="gen-type-help" class="text-xs text-slate-400 mt-1">Quiz normal: preguntas variadas (opción, completar, ordenar…) para ti solo.</p>
+        </div>
+        <div>
           <p class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién va a estudiar?</p>
           <div id="students-row" class="flex flex-wrap gap-2"></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <p class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de preguntas</p>
+            <p id="gen-count-label" class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de preguntas</p>
             <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
               <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
             </select>
           </div>
           <div class="md:col-span-2">
-            <p class="text-sm font-bold text-slate-700 mb-2">✏️ Tema del quiz</p>
+            <p class="text-sm font-bold text-slate-700 mb-2">✏️ Tema</p>
             <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be / pasado simple / vocabulario de carpintería"/>
           </div>
         </div>
-        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo (con nombre, cantidad y tema)</button>
-        <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en Claude, Gemini o ChatGPT y te devolverá el código del quiz.</p>
+        <button id="gen-btn" onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz normal</button>
+        <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en Claude, Gemini o ChatGPT y te devolverá el código. Luego pégalo abajo en el paso 2.</p>
       </div>
     </div>
 
@@ -735,6 +743,40 @@ D) CHECKLIST FINAL (revísalo antes de responder):
 
 Ahora crea 40 preguntas de: [ESCRIBE EL TEMA. Ej: verbo To Be en presente simple], mezclando los formatos.`;
 
+/* ===== Instructivo SOLO de DIÁLOGOS (para jugar de a dos / multijugador) ===== */
+const AI_PROMPT_DIALOGO = `Actúa como profesor experto de inglés para hispanohablantes principiantes.
+Vas a crear DIÁLOGOS (conversaciones) para que dos personas practiquen y compitan.
+Devuelve SOLO un JSON válido (nada antes ni después):
+{ "titulo":"...", "preguntas":[ ...uno o varios objetos "dialogo"... ] }
+
+Cada objeto es un DIÁLOGO con esta forma EXACTA:
+{ "formato":"dialogo",
+  "q":"Lee la conversación:",
+  "tema":"Conversation",
+  "dialogo":[
+    {"quien":"Ana","en":"Good morning! How are you?","pron":"gud mórning! jáu ar iú?","es":"¡Buenos días! ¿Cómo estás?"},
+    {"quien":"Tom","en":"I am fine, thank you. And you?","pron":"ái am fáin, zenk iú. and iú?","es":"Estoy bien, gracias. ¿Y tú?"}
+  ],
+  "glosario":[{"palabra":"morning","es":"mañana","tipo":"sustantivo","pron":"mórning"}],
+  "frases":[{"frase":"how are you","es":"cómo estás","pron":"jáu ar iú"}],
+  "preguntas":[
+    { "formato":"opcion","q":"How is Tom?",
+      "opciones":[{"texto":"He is fine","correcta":true,"razon":"Tom dice 'I am fine'."},
+                  {"texto":"He is sad","correcta":false,"razon":"No lo dice."},
+                  {"texto":"He is tired","correcta":false,"razon":"No lo dice."}],
+      "frase":"Tom is fine.","traduccion":"Tom está bien.","pronunciacion":"tom is fáin","estructura":"Sujeto + to be + adjetivo","dato":"'fine' = bien." }
+  ] }
+
+REGLAS OBLIGATORIAS (diálogos):
+- CADA línea del diálogo lleva: "quien" (nombre de la persona), "en" (inglés natural), "pron" (cómo suena en español latino, ej "jáu ar iú"), "es" (traducción).
+- Usa los nombres de los dos jugadores cuando aplique (por ejemplo los que te diga el usuario).
+- CADA diálogo lleva "preguntas" (de 2 a 5) de comprensión sobre lo que se dijo. En "opcion": SOLO una correcta; si hubiera varias válidas usa "multiple". Cada opción con su "razon".
+- "glosario" con TODAS las palabras difíciles (inglés y español, sin omitir); "frases" con las expresiones de 2-3 palabras.
+- Preguntas con "traduccion", "pronunciacion" (español latino), "estructura" (regla, sin dar la respuesta) y "dato" (contexto).
+- Inglés 100% correcto y cotidiano. No escribas NADA fuera del JSON.
+
+Ahora crea diálogos de: [ESCRIBE EL TEMA. Ej: saludos y presentarse], con sus preguntas.`;
+
 function extractJson(text){ let t=text.trim(); const iC=t.indexOf('{'),iB=t.indexOf('['); let start=Infinity; if(iC>=0)start=Math.min(start,iC); if(iB>=0)start=Math.min(start,iB); const end=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']')); if(start!==Infinity&&end>start)t=t.slice(start,end+1); return JSON.parse(t); }
 function baseMeta(it){ return { trad: it.traduccion||it['traducción']||it.trad||it.translation||'', pron: it.pronunciacion||it['pronunciación']||it.pron||it.pronunciation||'', form: it.regla||it.form||it.formula||it['fórmula']||it.rule||'', cat: it.tipo||it.categoria||it['categoría']||it.cat||'', extra: it.dato||it.contexto||it.extra||it.nota||it.note||'', estructura: it.estructura||it.structure||'', tema: it.tema||it.topic||it.subtema||it.theme||'' }; }
 function toBool(v){ if(v===true||v===1)return true; if(v===false||v===0)return false; const s=String(v).toLowerCase().trim(); if(['true','1','si','sí','verdadero','v','yes'].indexOf(s)>=0)return true; if(['false','0','no','falso','f'].indexOf(s)>=0)return false; return null; }
@@ -1224,16 +1266,35 @@ function toggleInstructivo(){
   p.classList.toggle('hidden');
   document.getElementById('eye-btn').textContent=p.classList.contains('hidden')?'🙈':'👁️';
 }
+/* Cambia la interfaz según el tipo de código elegido en el desplegable */
+function onGenType(){
+  const t=(document.getElementById('gen-type')||{}).value||'normal';
+  const help=document.getElementById('gen-type-help'), lbl=document.getElementById('gen-count-label'), btn=document.getElementById('gen-btn');
+  if(t==='dialogo'){
+    if(help) help.textContent='Diálogos: conversaciones en inglés (con pronunciación y traducción) + preguntas, para jugar de a dos con otra persona.';
+    if(lbl) lbl.textContent='🔢 Nº de preguntas por diálogo (aprox.)';
+    if(btn) btn.textContent='📋 Copiar instructivo de DIÁLOGOS (para jugar de a dos)';
+  } else {
+    if(help) help.textContent='Quiz normal: preguntas variadas (opción, completar, ordenar…) para ti solo.';
+    if(lbl) lbl.textContent='🔢 Cantidad de preguntas';
+    if(btn) btn.textContent='📋 Copiar instructivo del quiz normal';
+  }
+}
 function generatePrompt(){
   const name=getName()||'el estudiante';
   const count=document.getElementById('gen-count').value;
   const topic=(document.getElementById('gen-topic').value||'').trim();
-  if(!topic){ alert('✏️ Escribe el tema del quiz (ej: verbo to be en presente simple).'); document.getElementById('gen-topic').focus(); return null; }
-  // solo cambia el renglón final del instructivo; el resto queda intacto
-  const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'. '+
-    'OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.';
-  const base=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'');
-  const full=base+finalLine;
+  const type=(document.getElementById('gen-type')||{}).value||'normal';
+  if(!topic){ alert('✏️ Escribe el tema (ej: verbo to be / saludos).'); document.getElementById('gen-topic').focus(); return null; }
+  const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.';
+  let full;
+  if(type==='dialogo'){
+    const finalLine='Ahora crea varios diálogos de: '+topic+' (con unas '+count+' preguntas de comprensión en total) para '+name+' y su compañero/a. Usa sus nombres en las conversaciones.'+autoriza;
+    full=AI_PROMPT_DIALOGO.replace(/Ahora crea diálogos de:[\s\S]*$/,'')+finalLine;
+  } else {
+    const finalLine='Ahora crea '+count+' preguntas de: '+topic+' para el estudiante '+name+', usando SOLO los formatos opcion, multiple, vf, escribir, completar, huecos, ordenar y emparejar (NO uses lectura ni dialogo aquí).'+autoriza;
+    full=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'')+finalLine;
+  }
   copyToClipboard(full);
   return full;
 }

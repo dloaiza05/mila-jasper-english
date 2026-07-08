@@ -35,7 +35,7 @@
 <div id="app" class="max-w-5xl w-full mx-auto p-3 md:p-6 flex-1 flex flex-col">
 
   <header class="text-center py-4 md:py-6">
-    <h1 class="text-3xl md:text-5xl font-extrabold text-indigo-900 mb-1 tracking-tight">
+    <h1 onclick="goHome()" title="Volver al inicio" class="text-3xl md:text-5xl font-extrabold text-indigo-900 mb-1 tracking-tight cursor-pointer select-none">
       🐾 Mila &amp; Jasper <span class="bg-gradient-to-r from-blue-600 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">English</span>
     </h1>
     <p class="text-slate-500 font-medium text-sm md:text-base">Pega el código que te da una IA y practica inglés con quizzes súper interactivos</p>
@@ -222,16 +222,14 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 flex-1 flex flex-col mb-4">
-      <div class="mb-3"><span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span></div>
+      <div class="mb-3 flex flex-wrap gap-2 items-center">
+        <span id="tema-badge" class="hidden text-xs font-bold px-2 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700"></span>
+        <span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span>
+      </div>
       <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-2 text-slate-800 leading-snug"></h3>
       <!-- Estructura de cómo responder, siempre visible -->
       <p id="structure-line" class="hidden mb-4 text-xs md:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5"></p>
 
-      <!-- Texto de referencia para preguntas de comprensión de lectura -->
-      <div id="ref-text-box" class="hidden mb-4">
-        <button id="ref-text-btn" onclick="toggleRefText()" class="bg-sky-100 hover:bg-sky-200 text-sky-800 border-2 border-dashed border-sky-400 font-bold py-2 px-5 rounded-lg text-sm w-full md:w-auto">📖 Ver el texto de la lectura</button>
-        <div id="ref-text-content" class="hidden mt-2 bg-amber-50/70 border border-amber-200 rounded-2xl p-4 space-y-3 text-sm md:text-base leading-relaxed text-slate-800 shadow-inner slide-down"></div>
-      </div>
 
       <div class="mb-4 text-center">
         <button id="hint-btn" onclick="toggleHint()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-dashed border-amber-400 font-bold py-2 px-6 rounded-lg text-sm w-full md:w-auto">💡 Ver Pista</button>
@@ -331,7 +329,7 @@ function toBeFactory(){
   const d=pick(BE_SUBJ),c=pick(BE_COMP); const adj=d.pl?c.p:c.s; const conj=c.v==='ser'?d.ser:d.estar;
   return { formato:'opcion', q:`${d.s} ___ ${c.en}.`,
     opts:makeOptions(d.be,['am','is','are','be'],`¡Correcto! "${d.s}" usa "${d.be}".`,`"${d.s}" usa "${d.be}". I→am · He/She/It→is · You/We/They→are.`),
-    sentence:`${d.s} ${d.be} ${c.en}.`, trad:`${d.sub} ${conj} ${adj}.`, pron:`${d.pron} ${BE_PRON[d.be]} ${c.pron}`, form:'I → am · He/She/It → is · You/We/They → are', cat:'', extra:'', estructura:'Sujeto + verbo to be + complemento' };
+    sentence:`${d.s} ${d.be} ${c.en}.`, trad:`${d.sub} ${conj} ${adj}.`, pron:`${d.pron} ${BE_PRON[d.be]} ${c.pron}`, form:'I → am · He/She/It → is · You/We/They → are', cat:'', extra:'', estructura:'Sujeto + verbo to be + complemento', tema:'Verbo To Be' };
 }
 const R_PS3='He/She/It + verbo + -s', R_PSB='I/You/We/They + verbo base';
 const PRESENT=[
@@ -340,14 +338,14 @@ const PRESENT=[
   {q:'They ___ in Soacha. (live)',a:'live',o:['lives','living','lived'],s:'They live in Soacha.',t:'Ellos viven en Soacha.',p:'déi liv in Sóacha.',f:R_PSB},
   {q:'I ___ with wood every day. (work)',a:'work',o:['works','working','worked'],s:'I work with wood every day.',t:'Yo trabajo con madera todos los días.',p:'ái uérk uíd wud évri déi.',f:R_PSB}
 ];
-const presentFactory=()=>{ const q=fromBank(pick(PRESENT)); q.estructura='Sujeto + verbo en presente (He/She/It añade -s)'; return q; };
+const presentFactory=()=>{ const q=fromBank(pick(PRESENT)); q.estructura='Sujeto + verbo en presente (He/She/It añade -s)'; q.tema='Presente Simple'; return q; };
 const R_PAST='Verbos irregulares NO usan -ed.';
 const PAST=[
   {q:'Yesterday, I ___ to work. (go)',a:'went',o:['goed','go','gone'],s:'Yesterday, I went to work.',t:'Ayer, yo fui a trabajar.',p:'iésterdei, ái uént tu uérk.',f:R_PAST},
   {q:'Yesterday, he ___ wood. (buy)',a:'bought',o:['buyed','buy','buys'],s:'Yesterday, he bought wood.',t:'Ayer, él compró madera.',p:'iésterdei, ji bot wud.',f:R_PAST},
   {q:'Yesterday, we ___ a table. (make)',a:'made',o:['maked','make','makes'],s:'Yesterday, we made a table.',t:'Ayer, nosotros hicimos una mesa.',p:'iésterdei, uí méid a téibol.',f:R_PAST}
 ];
-const pastFactory=()=>{ const q=fromBank(pick(PAST)); q.estructura='Sujeto + verbo en pasado + complemento'; return q; };
+const pastFactory=()=>{ const q=fromBank(pick(PAST)); q.estructura='Sujeto + verbo en pasado + complemento'; q.tema='Pasado Simple'; return q; };
 const DICT=[
   {en:'pizza',es:'pizza',p:'pítsa',c:'sustantivo',n:'Palabra italiana que el inglés tomó tal cual; suena "pítsa".'},
   {en:'wood',es:'madera',p:'wud',c:'sustantivo'},{en:'hammer',es:'martillo',p:'jámer',c:'sustantivo'},{en:'table',es:'mesa',p:'téibol',c:'sustantivo'},
@@ -459,7 +457,17 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
  ['year','año','sustantivo','íar'],['years','años','sustantivo','íars'],['workshop','taller','sustantivo','uérkshop'],
  ['clients','clientes','sustantivo','cláients'],['client','cliente','sustantivo','cláient'],['cabinets','gabinetes','sustantivo','cábinets'],
  ['chairs','sillas','sustantivo','chers'],['tables','mesas','sustantivo','téibols'],['strong','fuerte','adjetivo','strong'],
- ['love','amar / amor','verbo / sustantivo','lav'],['always','siempre','adverbio','ólueis'],['study','estudiar','verbo','stádi']
+ ['love','amar / amor','verbo / sustantivo','lav'],['always','siempre','adverbio','ólueis'],['study','estudiar','verbo','stádi'],
+ ['learn','aprender','verbo','lern'],['left','salí / dejé (pasado de leave); izquierda','verbo (pasado) / sustantivo','left'],['ready','listo','adjetivo','rédi'],
+ ['student','estudiante','sustantivo','stiúdent'],['teacher','profesor(a)','sustantivo','tícher'],['job','trabajo / empleo','sustantivo','yob'],
+ // meses
+ ['january','enero','sustantivo (mes)','yánuari'],['february','febrero','sustantivo (mes)','fébruari'],['march','marzo','sustantivo (mes)','march'],
+ ['april','abril','sustantivo (mes)','éiprol'],['may','mayo','sustantivo (mes)','méi'],['june','junio','sustantivo (mes)','yun'],
+ ['july','julio','sustantivo (mes)','yulái'],['august','agosto','sustantivo (mes)','ógost'],['september','septiembre','sustantivo (mes)','septémber'],
+ ['october','octubre','sustantivo (mes)','octóuber'],['november','noviembre','sustantivo (mes)','novémber'],['december','diciembre','sustantivo (mes)','disémber'],
+ // días
+ ['monday','lunes','sustantivo (día)','mándei'],['tuesday','martes','sustantivo (día)','tiúsdei'],['wednesday','miércoles','sustantivo (día)','uénsdei'],
+ ['thursday','jueves','sustantivo (día)','zérsdei'],['friday','viernes','sustantivo (día)','fráidei'],['saturday','sábado','sustantivo (día)','sáturdei'],['sunday','domingo','sustantivo (día)','sándei']
 ].forEach(a=>addG(a[0],a[1],a[2],a[3]));
 // también todo el diccionario de vocabulario entra al glosario
 DICT.forEach(d=>{ addG(d.en,d.es,d.c,d.p); if(d.en.indexOf('to ')===0) addG(d.en.slice(3),d.es,'verbo',(d.p||'').replace(/^tu /,'')); });
@@ -530,10 +538,10 @@ function vocabFactory(dict){
   dict=dict||DICT; const item=pick(dict); const cat=item.c?` (${item.c})`:''; const enToEs=Math.random()<0.5;
   if(enToEs){ const d=vocabDistract(dict,item,'es');
     return { formato:'opcion', q:`¿Qué significa "${item.en}"${cat}?`, opts:shuffle([{t:item.es,c:1,r:`¡Correcto! "${item.en}" = ${item.es}.`}].concat(d.map(x=>({t:x,c:0,r:`"${item.en}" significa "${item.es}".`})))),
-      sentence:'', trad:`${item.en} = ${item.es}`, pron:item.p?`${item.en} → ${item.p}`:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'' }; }
+      sentence:'', trad:`${item.en} = ${item.es}`, pron:item.p?`${item.en} → ${item.p}`:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'', tema:'Vocabulario', estructura:'¿Qué significa la palabra?' }; }
   else { const d=vocabDistract(dict,item,'en');
     return { formato:'opcion', q:`¿Cómo se dice "${item.es}"${cat} en inglés?`, opts:shuffle([{t:item.en,c:1,r:`¡Correcto! "${item.es}" = ${item.en}.`}].concat(d.map(x=>({t:x,c:0,r:`"${item.es}" se dice "${item.en}".`})))),
-      sentence:'', trad:`${item.es} = ${item.en}`, pron:item.p?`${item.en} → ${item.p}`:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'' }; }
+      sentence:'', trad:`${item.es} = ${item.en}`, pron:item.p?`${item.en} → ${item.p}`:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'', tema:'Vocabulario', estructura:'¿Qué significa la palabra?' }; }
 }
 const NUMS={12:'twelve',15:'fifteen',20:'twenty',30:'thirty',40:'forty',50:'fifty',13:'thirteen',14:'fourteen'};
 const NUM_PRON={twelve:'tuélv',fifteen:'fiftíin',twenty:'tuénti',thirty:'zérti',forty:'fórti',fifty:'fífti',thirteen:'zértíin',fourteen:'fortíin'};
@@ -542,7 +550,7 @@ function numbersFactory(){
   const keys=Object.keys(NUMS).map(Number); const n=pick(keys); const correct=NUMS[n];
   const pool=shuffle(Object.values(NUMS).filter(x=>x!==correct)); let d=[]; if(NUM_TRAPS[correct])d.push(NUM_TRAPS[correct]); d=[...new Set(d.concat(pool))].slice(0,3);
   return { formato:'opcion', q:`¿Cómo se escribe el número ${n} en inglés?`, opts:shuffle([{t:correct,c:1,r:`¡Correcto! ${n} = "${correct}".`}].concat(d.map(x=>({t:x,c:0,r:`Ojo: ${n} se escribe "${correct}".`})))),
-    sentence:`${n} = ${correct}`, trad:`El número ${n} es "${correct}".`, pron:`${correct} → ${NUM_PRON[correct]}`, form:'Trampas: 40 = forty (sin U).', cat:'número', extra:'' };
+    sentence:`${n} = ${correct}`, trad:`El número ${n} es "${correct}".`, pron:`${correct} → ${NUM_PRON[correct]}`, form:'Trampas: 40 = forty (sin U).', cat:'número', extra:'', tema:'Números', estructura:'¿Cómo se escribe el número?' };
 }
 const ALL_FACTORIES=[toBeFactory,presentFactory,pastFactory,()=>vocabFactory(),numbersFactory];
 
@@ -559,29 +567,24 @@ const EXTRA_FORMATS=[
   {formato:'lectura', q:'Lee este texto sobre un carpintero:',
    text:"My name is Diego and I am a carpenter. I am 39 years old and I live in Soacha with my family. Every day I wake up at six in the morning.\n\nI work with wood in my workshop. I make tables, chairs and kitchen cabinets. My clients are happy because my furniture is beautiful and strong.\n\nAt night I come back home and I study English. My dogs Mila and Jasper are always at home. They are my best friends.",
    trad:"Me llamo Diego y soy carpintero. Tengo 39 años y vivo en Soacha con mi familia. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis perros Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
-   pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".'}
+   pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".',
+   subs:[
+     {formato:'opcion', tema:'Comprensión de lectura', q:'How old is Diego?',
+      opts:shuffle([{t:'He is 39 years old.',c:1,r:'¡Correcto! El texto dice "I am 39 years old".'},
+        {t:'He is 29 years old.',c:0,r:'Vuelve al texto: dice 39, no 29.'},
+        {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 39, no 49.'},
+        {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 39, no 19.'}]),
+      sentence:'Diego is 39 years old.', trad:'Diego tiene 39 años.', pron:'Diego is zérti-náin íars óuld', estructura:'Sujeto + verbo to be + edad', extra:'"years old" = años de edad.'},
+     {formato:'escribir', tema:'Comprensión de lectura', q:'¿En qué material trabaja Diego? (una palabra en inglés)',
+      answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del texto', extra:'"wood" = madera.'},
+     {formato:'vf', tema:'Comprensión de lectura', q:'"Diego wakes up at six in the morning" es correcto según el texto.',
+      answer:true, r:'Verdadero: el texto dice "Every day I wake up at six in the morning".', sentence:'Diego wakes up at six in the morning.', trad:'Diego se despierta a las seis de la mañana.', pron:'Diego uéiks ap at six in de mórning', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
+   ]}
 ];
-// preguntas de comprensión de la lectura del demo (con botón para volver a ver el texto)
-(function(){
-  const lect=EXTRA_FORMATS.find(x=>x.formato==='lectura');
-  EXTRA_FORMATS.push(
-    {formato:'opcion', q:'Comprensión: How old is Diego?', refText:lect.text,
-     opts:shuffle([{t:'He is 39 years old.',c:1,r:'¡Correcto! El texto dice "I am 39 years old".'},
-       {t:'He is 29 years old.',c:0,r:'Vuelve al texto: dice 39.'},
-       {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 39.'},
-       {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 39.'}]),
-     sentence:'Diego is 39 years old.', trad:'Diego tiene 39 años.', pron:'Diego is zérti-náin íars óuld', form:'Comprensión de lectura', cat:'lectura', extra:''},
-    {formato:'opcion', q:'Comprensión: What does Diego make in his workshop?', refText:lect.text,
-     opts:shuffle([{t:'Tables, chairs and kitchen cabinets.',c:1,r:'¡Correcto! "I make tables, chairs and kitchen cabinets."'},
-       {t:'Cars and bicycles.',c:0,r:'El texto habla de muebles, no de vehículos.'},
-       {t:'Bread and pizza.',c:0,r:'Eso es comida; él hace muebles.'},
-       {t:'Books and letters.',c:0,r:'El texto dice muebles de madera.'}]),
-     sentence:'Diego makes tables, chairs and kitchen cabinets.', trad:'Diego hace mesas, sillas y gabinetes de cocina.', pron:'Diego méiks téibols, chers and kíchen cábinets', form:'Comprensión de lectura', cat:'lectura', extra:''}
-  );
-})();
 // estructura GENÉRICA por formato (no revela la respuesta) para el quiz de ejemplo
 const DEFAULT_EST={completar:'Sujeto + verbo + complemento', huecos:'Sujeto + verbo + complemento', ordenar:'Sujeto + verbo + complemento', emparejar:'Une cada palabra con su significado', vf:'Decide si la oración está bien o mal', escribir:'Escribe la palabra o forma correcta', multiple:'Marca todas las que cumplan la condición'};
-EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estructura=DEFAULT_EST[q.formato]; });
+const DEFAULT_TEMA={multiple:'Clasificar palabras', vf:'Verdadero o Falso', escribir:'Escribir en inglés', completar:'Verbo To Be', huecos:'Preposiciones', ordenar:'Orden de la frase', emparejar:'Vocabulario', lectura:'Lectura'};
+EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estructura=DEFAULT_EST[q.formato]; if(!q.tema && DEFAULT_TEMA[q.formato]) q.tema=DEFAULT_TEMA[q.formato]; });
 
 /* ============================================================ IMPORTAR CÓDIGO DE UNA IA ============================================================ */
 const AI_PROMPT = `Actúa como profesor experto de inglés para un hispanohablante principiante.
@@ -647,6 +650,8 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
 7. "estructura": la fórmula gramatical GENÉRICA de cómo se responde, con nombres de categorías: "Sujeto + verbo to be + adjetivo", "Sujeto + verbo (+ -s con He/She/It)", "¿Cuál es el plural del sustantivo?", "Artículo + sustantivo". NUNCA reveles la respuesta exacta (no pongas "She→is"), solo el patrón con Sujeto/verbo/sustantivo/adjetivo/etc.
+8. "tema": el tema de esa pregunta (ej: "Verbo To Be", "Presente Simple", "Pasado Simple", "Preposiciones", "Vocabulario", "Números"). Va ENCIMA de la pregunta.
+9. En la "razon" de la opción CORRECTA explica POR QUÉ es esa y NO las otras (que también están bien escritas). Ejemplo: "Se usa 'a' cuando la profesión empieza en sonido de consonante; con vocal sería 'an'." Di con qué palabra se une la respuesta en la frase y qué significa esa unión. Muchos datos.
 
 B) POR FORMATO:
 - "opcion": exactamente 4 opciones, SOLO una con "correcta":true, y CADA opción con su "razon" (por qué está bien o mal). Incluye "frase" (la oración correcta completa).
@@ -659,18 +664,20 @@ B) POR FORMATO:
 - "emparejar": "pares" de 3 a 6 elementos {"en","es"}.
 - "lectura": "texto" de 1 a 8 párrafos cortos separados por \n\n + "traduccion" COMPLETA del texto + "glosario" con TODAS las palabras difíciles del texto + "frases" del texto + "preguntas" (2 a 5 preguntas de comprensión sobre el texto, cada una CUMPLIENDO también todas estas reglas).
 
-C) CALIDAD:
+C) CALIDAD DE LA INFORMACIÓN (obligatoria y extensa):
 - Inglés 100% correcto y natural; español latino claro.
-- Mezcla varios formatos para que sea dinámico.
-- Temas de la vida del alumno cuando se pueda.
+- "traduccion", "pronunciacion" (español latino), "dato" (extenso) y "glosario" (TODAS las palabras, inglés y español) en CADA pregunta. Ninguna palabra sin traducción.
+- La "razon" enseña: por qué es esa respuesta y no las otras, con qué se une en la frase y qué significa.
+- "tema" y "estructura" (genérica, sin revelar la respuesta) en cada pregunta.
+- Mezcla varios formatos para que sea dinámico. Las lecturas SIEMPRE con 2 a 8 preguntas y sus respuestas.
 - No escribas NADA fuera del JSON (sin saludos ni explicaciones).
 
 D) CHECKLIST FINAL (revísalo antes de responder):
-[ ] ¿Toda pregunta tiene traduccion, pronunciacion, regla y dato?
-[ ] ¿Toda pregunta tiene glosario con TODAS sus palabras clave?
+[ ] ¿Toda pregunta tiene tema, traduccion, pronunciacion, estructura, regla y dato extenso?
+[ ] ¿Toda pregunta tiene glosario con TODAS sus palabras clave (inglés y español)?
+[ ] ¿La razon de la correcta explica por qué esa y no las otras?
 [ ] ¿Incluiste las frases de 2-3 palabras que aparecen?
-[ ] ¿Toda opción tiene su razon?
-[ ] ¿Las lecturas traen texto + traduccion completa + preguntas de comprensión?
+[ ] ¿Las lecturas traen texto + traduccion completa + de 2 a 8 preguntas con respuestas?
 [ ] ¿El JSON es válido (empieza con { y termina con })?
 
 Ahora crea 40 preguntas de: [ESCRIBE EL TEMA. Ej: verbo To Be en presente simple], mezclando los formatos.`;
@@ -682,7 +689,7 @@ function copyAIPrompt(){
   function fb(){ const ta=document.getElementById('import-input'); ta.value=AI_PROMPT; ta.focus(); ta.select(); alert('Copia el texto del recuadro (Ctrl+C) y pégalo en la IA. Luego bórralo y pega ahí el JSON que te devuelva.'); }
 }
 function extractJson(text){ let t=text.trim(); const iC=t.indexOf('{'),iB=t.indexOf('['); let start=Infinity; if(iC>=0)start=Math.min(start,iC); if(iB>=0)start=Math.min(start,iB); const end=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']')); if(start!==Infinity&&end>start)t=t.slice(start,end+1); return JSON.parse(t); }
-function baseMeta(it){ return { trad: it.traduccion||it['traducción']||it.trad||it.translation||'', pron: it.pronunciacion||it['pronunciación']||it.pron||it.pronunciation||'', form: it.regla||it.form||it.formula||it['fórmula']||it.rule||'', cat: it.tipo||it.categoria||it['categoría']||it.cat||'', extra: it.dato||it.contexto||it.extra||it.nota||it.note||'', estructura: it.estructura||it.structure||'' }; }
+function baseMeta(it){ return { trad: it.traduccion||it['traducción']||it.trad||it.translation||'', pron: it.pronunciacion||it['pronunciación']||it.pron||it.pronunciation||'', form: it.regla||it.form||it.formula||it['fórmula']||it.rule||'', cat: it.tipo||it.categoria||it['categoría']||it.cat||'', extra: it.dato||it.contexto||it.extra||it.nota||it.note||'', estructura: it.estructura||it.structure||'', tema: it.tema||it.topic||it.subtema||it.theme||'' }; }
 function toBool(v){ if(v===true||v===1)return true; if(v===false||v===0)return false; const s=String(v).toLowerCase().trim(); if(['true','1','si','sí','verdadero','v','yes'].indexOf(s)>=0)return true; if(['false','0','no','falso','f'].indexOf(s)>=0)return false; return null; }
 function parseOpts(it,i){
   let raw=it.opciones||it.opts||it.options||it.choices||it.answer_options||it.answerOptions; if(!Array.isArray(raw)||raw.length<2) throw new Error('La pregunta '+(i+1)+' no tiene opciones válidas.');
@@ -700,22 +707,36 @@ function collectPhrases(target, arr){
 }
 /* Red de seguridad: si una lectura llega sin preguntas, se generan 2-3 desde el propio texto */
 function autoLecturaQuestions(text){
-  const sentences=String(text).replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).filter(s=>s.split(' ').length>=4);
+  const sentences=String(text).replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(s=>s.split(' ').length>=4);
   const allWords=Array.from(new Set(String(text).toLowerCase().match(/[a-z']{4,}/g)||[]));
   const stop=new Set(['this','that','with','have','they','their','there','from','your','about','which','would','could','because','these','those','were','been','into','also','when','what','where','than','then','every','always']);
-  const out=[];
-  const mixed=shuffle(sentences);
-  for(let s=0;s<mixed.length && out.length<3;s++){
+  const out=[]; const mixed=shuffle(sentences);
+  for(let s=0;s<mixed.length && out.length<4;s++){
     const sent=mixed[s]; const words=sent.split(' ');
     const candidates=words.filter(w=>{ const c=w.replace(/[^a-zA-Z']/g,''); return c.length>=4 && !stop.has(c.toLowerCase()); });
     if(!candidates.length) continue;
     const target=pick(candidates); const clean=target.replace(/[^a-zA-Z']/g,'');
-    const distract=shuffle(allWords.filter(w=>w!==clean.toLowerCase())).slice(0,3);
-    if(distract.length<3) continue;
-    const blanked=sent.replace(target,'_____');
-    out.push({formato:'opcion', q:'Según el texto, completa: "'+blanked+'"',
-      opts:shuffle([{t:clean,c:1,r:'¡Correcto! El texto dice: "'+sent+'"'}].concat(distract.map(d=>({t:d,c:0,r:'La palabra del texto era "'+clean+'". Relee: "'+sent+'"'})))),
-      sentence:sent, trad:'', pron:'', form:'Vuelve a ver el texto si lo necesitas.', cat:'lectura', extra:'Pregunta de comprensión generada desde el texto.'});
+    const type=out.length%4;
+    if(type===0){
+      const distract=shuffle(allWords.filter(w=>w!==clean.toLowerCase())).slice(0,3);
+      if(distract.length<3) continue;
+      out.push({formato:'opcion', tema:'Comprensión de lectura', q:'Según el texto, completa: "'+sent.replace(target,'_____')+'"',
+        opts:shuffle([{t:clean,c:1,r:'¡Correcto! El texto dice: "'+sent+'".'}].concat(distract.map(d=>({t:d,c:0,r:'En el texto la palabra era "'+clean+'", no "'+d+'". Relee: "'+sent+'".'})))),
+        sentence:sent, estructura:'Elige la palabra que aparece en el texto', extra:'Pregunta generada del texto.'});
+    } else if(type===1){
+      out.push({formato:'escribir', tema:'Comprensión de lectura', q:'Escribe la palabra que falta según el texto: "'+sent.replace(target,'_____')+'"',
+        answer:clean, respuestas:[clean], sentence:sent, estructura:'Escribe la palabra exacta del texto', extra:'La respuesta está en el texto.'});
+    } else if(type===2){
+      const makeFalse=Math.random()<0.5; let stmt=sent, ans=true;
+      if(makeFalse){ const other=pick(allWords.filter(w=>w!==clean.toLowerCase())||[clean]); if(other){ stmt=sent.replace(target,other); ans=false; } }
+      out.push({formato:'vf', tema:'Comprensión de lectura', q:'¿Es correcto según el texto?: "'+stmt+'"',
+        answer:ans, r:ans?'Verdadero: aparece así en el texto.':('Falso: el texto dice "'+sent+'".'), sentence:sent, estructura:'Verdadero o Falso según el texto'});
+    } else {
+      const w2=words.filter(w=>w.replace(/[^a-zA-Z']/g,'').length>0);
+      if(w2.length<3 || w2.length>8) continue;
+      out.push({formato:'ordenar', tema:'Comprensión de lectura', q:'Ordena las palabras para formar una frase del texto:',
+        order:w2, sentence:sent, estructura:'Ordena: Sujeto + verbo + complemento', extra:'Es una frase del texto.'});
+    }
   }
   return out;
 }
@@ -780,18 +801,19 @@ function normalizeImported(text){
     if(item.formato==='lectura'){
       let subs=it.preguntas||it.comprension||it['comprensión']||it.questions||it.ejercicios||it.actividades||it.quiz;
       // si la IA incrustó opciones directamente en la lectura, se vuelven una pregunta
-      if(!Array.isArray(subs) && Array.isArray(it.opciones||it.options)) subs=[{formato:'opcion', q:it.q, opciones:it.opciones||it.options, frase:it.frase, traduccion:it.traduccion, pronunciacion:it.pronunciacion, regla:it.regla, dato:it.dato}];
-      let added=0;
-      if(Array.isArray(subs)) subs.forEach(s=>{ try{ const sq=parseItem(s,i); sq.refText=item.text; qs.push(sq); added++; }catch(e){} });
-      // red de seguridad: si no llegaron preguntas, la app las genera desde el texto
-      if(!added){ autoLecturaQuestions(item.text).forEach(sq=>{ sq.refText=item.text; qs.push(sq); }); }
+      if(!Array.isArray(subs) && Array.isArray(it.opciones||it.options)) subs=[{formato:'opcion', q:it.q, opciones:it.opciones||it.options, frase:it.frase, traduccion:it.traduccion, pronunciacion:it.pronunciacion, regla:it.regla, dato:it.dato, tema:it.tema}];
+      const parsed=[];
+      if(Array.isArray(subs)) subs.forEach(s=>{ try{ parsed.push(parseItem(s,i)); }catch(e){} });
+      // red de seguridad: si no llegaron preguntas, la app las genera desde el texto (tipos variados), texto arriba
+      item.subs = parsed.length ? parsed : autoLecturaQuestions(item.text);
     }
   });
   return {titulo,qs,glossary,phrases};
 }
 
 /* ============================================================ ESTADO Y RENDER ============================================================ */
-let quiz=[],idx=0,score=0,answered=false,customQuestions=null,streak=0,maxStreak=0;
+let quiz=[],idx=0,score=0,answered=false,customQuestions=null,streak=0,maxStreak=0,quizMax=0;
+function computeQuizMax(){ quizMax=quiz.reduce((s,it)=> s + ((it.subs&&it.subs.length)? it.subs.length : 1), 0); }
 const screens={home:document.getElementById('home-screen'),quiz:document.getElementById('quiz-screen'),end:document.getElementById('end-screen')};
 const ui={ qText:document.getElementById('question-text'), area:document.getElementById('answer-area'), badge:document.getElementById('format-badge'),
   feedback:document.getElementById('feedback-box'), fTitle:document.getElementById('feedback-title'), fRat:document.getElementById('feedback-rationale'),
@@ -810,7 +832,7 @@ function startCustomImport(){
   quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; launchQuiz(res.titulo+' ('+res.qs.length+' preguntas)');
 }
 function repeatQuiz(){ if(customQuestions){ quiz=shuffle(customQuestions); launchQuiz(ui.topicLabel.textContent);} else goHome(); }
-function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
+function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; computeQuizMax(); updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
 function updateStreak(animate){ const el=document.getElementById('streak-counter'); el.textContent='🔥 '+streak; if(animate){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } }
 function goHome(){ screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.home.classList.remove('hidden'); renderResume(); renderSaved(); window.scrollTo(0,0); }
 
@@ -823,7 +845,14 @@ function showWordPopup(el){
   const sp=g?null:lookupSpanish(word); // si no es palabra en inglés, intenta español -> inglés
   const p=document.getElementById('word-popup');
   document.getElementById('wp-word').textContent=word;
-  document.getElementById('wp-es').textContent = g?('📖 '+g.es) : (sp?('🇬🇧 En inglés: '+sp.en):'Sin traducción guardada');
+  // mensaje útil según el caso
+  let esMsg;
+  if(g) esMsg='📖 '+g.es;
+  else if(sp) esMsg='🇬🇧 En inglés se dice: '+sp.en;
+  else if(/^[A-ZÀ-Ý]/.test(word) && word.length>1) esMsg='🔤 Parece un nombre propio (persona, lugar o marca). Los nombres propios no se traducen.';
+  else if(/^[a-zA-Z']+$/.test(word)) esMsg='❓ No está en el diccionario: puede estar mal escrita o ser poco común. Revisa la ortografía.';
+  else esMsg='ℹ️ No hay traducción para este símbolo.';
+  document.getElementById('wp-es').textContent = esMsg;
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
   document.getElementById('wp-pron').textContent = (g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
   const ph=findPhrase(el); const phEl=document.getElementById('wp-phrase');
@@ -882,7 +911,7 @@ function resumeSaved(restart){
   quiz=p.quiz; customQuestions=quiz; extraGlossary=p.glossary||{}; extraPhrases=p.phrases||{};
   if(p.player) selectStudent(p.player); // restaura quién lo estaba haciendo
   if(restart){ launchQuiz(p.title); return; }
-  idx=p.idx; score=p.score||0; streak=p.streak||0; maxStreak=p.maxStreak||0;
+  idx=p.idx; score=p.score||0; streak=p.streak||0; maxStreak=p.maxStreak||0; computeQuizMax();
   screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden');
   ui.topicLabel.textContent=p.title; updateStreak(false); loadQuestion(); window.scrollTo(0,0);
 }
@@ -924,37 +953,28 @@ function deleteSaved(id){ const s=getSavedList().find(x=>x.id===id); if(!s) retu
 function loadQuestion(){
   answered=false; const q=quiz[idx]; const fmt=q.formato||'opcion';
   ui.badge.textContent=FORMAT_LABELS[fmt]||'';
+  // tema encima de la pregunta
+  const tb=document.getElementById('tema-badge');
+  if(q.tema){ tb.textContent='📗 '+q.tema; tb.classList.remove('hidden'); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
-  // estructura GENÉRICA de cómo responder (no revela la respuesta), siempre visible
+  // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
   if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
-  // pregunta de comprensión de lectura: botón para volver a ver el texto (con palabras tocables)
-  const refBox=document.getElementById('ref-text-box');
-  if(q.refText){
-    refBox.classList.remove('hidden');
-    document.getElementById('ref-text-content').innerHTML=String(q.refText).split(/\n{2,}/).map(p=>'<p>'+wordSpanify(p.trim())+'</p>').join('');
-    document.getElementById('ref-text-content').classList.add('hidden');
-    document.getElementById('ref-text-btn').textContent='📖 Ver el texto de la lectura';
-  } else refBox.classList.add('hidden');
+  // pista global (las lecturas tienen su propia pista por sub-pregunta)
   ui.hTrad.textContent=q.trad||''; ui.hPron.textContent=q.pron?`(${q.pron})`:''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
   const autoVocab=buildAutoHint(q);
   document.getElementById('hint-vocab').textContent=autoVocab;
   show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-vocab-wrap'),!!autoVocab); show(document.getElementById('hint-extra-wrap'),!!q.extra); show(document.getElementById('hint-form-wrap'),!!q.form);
-  ui.hint.classList.add('hidden'); ui.hintBtn.classList.remove('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista';
+  ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista';
+  const hayPista = fmt!=='lectura' && (q.trad||q.pron||q.extra||q.form||autoVocab);
+  if(hayPista) ui.hintBtn.classList.remove('hidden'); else ui.hintBtn.classList.add('hidden');
   ui.counter.textContent=`${idx+1}/${quiz.length}`; ui.score.textContent=`Puntaje: ${score}`; ui.progress.style.width=`${(idx/quiz.length)*100}%`;
   ui.feedback.classList.add('hidden'); ui.nextBtn.classList.add('hidden'); ui.area.innerHTML='';
-  if(fmt==='multiple') renderMultiple(q);
-  else if(fmt==='vf') renderVF(q);
-  else if(fmt==='completar') renderComplete(q);
-  else if(fmt==='huecos') renderHuecos(q);
-  else if(fmt==='ordenar') renderOrder(q);
-  else if(fmt==='emparejar') renderMatch(q);
-  else if(fmt==='escribir') renderWrite(q);
-  else if(fmt==='lectura') renderLectura(q);
-  else renderChoice(q);
+  if(fmt==='lectura'){ renderLectura(q); return; }
+  const ctx={ area:ui.area, answered:false, done:(ok,exp,qq)=>finalize(ok,exp,qq) };
+  dispatchRender(q, ctx);
 }
 function toggleHint(){ if(ui.hint.classList.contains('hidden')){ ui.hint.classList.remove('hidden'); ui.hintBtn.innerHTML='👀 Pista abierta'; } else { ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista'; } }
-function toggleRefText(){ const c=document.getElementById('ref-text-content'); const b=document.getElementById('ref-text-btn'); c.classList.toggle('hidden'); b.textContent=c.classList.contains('hidden')?'📖 Ver el texto de la lectura':'👀 Ocultar el texto'; }
 
 /* Pista automática: traduce las palabras de la pregunta usando el glosario */
 function buildAutoHint(q){
@@ -1009,14 +1029,25 @@ function generatePrompt(){
   const topic=(document.getElementById('gen-topic').value||'').trim();
   if(!topic){ alert('✏️ Escribe el tema del quiz (ej: verbo to be en presente simple).'); document.getElementById('gen-topic').focus(); return null; }
   // solo cambia el renglón final del instructivo; el resto queda intacto
-  const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'.';
+  const finalLine='Ahora crea '+count+' preguntas de: '+topic+', mezclando los formatos, para el estudiante '+name+'. '+
+    'OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.';
   const base=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'');
   const full=base+finalLine;
-  const done=()=>{ const st=document.getElementById('gen-status'); st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 12000); };
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(full).then(done).catch(()=>{ document.getElementById('import-input').value=full; done(); });
-  } else { document.getElementById('import-input').value=full; done(); }
+  copyToClipboard(full);
   return full;
+}
+/* Copia SIEMPRE (PC y celular). Respaldo con textarea + execCommand si falla la API */
+function copyToClipboard(text){
+  const done=()=>{ const st=document.getElementById('gen-status'); if(st){ st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 12000); } };
+  function fallback(){
+    try{ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.top='-9999px'; document.body.appendChild(ta); ta.focus(); ta.select(); const okc=document.execCommand('copy'); document.body.removeChild(ta); if(okc){ done(); return true; } }catch(e){}
+    // último recurso: dejarlo en el recuadro de la derecha para copiar a mano
+    const inp=document.getElementById('import-input'); if(inp){ inp.value=text; inp.focus(); inp.select(); }
+    done(); return false;
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else { fallback(); }
 }
 /* Genera + copia + abre la IA elegida (solo falta pegar con Ctrl+V) */
 function openIA(which){
@@ -1027,134 +1058,193 @@ function openIA(which){
   window.open(url,'_blank','noopener');
 }
 
+/* Despacha el render según el formato, dentro del contexto dado (área + callback) */
+function dispatchRender(q, ctx){
+  const fmt=q.formato||'opcion';
+  if(fmt==='multiple') renderMultiple(q,ctx);
+  else if(fmt==='vf') renderVF(q,ctx);
+  else if(fmt==='completar') renderComplete(q,ctx);
+  else if(fmt==='huecos') renderHuecos(q,ctx);
+  else if(fmt==='ordenar') renderOrder(q,ctx);
+  else if(fmt==='emparejar') renderMatch(q,ctx);
+  else if(fmt==='escribir') renderWrite(q,ctx);
+  else renderChoice(q,ctx);
+}
+/* Pista compacta para una sub-pregunta de lectura */
+function buildSubHint(sq){
+  const wrap=document.createElement('div'); const vocab=buildAutoHint(sq);
+  if(!sq.trad && !sq.pron && !sq.extra && !vocab) return wrap;
+  const btn=document.createElement('button'); btn.className='bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-dashed border-amber-400 font-bold py-1.5 px-4 rounded-lg text-xs'; btn.textContent='💡 Ver Pista';
+  const box=document.createElement('div'); box.className='hidden mt-2 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3 text-xs space-y-1';
+  let h=''; if(sq.trad) h+='<div><b>📖 Traducción:</b> '+escapeHtml(sq.trad)+'</div>'; if(sq.pron) h+='<div><b>🗣️ Pronunciación:</b> <i>('+escapeHtml(sq.pron)+')</i></div>'; if(vocab) h+='<div><b>📚 Vocabulario:</b> '+escapeHtml(vocab)+'</div>'; if(sq.extra) h+='<div><b>💡 Dato:</b> '+escapeHtml(sq.extra)+'</div>';
+  box.innerHTML=h;
+  btn.onclick=()=>{ box.classList.toggle('hidden'); btn.textContent=box.classList.contains('hidden')?'💡 Ver Pista':'👀 Pista abierta'; };
+  wrap.appendChild(btn); wrap.appendChild(box); return wrap;
+}
+/* Cierre de una sub-pregunta de lectura (feedback + tarjeta dentro de su tarjeta) */
+function finalizeSub(ok, exp, sq, fb){
+  if(ok){ score++; streak++; if(streak>maxStreak)maxStreak=streak; } else { streak=0; }
+  updateStreak(ok); ui.score.textContent='Puntaje: '+score;
+  fb.className='mt-3 p-3 rounded-xl border text-sm '+(ok?'bg-green-50 border-green-200':'bg-red-50 border-red-200');
+  let h='<p class="font-bold '+(ok?'text-green-700':'text-red-700')+'">'+(ok?'¡Correcto!':'Revisa:')+'</p>';
+  if(exp) h+='<p class="text-slate-700">'+escapeHtml(exp)+'</p>';
+  h+='<div class="mt-2 bg-white/80 rounded-lg border border-slate-200 p-2 space-y-0.5 text-xs">';
+  if(sq.sentence) h+='<div><b>✅ Frase:</b> '+wordSpanify(sq.sentence)+'</div>';
+  if(sq.trad) h+='<div><b>📖 Significa:</b> '+escapeHtml(sq.trad)+'</div>';
+  if(sq.pron) h+='<div><b>🗣️ Se pronuncia:</b> <i>('+escapeHtml(sq.pron)+')</i></div>';
+  if(sq.cat) h+='<div><b>🏷️ Tipo:</b> '+escapeHtml(sq.cat)+'</div>';
+  if(sq.extra) h+='<div><b>💡 Dato:</b> '+escapeHtml(sq.extra)+'</div>';
+  h+='</div>'; fb.innerHTML=h; fb.classList.remove('hidden');
+}
+
 /* opción múltiple (1 correcta) */
-function renderChoice(q){
+function renderChoice(q,ctx){
   const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach(opt=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    btn.innerHTML=`<span>${wordSpanify(opt.t)}</span><span class="hidden icon-status text-lg"></span>`;
-    btn.onclick=()=>{ if(answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
+    btn.innerHTML='<span>'+wordSpanify(opt.t)+'</span><span class="hidden icon-status text-lg"></span>';
+    btn.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('span').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
-      btn.querySelector('.icon-status').classList.remove('hidden'); finalize(opt.c===1, opt.r, q);
+      btn.querySelector('.icon-status').classList.remove('hidden'); ctx.answered=true; ctx.done(opt.c===1, opt.r, q);
     };
     box.appendChild(btn);
   });
-  ui.area.appendChild(box);
+  ctx.area.appendChild(box);
 }
 /* varias correctas */
-function renderMultiple(q){
+function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    b.innerHTML=`<span>${wordSpanify(opt.t)}</span><span class="check-box text-lg">⬜</span>`;
-    b.onclick=()=>{ if(answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
+    b.innerHTML='<span>'+wordSpanify(opt.t)+'</span><span class="check-box text-lg">⬜</span>';
+    b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });
-  ui.area.appendChild(box);
+  ctx.area.appendChild(box);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  chk.onclick=()=>{ if(answered)return; const buttons=box.querySelectorAll('button'); let ok=true;
+  chk.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); let ok=true;
     q.opts.forEach((opt,i)=>{ const b=buttons[i]; b.disabled=true; b.classList.add('btn-disabled'); const chosen=sel.has(i);
       if(opt.c===1){ b.classList.add('bg-green-100','border-green-400'); b.querySelector('.check-box').textContent=chosen?'✅':'✔️'; if(!chosen)ok=false; }
       else if(chosen){ b.classList.add('bg-red-100','border-red-400'); b.querySelector('.check-box').textContent='❌'; ok=false; } });
     chk.disabled=true; chk.classList.add('btn-disabled');
     const cr=q.opts.filter(o=>o.c===1).map(o=>o.t);
-    finalize(ok, ok?'¡Correcto! Elegiste todas las correctas.':('Las correctas eran: '+cr.join(', ')+'.'), q);
+    ctx.answered=true; ctx.done(ok, ok?'¡Correcto! Elegiste todas las correctas.':('Las correctas eran: '+cr.join(', ')+'.'), q);
   };
-  ui.area.appendChild(chk);
+  ctx.area.appendChild(chk);
 }
 /* verdadero / falso */
-function renderVF(q){
+function renderVF(q,ctx){
+  const box=document.createElement('div'); ctx.area.appendChild(box);
   [['✅ Verdadero',true],['❌ Falso',false]].forEach((pair,i)=>{
     const b=document.createElement('button'); b.className='w-full p-4 rounded-xl border-2 border-slate-200 bg-white font-bold btn-option text-base '+(i>0?'mt-2':''); b.textContent=pair[0];
-    b.onclick=()=>{ if(answered)return; const buttons=ui.area.querySelectorAll('button'); buttons.forEach(x=>{x.disabled=true;x.classList.add('btn-disabled');});
+    b.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(x=>{x.disabled=true;x.classList.add('btn-disabled');});
       const ok=(pair[1]===q.answer); b.classList.add(ok?'btn-selected-correct':'btn-selected-incorrect');
       if(!ok){ buttons.forEach(x=>{ if((x.textContent.indexOf('Verdadero')>=0)===q.answer) x.classList.add('bg-green-100','border-green-400'); }); }
-      finalize(ok, q.r||(ok?'¡Correcto!':('La respuesta correcta es: '+(q.answer?'Verdadero':'Falso')+'.')), q);
+      ctx.answered=true; ctx.done(ok, q.r||(ok?'¡Correcto!':('La respuesta correcta es: '+(q.answer?'Verdadero':'Falso')+'.')), q);
     };
-    ui.area.appendChild(b);
+    box.appendChild(b);
   });
 }
 /* completar espacios (escritos) */
-function renderComplete(q){
+function renderComplete(q,ctx){
   const parts=String(q.template).split(/_{2,}/); const wrap=document.createElement('div'); wrap.className='text-base md:text-lg leading-loose'; const inputs=[];
   parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); wrap.appendChild(sp); if(i<parts.length-1){ const inp=document.createElement('input'); inp.type='text'; inp.autocomplete='off'; inp.spellcheck=false; inp.className='inline-block mx-1 px-2 py-1 border-2 border-slate-300 rounded-lg text-center focus:border-indigo-400 outline-none'; inp.style.width='120px'; inputs.push(inp); wrap.appendChild(inp); } });
-  ui.area.appendChild(wrap);
+  ctx.area.appendChild(wrap);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  chk.onclick=()=>{ if(answered)return; let ok=true; const detail=[]; inputs.forEach((inp,i)=>{ inp.disabled=true; const good=norm(inp.value)===norm(q.answers[i]||''); inp.classList.remove('border-slate-300'); inp.classList.add(good?'border-green-500':'border-red-500', good?'bg-green-50':'bg-red-50'); detail.push('Espacio '+(i+1)+(good?' ✓':': escribiste "'+(inp.value.trim()||'(vacío)')+'" → está mal, era "'+q.answers[i]+'"')); if(!good)ok=false; });
-    chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto! Todos los espacios correctos.':detail.join(' · '), q);
+  chk.onclick=()=>{ if(ctx.answered)return; let ok=true; const detail=[]; inputs.forEach((inp,i)=>{ inp.disabled=true; const good=norm(inp.value)===norm(q.answers[i]||''); inp.classList.remove('border-slate-300'); inp.classList.add(good?'border-green-500':'border-red-500', good?'bg-green-50':'bg-red-50'); detail.push('Espacio '+(i+1)+(good?' ✓':': escribiste "'+(inp.value.trim()||'(vacío)')+'" → está mal, era "'+q.answers[i]+'"')); if(!good)ok=false; });
+    chk.disabled=true; chk.classList.add('btn-disabled'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto! Todos los espacios correctos.':detail.join(' · '), q);
   };
-  ui.area.appendChild(chk); setTimeout(()=>inputs[0]&&inputs[0].focus(),50);
+  ctx.area.appendChild(chk); setTimeout(()=>inputs[0]&&inputs[0].focus(),50);
 }
 /* completar con fichas */
-function renderHuecos(q){
+function renderHuecos(q,ctx){
   const parts=String(q.template).split(/_{2,}/); const slots=new Array(q.answers.length).fill(null);
   const bank=(q.bank&&q.bank.length?q.bank:q.answers).map((w,i)=>({w:String(w),used:false,id:i}));
   const sentWrap=document.createElement('div'); sentWrap.className='text-base md:text-lg leading-loose mb-3'; const bankWrap=document.createElement('div'); bankWrap.className='flex flex-wrap gap-2 mb-3';
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; slot.onclick=()=>{ if(answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }; sentWrap.appendChild(slot); } }); }
-  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; b.onclick=()=>{ if(answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }; bankWrap.appendChild(b); }); }
-  ui.area.appendChild(sentWrap); ui.area.appendChild(bankWrap); ui.area.appendChild(chk);
-  chk.onclick=()=>{ if(answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const good=norm(s.w)===norm(q.answers[i]); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, era "'+q.answers[i]+'"'); } }); chk.disabled=true; chk.classList.add('btn-disabled'); finalize(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Frase correcta: "'+q.sentence+'".'), q); };
+  function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; slot.onclick=()=>{ if(ctx.answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }; sentWrap.appendChild(slot); } }); }
+  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; b.onclick=()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }; bankWrap.appendChild(b); }); }
+  ctx.area.appendChild(sentWrap); ctx.area.appendChild(bankWrap); ctx.area.appendChild(chk);
+  chk.onclick=()=>{ if(ctx.answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const good=norm(s.w)===norm(q.answers[i]); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, era "'+q.answers[i]+'"'); } }); chk.disabled=true; chk.classList.add('btn-disabled'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Frase correcta: "'+q.sentence+'".'), q); };
   drawSentence(); drawBank();
 }
 /* ordenar palabras */
-function renderOrder(q){
+function renderOrder(q,ctx){
   const correct=q.order; let bank=shuffle(correct.map((w,i)=>({w,id:i}))); let ans=[];
-  const wrap=document.createElement('div'); wrap.innerHTML=`<p class="text-xs text-slate-500 mb-1">Toca las palabras en orden:</p><div id="order-answer" class="min-h-[52px] flex flex-wrap gap-2 p-2 mb-3 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50"></div><div id="order-bank" class="flex flex-wrap gap-2 mb-3"></div><button id="order-check" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto">Comprobar ✅</button>`;
-  ui.area.appendChild(wrap);
-  const ansRow=document.getElementById('order-answer'), bankRow=document.getElementById('order-bank'), checkBtn=document.getElementById('order-check');
+  const ansRow=document.createElement('div'); ansRow.className='min-h-[52px] flex flex-wrap gap-2 p-2 mb-3 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50';
+  const bankRow=document.createElement('div'); bankRow.className='flex flex-wrap gap-2 mb-3';
+  const checkBtn=document.createElement('button'); checkBtn.textContent='Comprobar ✅'; checkBtn.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
+  const hint=document.createElement('p'); hint.className='text-xs text-slate-500 mb-1'; hint.textContent='Toca las palabras en orden:';
+  ctx.area.appendChild(hint); ctx.area.appendChild(ansRow); ctx.area.appendChild(bankRow); ctx.area.appendChild(checkBtn);
   function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML=wordSpanify(w); return b; }
-  function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); c.onclick=()=>{ if(answered)return; ans.splice(pos,1); bank.push(it); draw(); }; ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); c.onclick=()=>{ if(answered)return; bank.splice(pos,1); ans.push(it); draw(); }; bankRow.appendChild(c); }); }
-  checkBtn.onclick=()=>{ if(answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const userOrder=ans.map(a=>a.w).join(' '); const ok=userOrder.toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); finalize(ok, ok?'¡Excelente orden!':('Tu orden: "'+userOrder+'" → está mal. El correcto es: "'+correct.join(' ')+'".'), q); };
+  function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); c.onclick=()=>{ if(ctx.answered)return; ans.splice(pos,1); bank.push(it); draw(); }; ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); c.onclick=()=>{ if(ctx.answered)return; bank.splice(pos,1); ans.push(it); draw(); }; bankRow.appendChild(c); }); }
+  checkBtn.onclick=()=>{ if(ctx.answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const userOrder=ans.map(a=>a.w).join(' '); const ok=userOrder.toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true; ctx.done(ok, ok?'¡Excelente orden!':('Tu orden: "'+userOrder+'" → está mal. El correcto es: "'+correct.join(' ')+'".'), q); };
   draw();
 }
 /* emparejar / unir columnas */
-function renderMatch(q){
+function renderMatch(q,ctx){
   const left=shuffle(q.pairs.map((p,i)=>({t:p.a,id:i}))), right=shuffle(q.pairs.map((p,i)=>({t:p.b,id:i})));
   let selBtn=null, selId=null, matched=0, errors=0;
   const grid=document.createElement('div'); grid.className='grid grid-cols-2 gap-3'; const colL=document.createElement('div'); colL.className='space-y-2'; const colR=document.createElement('div'); colR.className='space-y-2';
   function mk(item,side){ const b=document.createElement('button'); b.innerHTML=wordSpanify(item.t); b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
-    b.onclick=()=>{ if(answered||b.disabled)return;
+    b.onclick=()=>{ if(ctx.answered||b.disabled)return;
       if(side==='L'){ if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=b; selId=item.id; b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }
       else { if(selId===null)return;
-        if(item.id===selId){ b.classList.add('btn-selected-correct'); b.disabled=true; selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn.classList.add('btn-selected-correct'); selBtn.disabled=true; selBtn=null; selId=null; matched++; if(matched===q.pairs.length) finalize(errors===0, errors===0?'¡Perfecto! Uniste todo bien.':'¡Completado! Repite para hacerlo sin errores.', q); }
+        if(item.id===selId){ b.classList.add('btn-selected-correct'); b.disabled=true; selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn.classList.add('btn-selected-correct'); selBtn.disabled=true; selBtn=null; selId=null; matched++; if(matched===q.pairs.length){ ctx.answered=true; ctx.done(errors===0, errors===0?'¡Perfecto! Uniste todo bien.':'¡Completado! Repite para hacerlo sin errores.', q); } }
         else { errors++; b.classList.add('btn-selected-incorrect'); const bad=b; setTimeout(()=>bad.classList.remove('btn-selected-incorrect'),450); if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=null; selId=null; }
       }
     };
     return b;
   }
-  left.forEach(it=>colL.appendChild(mk(it,'L'))); right.forEach(it=>colR.appendChild(mk(it,'R'))); grid.appendChild(colL); grid.appendChild(colR); ui.area.appendChild(grid);
-}
-/* lectura: texto de párrafos, palabras tocables, traducción opcional */
-function renderLectura(q){
-  const wrap=document.createElement('div');
-  const paras=String(q.text||'').split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
-  let html='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-4 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+
-    paras.map(p=>'<p>'+wordSpanify(p)+'</p>').join('')+'</div>'+
-    '<p class="text-xs text-slate-400 mt-2 text-center">💡 Mantén presionada cualquier palabra para ver su traducción, tipo y pronunciación.</p>';
-  if(q.trad){
-    html+='<div class="text-center"><button id="lect-trad-btn" class="mt-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-dashed border-amber-400 font-bold py-2 px-5 rounded-lg text-sm w-full md:w-auto">📖 Ver traducción del texto</button></div>'+
-    '<div id="lect-trad" class="hidden mt-2 bg-blue-50 border-l-4 border-blue-400 rounded-r-xl p-3 text-sm text-blue-900 slide-down">'+escapeHtml(q.trad).replace(/\n{2,}/g,'<br><br>')+
-    (q.pron?'<div class="text-purple-700 italic mt-2">🗣️ '+escapeHtml(q.pron)+'</div>':'')+'</div>';
-  }
-  html+='<div class="text-center mt-4"><button id="lect-done" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-8 rounded-full shadow-lg">✅ Terminé de leer — Continuar</button></div>';
-  wrap.innerHTML=html; ui.area.appendChild(wrap);
-  const tb=document.getElementById('lect-trad-btn');
-  if(tb) tb.onclick=()=>{ const t=document.getElementById('lect-trad'); t.classList.toggle('hidden'); tb.textContent=t.classList.contains('hidden')?'📖 Ver traducción del texto':'👀 Ocultar traducción'; };
-  const done=document.getElementById('lect-done');
-  done.onclick=()=>{ if(answered)return; done.disabled=true; done.classList.add('btn-disabled'); finalize(true,'¡Lectura completada! Si una palabra no la entendiste, vuelve y mantenla presionada.', q); };
+  left.forEach(it=>colL.appendChild(mk(it,'L'))); right.forEach(it=>colR.appendChild(mk(it,'R'))); grid.appendChild(colL); grid.appendChild(colR); ctx.area.appendChild(grid);
 }
 /* escribir */
-function renderWrite(q){
-  const wrap=document.createElement('div'); wrap.innerHTML=`<input id="write-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" class="w-full p-3 md:p-4 rounded-xl border-2 border-slate-300 text-base focus:border-indigo-400 outline-none" placeholder="Escribe tu respuesta en inglés..."/><button id="write-check" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto">Comprobar ✅</button>`;
-  ui.area.appendChild(wrap); const inp=document.getElementById('write-input'), btn=document.getElementById('write-check');
-  function check(){ if(answered)return; const val=inp.value.trim(); if(!val){ inp.focus(); return; } const list=[q.answer].concat(q.respuestas||[]); const ok=list.some(a=>norm(a)===norm(val)); inp.disabled=true; btn.disabled=true; btn.classList.add('btn-disabled'); inp.classList.remove('border-slate-300'); inp.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); finalize(ok, ok?'¡Perfecto! Lo escribiste bien.':('Escribiste "'+val+'" → está mal. La forma correcta es "'+q.answer+'".'), q); }
+function renderWrite(q,ctx){
+  const inp=document.createElement('input'); inp.type='text'; inp.autocomplete='off'; inp.setAttribute('autocapitalize','off'); inp.spellcheck=false; inp.className='w-full p-3 md:p-4 rounded-xl border-2 border-slate-300 text-base focus:border-indigo-400 outline-none'; inp.placeholder='Escribe tu respuesta en inglés...';
+  const btn=document.createElement('button'); btn.textContent='Comprobar ✅'; btn.className='mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
+  ctx.area.appendChild(inp); ctx.area.appendChild(btn);
+  function check(){ if(ctx.answered)return; const val=inp.value.trim(); if(!val){ inp.focus(); return; } const list=[q.answer].concat(q.respuestas||[]); const ok=list.some(a=>norm(a)===norm(val)); inp.disabled=true; btn.disabled=true; btn.classList.add('btn-disabled'); inp.classList.remove('border-slate-300'); inp.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto! Lo escribiste bien.':('Escribiste "'+val+'" → está mal. La forma correcta es "'+q.answer+'".'), q); }
   btn.onclick=check; inp.addEventListener('keydown',e=>{ if(e.key==='Enter')check(); }); setTimeout(()=>inp.focus(),50);
+}
+/* lectura: texto arriba + TODAS sus preguntas y respuestas en la misma hoja */
+function renderLectura(q){
+  const cont=ui.area;
+  const paras=String(q.text||'').split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
+  const textCard=document.createElement('div');
+  textCard.innerHTML='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-3 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+paras.map(p=>'<p>'+wordSpanify(p)+'</p>').join('')+'</div>'+
+    '<p class="text-xs text-slate-400 mt-2 text-center">💡 Mantén presionada cualquier palabra del texto para ver su traducción.</p>';
+  cont.appendChild(textCard);
+  if(q.trad){
+    const tbtn=document.createElement('button'); tbtn.className='mt-2 mx-auto block bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-dashed border-amber-400 font-bold py-2 px-5 rounded-lg text-sm'; tbtn.textContent='📖 Ver traducción del texto';
+    const tdiv=document.createElement('div'); tdiv.className='hidden mt-2 bg-blue-50 border-l-4 border-blue-400 rounded-r-xl p-3 text-sm text-blue-900'; tdiv.innerHTML=escapeHtml(q.trad).replace(/\n{2,}/g,'<br><br>')+(q.pron?'<div class="text-purple-700 italic mt-2">🗣️ '+escapeHtml(q.pron)+'</div>':'');
+    tbtn.onclick=()=>{ tdiv.classList.toggle('hidden'); tbtn.textContent=tdiv.classList.contains('hidden')?'📖 Ver traducción del texto':'👀 Ocultar traducción'; };
+    cont.appendChild(tbtn); cont.appendChild(tdiv);
+  }
+  const subs=q.subs||[]; let doneCount=0;
+  if(subs.length){ const hd=document.createElement('p'); hd.className='font-extrabold text-indigo-700 mt-5 mb-1'; hd.textContent='📝 Responde sobre la lectura:'; cont.appendChild(hd); }
+  const contBtn=document.createElement('button'); contBtn.className='bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-8 rounded-full shadow-lg';
+  contBtn.textContent = subs.length ? 'Responde las '+subs.length+' preguntas' : '✅ Continuar';
+  if(subs.length){ contBtn.disabled=true; contBtn.classList.add('btn-disabled'); }
+  contBtn.onclick=()=>{ saveProgress(idx+1); if(idx<quiz.length-1){ idx++; loadQuestion(); window.scrollTo(0,0);} else showEnd(); };
+  subs.forEach((sq,si)=>{
+    const card=document.createElement('div'); card.className='mt-4 rounded-2xl border-2 border-slate-100 p-3 md:p-4 bg-white sub-card'; card.dataset.sub=si;
+    let bh='<div class="flex flex-wrap gap-2 mb-2">'; if(sq.tema) bh+='<span class="text-xs font-bold px-2 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700">📗 '+escapeHtml(sq.tema)+'</span>'; bh+='<span class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">'+(FORMAT_LABELS[sq.formato||'opcion']||'')+'</span></div>';
+    const head=document.createElement('div'); head.innerHTML=bh; card.appendChild(head);
+    const qh=document.createElement('h4'); qh.className='font-bold text-slate-800 mb-1 text-base md:text-lg'; qh.innerHTML='Pregunta '+(si+1)+': '+wordSpanify(sq.q); card.appendChild(qh);
+    if(sq.estructura){ const st=document.createElement('p'); st.className='text-xs font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-2 py-1 mb-2'; st.textContent='⚙️ '+sq.estructura; card.appendChild(st); }
+    card.appendChild(buildSubHint(sq));
+    const ansArea=document.createElement('div'); ansArea.className='mt-2'; card.appendChild(ansArea);
+    const fb=document.createElement('div'); fb.className='hidden'; card.appendChild(fb);
+    const subCtx={ area:ansArea, answered:false, done:(ok,exp,qq)=>{ finalizeSub(ok,exp,qq,fb); doneCount++; if(doneCount===subs.length){ contBtn.disabled=false; contBtn.classList.remove('btn-disabled'); contBtn.textContent='✅ Continuar'; } saveProgress(idx); } };
+    dispatchRender(sq, subCtx);
+    cont.appendChild(card);
+  });
+  const bw=document.createElement('div'); bw.className='text-center mt-6'; bw.appendChild(contBtn); cont.appendChild(bw);
 }
 
 /* cierre común */
 function finalize(ok, explanation, q){
-  answered=true; ui.hintBtn.classList.add('hidden');
+  answered=true; // la pista sigue disponible después de responder (no se oculta)
   if(ok){ score++; streak++; if(streak>maxStreak)maxStreak=streak; updateStreak(true); ui.feedback.className='mt-4 p-4 rounded-xl border bg-green-50 border-green-200 fade-in'; ui.fTitle.textContent=streak>=3?('¡Excelente! 🔥 Racha de '+streak):'¡Excelente!'; ui.fTitle.className='font-bold text-green-700'; }
   else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
@@ -1168,7 +1258,7 @@ function nextQuestion(){ idx++; if(idx<quiz.length){ loadQuestion(); window.scro
 function showEnd(){
   clearProgress();
   screens.quiz.classList.add('hidden'); screens.end.classList.remove('hidden');
-  document.getElementById('final-score').textContent=`${score} / ${quiz.length}`; const pct=Math.round((score/quiz.length)*100);
+  const maxTotal=quizMax||quiz.length; document.getElementById('final-score').textContent=`${score} / ${maxTotal}`; const pct=Math.round((score/maxTotal)*100);
   document.getElementById('final-percentage').textContent=`${pct}% de acierto`;
   document.getElementById('final-streak').textContent=`🔥 Racha máxima: ${maxStreak}`;
   const nm=getName();

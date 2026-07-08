@@ -85,7 +85,7 @@
       <p class="text-xs text-slate-500 mb-3">Empieza con <b>{</b> y termina con <b>}</b>. ¿Dudas del formato? Toca el ojo 👁.</p>
 
       <div id="instructivo-panel" class="hidden mb-3">
-        <p class="text-xs text-slate-500 mb-2">📖 Así se ve el formato del código (9 tipos de pregunta). Esto lo genera la IA con el instructivo del paso 1:</p>
+        <p class="text-xs text-slate-500 mb-2">📖 Así se ve el formato del código (10 tipos de pregunta, incluido 💬 diálogo). Esto lo genera la IA con el instructivo del paso 1:</p>
         <pre class="bg-slate-900 text-emerald-200 p-3 rounded-lg overflow-auto text-[11px] leading-relaxed scroll-soft max-h-[300px]">{
   "titulo": "Mi quiz de inglés",
   "preguntas": [
@@ -179,7 +179,7 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow p-4 border border-blue-100 text-center">
-      <p class="text-slate-600 text-sm mb-3">¿Quieres probar sin pegar nada? Carga un quiz de ejemplo con los 8 tipos de pregunta.</p>
+      <p class="text-slate-600 text-sm mb-3">¿Quieres probar sin pegar nada? Carga un quiz de ejemplo con los 10 tipos de pregunta (incluye 📚 lectura y 💬 diálogo).</p>
       <button onclick="loadDemo()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">🎯 Cargar quiz de ejemplo</button>
     </div>
 
@@ -568,6 +568,18 @@ const EXTRA_FORMATS=[
       answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del texto', extra:'"wood" = madera.'},
      {formato:'vf', tema:'Reading Comprehension', q:'"Diego wakes up at six in the morning" es correcto según el texto.',
       answer:true, r:'Verdadero: el texto dice "Every day I wake up at six in the morning".', sentence:'Diego wakes up at six in the morning.', trad:'Diego se despierta a las seis de la mañana.', pron:'Diego uéiks ap at six in de mórning', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
+   ]},
+  {formato:'dialogo', tema:'Conversation', q:'Lee la conversación en la carpintería:',
+   dialogue:[
+     {quien:'Client', en:'Good morning! Are you the carpenter?', pron:'gud mórning! ar iú de cárpenter?', es:'¡Buenos días! ¿Eres el carpintero?'},
+     {quien:'Diego', en:'Yes, I am. How can I help you?', pron:'iés, ái am. jáu can ái jelp iú?', es:'Sí, lo soy. ¿En qué te puedo ayudar?'},
+     {quien:'Client', en:'I need a new kitchen table.', pron:'ái nid a niú kíchen téibol.', es:'Necesito una mesa de cocina nueva.'},
+     {quien:'Diego', en:'No problem. I work with wood every day.', pron:'nóu próblem. ái uérk uíd wud évri déi.', es:'No hay problema. Trabajo con madera todos los días.'}
+   ],
+   subs:[
+     {formato:'opcion', tema:'Conversation', q:'What does the client need?', opts:shuffle([{t:'A kitchen table',c:1,r:'✅ El cliente dice "I need a new kitchen table".'},{t:'A chair',c:0,r:'❌ No pidió una silla.'},{t:'A door',c:0,r:'❌ No pidió una puerta.'}]), sentence:'The client needs a kitchen table.', trad:'El cliente necesita una mesa de cocina.', pron:'de cláient nids a kíchen téibol', estructura:'Sujeto + verbo + complemento', extra:'"kitchen table" = mesa de cocina.'},
+     {formato:'vf', tema:'Conversation', q:'"Diego is the carpenter" es correcto según el diálogo.', answer:true, r:'Verdadero: Diego responde "Yes, I am" cuando le preguntan si es el carpintero.', sentence:'Diego is the carpenter.', trad:'Diego es el carpintero.', pron:'Diego is de cárpenter', estructura:'Verdadero o Falso según el diálogo', extra:'"carpenter" = carpintero.'},
+     {formato:'escribir', tema:'Conversation', q:'¿Con qué material trabaja Diego? (una palabra en inglés)', answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del diálogo', extra:'"wood" = madera.'}
    ]}
 ];
 // estructura GENÉRICA por formato (no revela la respuesta) para el quiz de ejemplo
@@ -625,6 +637,16 @@ Cada pregunta lleva un campo "formato". Formatos disponibles:
 - En "lectura": párrafos separados por línea en blanco (\n\n). Usa inglés sencillo y temas de la vida del alumno.
 - Las "preguntas" de comprensión aparecen DESPUÉS del texto y el alumno tiene un botón para volver a ver la lectura mientras responde.
 
+10) "dialogo" (una CONVERSACIÓN entre 2 personas). Cada línea trae: quién habla, la frase en inglés, su pronunciación español latino, y su traducción (que queda OCULTA hasta que el alumno la toca). SIEMPRE agrégale "preguntas" (2 a 5) sobre el diálogo:
+{ "formato":"dialogo","q":"Lee la conversación:",
+  "dialogo":[
+    {"quien":"Ana","en":"Good morning! How are you?","pron":"gud mórning! jáu ar iú?","es":"¡Buenos días! ¿Cómo estás?"},
+    {"quien":"Tom","en":"I am fine, thank you.","pron":"ái am fáin, zenk iú.","es":"Estoy bien, gracias."}
+  ],
+  "glosario":[...], "frases":[...],
+  "preguntas":[ { "formato":"opcion","q":"How is Tom?","opciones":[...], ... } ] }
+- En "dialogo" usa nombres reales de las personas del alumno cuando aplique (Diego, Leidy...). Inglés natural y cotidiano.
+
 =================== REGLAS OBLIGATORIAS ===================
 El código debe venir COMPLETO. NINGÚN campo es opcional. Si una pregunta no trae todos sus campos, la app pierde funciones. Cumple TODO esto:
 
@@ -643,7 +665,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
 9. En la "razon" de la opción CORRECTA explica POR QUÉ es esa y NO las otras (que también están bien escritas). Ejemplo: "Se usa 'a' cuando la profesión empieza en sonido de consonante; con vocal sería 'an'." Di con qué palabra se une la respuesta en la frase y qué significa esa unión. Muchos datos.
 
 B) POR FORMATO:
-- "opcion": exactamente 4 opciones, SOLO una con "correcta":true, y CADA opción con su "razon" (por qué está bien o mal). Incluye "frase" (la oración correcta completa).
+- "opcion": exactamente 4 opciones, SOLO UNA verdaderamente correcta. REGLA CRÍTICA: las otras 3 deben estar CLARAMENTE mal (gramática incorrecta o significado equivocado). Si dos opciones fueran válidas al mismo tiempo (ej. "The dog is busy" y "The cat is happy" ambas correctas), NO uses "opcion": usa "multiple" y marca las dos como correctas. Nunca dejes dos respuestas buenas en una pregunta de una sola correcta. CADA opción con su "razon". Incluye "frase".
 - "multiple": 4-6 opciones, 2 o más correctas, cada una con "razon".
 - "vf": "respuesta":true/false + "razon" + "frase" (la forma correcta).
 - "escribir": "respuesta" + "respuestas" con TODAS las formas válidas alternativas (ej. ["I am","I'm"]). No importan mayúsculas ni tildes.
@@ -658,7 +680,9 @@ C) CALIDAD DE LA INFORMACIÓN (obligatoria y extensa):
 - "traduccion", "pronunciacion" (español latino), "dato" (extenso) y "glosario" (TODAS las palabras, inglés y español) en CADA pregunta. Ninguna palabra sin traducción.
 - La "razon" enseña: por qué es esa respuesta y no las otras, con qué se une en la frase y qué significa.
 - "tema" y "estructura" (genérica, sin revelar la respuesta) en cada pregunta.
-- Mezcla varios formatos para que sea dinámico. Las lecturas SIEMPRE con 2 a 8 preguntas y sus respuestas.
+- MUCHO CONTEXTO: en "dato" cuenta la vida real de la palabra/frase — de dónde viene, cuándo se usa, con qué se combina, error típico de un hispanohablante, y un ejemplo extra de uso. Que el alumno aprenda historia y contexto, no solo la respuesta.
+- Usa muchas lecturas y diálogos con historias de la vida del alumno (trabajo, familia, ciudad) para dar contexto rico.
+- Mezcla varios formatos (incluye "dialogo" y "lectura") para que sea dinámico. Lecturas y diálogos SIEMPRE con 2 a 8 preguntas y sus respuestas.
 - No escribas NADA fuera del JSON (sin saludos ni explicaciones).
 
 D) CHECKLIST FINAL (revísalo antes de responder):
@@ -761,6 +785,12 @@ function normalizeImported(text){
       if(!Array.isArray(order)||order.length<2) throw new Error('La pregunta '+(i+1)+' (ordenar) necesita "palabras".');
       order=order.map(String); return Object.assign({formato:'ordenar', q:String(q), order}, meta, {sentence:frase||order.join(' ')});
     }
+    if(fmt.indexOf('dialog')>=0 || fmt.indexOf('diálog')>=0 || fmt.indexOf('conversa')>=0 || Array.isArray(it.dialogo)||Array.isArray(it.dialogue)||Array.isArray(it.lineas)||Array.isArray(it['diálogo'])){
+      const raw=it.dialogo||it.dialogue||it.lineas||it['diálogo']||it.conversacion; if(!Array.isArray(raw)||!raw.length) throw new Error('La pregunta '+(i+1)+' (diálogo) necesita "dialogo" (lista de líneas).');
+      const lines=raw.map(l=>({ quien:String(l.quien||l.persona||l.speaker||l.who||l.nombre||''), en:String(l.en||l.ingles||l.english||l.texto||l.linea||l.text||''), pron:String(l.pron||l.pronunciacion||l['pronunciación']||''), es:String(l.es||l.traduccion||l['traducción']||l.significado||'') })).filter(l=>l.en);
+      if(!lines.length) throw new Error('La pregunta '+(i+1)+' (diálogo): las líneas necesitan "en" (inglés).');
+      return Object.assign({formato:'dialogo', q:String(q), dialogue:lines, text:lines.map(l=>l.en).join(' ')}, meta, {sentence:''});
+    }
     if(fmt.indexOf('lect')>=0 || fmt==='reading' || fmt==='passage' || ((fmt==='texto'||fmt==='text') && (it.texto||it.text))){
       const text=it.texto||it.text||it.passage||it.parrafos||it['párrafos']; if(!text) throw new Error('La pregunta '+(i+1)+' (lectura) necesita "texto".');
       return Object.assign({formato:'lectura', q:String(q), text:Array.isArray(text)?text.join('\n\n'):String(text)}, meta, {sentence:''});
@@ -780,8 +810,8 @@ function normalizeImported(text){
   const qs=[];
   arr.forEach((it,i)=>{
     const item=parseItem(it,i); qs.push(item);
-    // una lectura SIEMPRE debe traer preguntas para responder
-    if(item.formato==='lectura'){
+    // una lectura o diálogo SIEMPRE traen preguntas (misma hoja)
+    if(item.formato==='lectura'||item.formato==='dialogo'){
       let subs=it.preguntas||it.comprension||it['comprensión']||it.questions||it.ejercicios||it.actividades||it.quiz;
       // si la IA incrustó opciones directamente en la lectura, se vuelven una pregunta
       if(!Array.isArray(subs) && Array.isArray(it.opciones||it.options)) subs=[{formato:'opcion', q:it.q, opciones:it.opciones||it.options, frase:it.frase, traduccion:it.traduccion, pronunciacion:it.pronunciacion, regla:it.regla, dato:it.dato, tema:it.tema}];
@@ -805,7 +835,7 @@ const ui={ qText:document.getElementById('question-text'), area:document.getElem
   learnSent:document.getElementById('learn-sentence'), learnTrad:document.getElementById('learn-trad'), learnPron:document.getElementById('learn-pron'), learnCat:document.getElementById('learn-cat'), learnExtra:document.getElementById('learn-extra'),
   counter:document.getElementById('question-counter'), score:document.getElementById('score-counter'), progress:document.getElementById('progress-bar'), topicLabel:document.getElementById('topic-label') };
 function show(el,on){ el.style.display=on?'':'none'; }
-const FORMAT_LABELS={opcion:'🔘 Opción múltiple', multiple:'☑️ Varias correctas', vf:'✅❌ Verdadero / Falso', escribir:'⌨️ Escribe la respuesta', completar:'📝 Completa los espacios', huecos:'🧩 Completa con fichas', ordenar:'🔀 Ordena las palabras', emparejar:'🔗 Une las columnas', lectura:'📚 Lectura'};
+const FORMAT_LABELS={opcion:'🔘 Opción múltiple', multiple:'☑️ Varias correctas', vf:'✅❌ Verdadero / Falso', escribir:'⌨️ Escribe la respuesta', completar:'📝 Completa los espacios', huecos:'🧩 Completa con fichas', ordenar:'🔀 Ordena las palabras', emparejar:'🔗 Une las columnas', lectura:'📚 Lectura', dialogo:'💬 Diálogo'};
 /* Temas en inglés → español (para el badge tocable) */
 const TEMA_ES={'verb to be':'Verbo To Be','present simple':'Presente Simple','simple past':'Pasado Simple','past simple':'Pasado Simple','present continuous':'Presente Continuo','reading':'Lectura','reading comprehension':'Comprensión de lectura','word types':'Tipos de palabra','true or false':'Verdadero o Falso','writing':'Escritura','fill in the blanks':'Completar espacios','sentence order':'Orden de la frase','vocabulary':'Vocabulario','numbers':'Números','articles':'Artículos (a/an)','pronouns':'Pronombres','possessives':'Posesivos','prepositions':'Preposiciones','adjectives':'Adjetivos','plurals':'Plurales','questions':'Preguntas','wh questions':'Preguntas Wh-','family':'Familia','colors':'Colores','food':'Comida'};
 function temaEs(t){ if(!t) return ''; const k=norm(t); if(TEMA_ES[k]) return TEMA_ES[k]; const sp=lookupWord(t); return sp?sp.es:''; }
@@ -981,11 +1011,11 @@ function loadQuestion(){
   document.getElementById('hint-vocab').textContent=autoVocab;
   show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-vocab-wrap'),!!autoVocab); show(document.getElementById('hint-extra-wrap'),!!q.extra); show(document.getElementById('hint-form-wrap'),!!q.form);
   ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista';
-  const hayPista = fmt!=='lectura' && (q.trad||q.pron||q.extra||q.form||autoVocab);
+  const hayPista = fmt!=='lectura' && fmt!=='dialogo' && (q.trad||q.pron||q.extra||q.form||autoVocab);
   if(hayPista) ui.hintBtn.classList.remove('hidden'); else ui.hintBtn.classList.add('hidden');
   ui.counter.textContent=`${idx+1}/${quiz.length}`; ui.score.textContent=`Puntaje: ${score}`; ui.progress.style.width=`${(idx/quiz.length)*100}%`;
   ui.feedback.classList.add('hidden'); ui.nextBtn.classList.add('hidden'); ui.area.innerHTML='';
-  if(fmt==='lectura'){ renderLectura(q); return; }
+  if(fmt==='lectura'||fmt==='dialogo'){ renderLectura(q); return; }
   const ctx={ area:ui.area, answered:false, done:(ok,exp,qq)=>finalize(ok,exp,qq) };
   dispatchRender(q, ctx);
 }
@@ -1215,12 +1245,35 @@ function renderWrite(q,ctx){
 /* lectura: texto arriba + TODAS sus preguntas y respuestas en la misma hoja */
 function renderLectura(q){
   const cont=ui.area;
-  const paras=String(q.text||'').split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
+  const paras=(q.dialogue&&q.dialogue.length)? q.dialogue.map(l=>l.en) : String(q.text||'').split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
   const textCard=document.createElement('div');
-  textCard.innerHTML='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-3 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+paras.map(p=>'<p>'+wordSpanify(p)+'</p>').join('')+'</div>'+
-    '<p class="text-xs text-slate-400 mt-2 text-center">💡 Mantén presionada cualquier palabra del texto para ver su traducción.</p>';
+  if(q.dialogue&&q.dialogue.length){
+    // DIÁLOGO: cada línea en inglés + fonética español latino debajo + traducción oculta por línea
+    const speakers=[...new Set(q.dialogue.map(l=>l.quien).filter(Boolean))];
+    const box=document.createElement('div'); box.className='bg-amber-50/70 border border-amber-200 rounded-2xl p-3 md:p-4 space-y-3 shadow-inner';
+    q.dialogue.forEach(l=>{
+      const isB = speakers.length>1 && l.quien===speakers[1];
+      const row=document.createElement('div'); row.className='rounded-xl p-2.5 '+(isB?'bg-fuchsia-50 border border-fuchsia-100':'bg-white border border-slate-100');
+      let h='';
+      if(l.quien) h+='<div class="text-xs font-bold '+(isB?'text-fuchsia-600':'text-teal-600')+' mb-0.5">'+(isB?'🟣 ':'🟢 ')+escapeHtml(l.quien)+'</div>';
+      h+='<div class="text-base md:text-lg font-medium text-slate-800 leading-snug">'+wordSpanify(l.en)+'</div>';
+      if(l.pron) h+='<div class="text-sm text-purple-700 italic">🗣️ '+escapeHtml(l.pron)+'</div>';
+      row.innerHTML=h;
+      if(l.es){ const tb=document.createElement('button'); tb.className='mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline'; tb.textContent='📖 Ver traducción';
+        const td=document.createElement('div'); td.className='hidden text-sm text-blue-800 mt-0.5'; td.textContent=l.es;
+        tb.onclick=()=>{ td.classList.toggle('hidden'); tb.textContent=td.classList.contains('hidden')?'📖 Ver traducción':'👀 Ocultar'; };
+        row.appendChild(tb); row.appendChild(td); }
+      box.appendChild(row);
+    });
+    textCard.appendChild(box);
+    const tip=document.createElement('p'); tip.className='text-xs text-slate-400 mt-2 text-center'; tip.textContent='💡 Mantén presionada cualquier palabra para ver su traducción. Cada línea tiene su pronunciación y su traducción oculta.';
+    textCard.appendChild(tip);
+  } else {
+    textCard.innerHTML='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-3 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+paras.map(p=>'<p>'+wordSpanify(p)+'</p>').join('')+'</div>'+
+      '<p class="text-xs text-slate-400 mt-2 text-center">💡 Mantén presionada cualquier palabra del texto para ver su traducción.</p>';
+  }
   cont.appendChild(textCard);
-  if(q.trad){
+  if(q.trad && !(q.dialogue&&q.dialogue.length)){
     const tbtn=document.createElement('button'); tbtn.className='mt-2 mx-auto block bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-dashed border-amber-400 font-bold py-2 px-5 rounded-lg text-sm'; tbtn.textContent='📖 Ver traducción del texto';
     const tdiv=document.createElement('div'); tdiv.className='hidden mt-2 bg-blue-50 border-l-4 border-blue-400 rounded-r-xl p-3 text-sm text-blue-900'; tdiv.innerHTML=escapeHtml(q.trad).replace(/\n{2,}/g,'<br><br>')+(q.pron?'<div class="text-purple-700 italic mt-2">🗣️ '+escapeHtml(q.pron)+'</div>':'');
     tbtn.onclick=()=>{ tdiv.classList.toggle('hidden'); tbtn.textContent=tdiv.classList.contains('hidden')?'📖 Ver traducción del texto':'👀 Ocultar traducción'; };

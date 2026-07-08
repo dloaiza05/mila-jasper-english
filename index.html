@@ -46,57 +46,48 @@
   <div id="home-screen" class="fade-in flex-1 flex flex-col">
     <div id="resume-card" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl shadow p-4 mb-5"></div>
 
-    <!-- ===== GENERADOR DE INSTRUCTIVO PERSONALIZADO ===== -->
-    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-extrabold text-violet-700 text-lg">🧙 Genera tu instructivo</h3>
-        <button id="eye-btn" onclick="toggleInstructivo()" title="Mostrar / ocultar la ventana del instructivo" class="text-2xl hover:scale-110 transition-transform">👁️</button>
-      </div>
+    <!-- ===== RANKING ===== -->
+    <div id="ranking-section" class="hidden bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-amber-200">
+      <h3 class="font-extrabold text-amber-600 text-lg mb-3">🏆 Ranking de estudiantes</h3>
+      <div id="ranking-list" class="space-y-2"></div>
+    </div>
 
+    <!-- ===== 1) GENERADOR ===== -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
+      <h3 class="font-extrabold text-violet-700 text-lg mb-4">🧙 1) Arma el instructivo para tu IA</h3>
       <div class="space-y-4">
         <div>
-          <p class="text-sm font-bold text-slate-700 mb-2">1️⃣ ¿Quién va a estudiar?</p>
+          <p class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién va a estudiar?</p>
           <div id="students-row" class="flex flex-wrap gap-2"></div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <p class="text-sm font-bold text-slate-700 mb-2">2️⃣ Cantidad de preguntas</p>
+            <p class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de preguntas</p>
             <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
               <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
             </select>
           </div>
           <div class="md:col-span-2">
-            <p class="text-sm font-bold text-slate-700 mb-2">3️⃣ Tema del quiz</p>
+            <p class="text-sm font-bold text-slate-700 mb-2">✏️ Tema del quiz</p>
             <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be / pasado simple / vocabulario de carpintería"/>
           </div>
         </div>
-
-        <div class="border-t border-slate-100 pt-4">
-          <p class="text-sm font-bold text-slate-700 mb-1 text-center">4️⃣ Genera y abre tu IA (el código se copia solo)</p>
-          <p class="text-xs text-slate-400 mb-3 text-center">Se abre la página con el código ya copiado — solo pega con <b>Ctrl+V</b> (o mantén presionado → Pegar) y envía.</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <button onclick="openIA('claude')" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 px-4 rounded-full text-sm shadow">🤖 Generar y abrir Claude</button>
-            <button onclick="openIA('chatgpt')" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-4 rounded-full text-sm shadow">💬 Generar y abrir ChatGPT</button>
-            <button onclick="openIA('gemini')" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-full text-sm shadow">🔮 Generar y abrir Gemini</button>
-          </div>
-          <p id="gen-status" class="hidden text-center text-xs text-emerald-700 font-bold mt-3">✅ ¡Copiado! Ya se abrió tu IA — pega con Ctrl+V y envía.</p>
-          <div class="text-center mt-2">
-            <button onclick="generatePrompt()" class="text-xs text-violet-600 underline hover:text-violet-800">o solo copiar el instructivo sin abrir nada</button>
-          </div>
-        </div>
+        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo (con nombre, cantidad y tema)</button>
+        <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en Claude, Gemini o ChatGPT y te devolverá el código del quiz.</p>
       </div>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-4 mb-5">
+    <!-- ===== 2) PEGAR CÓDIGO ===== -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-emerald-200">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="font-extrabold text-emerald-700 text-lg">📥 2) Pega el código que te dio la IA</h3>
+        <button id="eye-btn" onclick="toggleInstructivo()" title="Ver ejemplo del formato del código" class="text-xl hover:scale-110 transition-transform">👁️</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Empieza con <b>{</b> y termina con <b>}</b>. ¿Dudas del formato? Toca el ojo 👁.</p>
 
-      <!-- VENTANA IZQUIERDA: INSTRUCTIVO -->
-      <div id="instructivo-panel" class="bg-white rounded-2xl shadow-lg p-4 md:p-5 border border-indigo-100 flex flex-col">
-        <h3 class="font-extrabold text-indigo-700 text-lg mb-1">📖 Instructivo y ejemplo del código</h3>
-        <p class="text-xs text-slate-500 mb-3">Pídele a <b>Claude, Gemini o ChatGPT</b> las preguntas con este formato y pégalas en la ventana de la derecha. Hay 9 tipos de pregunta interactivos, incluida 📚 lectura de textos.</p>
-        <p class="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-2 mb-3">✅ El botón de abajo copia instrucciones que <b>obligan a la IA a mandar el código completo</b>: glosario con todas las palabras, frases conectadas, traducción, pronunciación, regla, dato y razones de cada opción — en los 9 tipos de pregunta.</p>
-        <button onclick="copyAIPrompt()" class="mb-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-2 px-4 rounded-full text-sm w-full md:w-auto shadow-md">📋 Copiar instrucciones para la IA</button>
-        <pre class="bg-slate-900 text-emerald-200 p-3 rounded-lg overflow-auto text-[11px] leading-relaxed scroll-soft flex-1 max-h-[340px]">{
+      <div id="instructivo-panel" class="hidden mb-3">
+        <p class="text-xs text-slate-500 mb-2">📖 Así se ve el formato del código (9 tipos de pregunta). Esto lo genera la IA con el instructivo del paso 1:</p>
+        <pre class="bg-slate-900 text-emerald-200 p-3 rounded-lg overflow-auto text-[11px] leading-relaxed scroll-soft max-h-[300px]">{
   "titulo": "Mi quiz de inglés",
   "preguntas": [
 
@@ -181,15 +172,10 @@
 }</pre>
       </div>
 
-      <!-- VENTANA DERECHA: PEGAR CÓDIGO -->
-      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 border border-emerald-100 flex flex-col">
-        <h3 class="font-extrabold text-emerald-700 text-lg mb-1">📥 Pegue su código de quiz nuevo acá</h3>
-        <p class="text-xs text-slate-500 mb-3">Pega el JSON que te dio la IA (empieza con <b>{</b> y termina con <b>}</b>).</p>
-        <textarea id="import-input" class="w-full flex-1 min-h-[240px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-emerald-400 outline-none scroll-soft" placeholder='Pega aquí tu código...'></textarea>
-        <input id="import-file" type="file" accept=".json,.txt" class="block w-full mt-2 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-emerald-100 file:text-emerald-700 file:font-bold"/>
-        <div class="text-right mt-3">
-          <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">⚡ Generar quiz</button>
-        </div>
+      <textarea id="import-input" class="w-full min-h-[200px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-emerald-400 outline-none scroll-soft" placeholder='Pega aquí tu código...'></textarea>
+      <input id="import-file" type="file" accept=".json,.txt" class="block w-full mt-2 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-emerald-100 file:text-emerald-700 file:font-bold"/>
+      <div class="text-right mt-3">
+        <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">⚡ Generar quiz</button>
       </div>
     </div>
 
@@ -329,7 +315,7 @@ function toBeFactory(){
   const d=pick(BE_SUBJ),c=pick(BE_COMP); const adj=d.pl?c.p:c.s; const conj=c.v==='ser'?d.ser:d.estar;
   return { formato:'opcion', q:`${d.s} ___ ${c.en}.`,
     opts:makeOptions(d.be,['am','is','are','be'],`¡Correcto! "${d.s}" usa "${d.be}".`,`"${d.s}" usa "${d.be}". I→am · He/She/It→is · You/We/They→are.`),
-    sentence:`${d.s} ${d.be} ${c.en}.`, trad:`${d.sub} ${conj} ${adj}.`, pron:`${d.pron} ${BE_PRON[d.be]} ${c.pron}`, form:'I → am · He/She/It → is · You/We/They → are', cat:'', extra:'', estructura:'Sujeto + verbo to be + complemento', tema:'Verbo To Be' };
+    sentence:`${d.s} ${d.be} ${c.en}.`, trad:`${d.sub} ${conj} ${adj}.`, pron:`${d.pron} ${BE_PRON[d.be]} ${c.pron}`, form:'I → am · He/She/It → is · You/We/They → are', cat:'', extra:'', estructura:'Sujeto + verbo to be + complemento', tema:'Verb To Be' };
 }
 const R_PS3='He/She/It + verbo + -s', R_PSB='I/You/We/They + verbo base';
 const PRESENT=[
@@ -338,14 +324,14 @@ const PRESENT=[
   {q:'They ___ in Soacha. (live)',a:'live',o:['lives','living','lived'],s:'They live in Soacha.',t:'Ellos viven en Soacha.',p:'déi liv in Sóacha.',f:R_PSB},
   {q:'I ___ with wood every day. (work)',a:'work',o:['works','working','worked'],s:'I work with wood every day.',t:'Yo trabajo con madera todos los días.',p:'ái uérk uíd wud évri déi.',f:R_PSB}
 ];
-const presentFactory=()=>{ const q=fromBank(pick(PRESENT)); q.estructura='Sujeto + verbo en presente (He/She/It añade -s)'; q.tema='Presente Simple'; return q; };
+const presentFactory=()=>{ const q=fromBank(pick(PRESENT)); q.estructura='Sujeto + verbo en presente (He/She/It añade -s)'; q.tema='Present Simple'; return q; };
 const R_PAST='Verbos irregulares NO usan -ed.';
 const PAST=[
   {q:'Yesterday, I ___ to work. (go)',a:'went',o:['goed','go','gone'],s:'Yesterday, I went to work.',t:'Ayer, yo fui a trabajar.',p:'iésterdei, ái uént tu uérk.',f:R_PAST},
   {q:'Yesterday, he ___ wood. (buy)',a:'bought',o:['buyed','buy','buys'],s:'Yesterday, he bought wood.',t:'Ayer, él compró madera.',p:'iésterdei, ji bot wud.',f:R_PAST},
   {q:'Yesterday, we ___ a table. (make)',a:'made',o:['maked','make','makes'],s:'Yesterday, we made a table.',t:'Ayer, nosotros hicimos una mesa.',p:'iésterdei, uí méid a téibol.',f:R_PAST}
 ];
-const pastFactory=()=>{ const q=fromBank(pick(PAST)); q.estructura='Sujeto + verbo en pasado + complemento'; q.tema='Pasado Simple'; return q; };
+const pastFactory=()=>{ const q=fromBank(pick(PAST)); q.estructura='Sujeto + verbo en pasado + complemento'; q.tema='Simple Past'; return q; };
 const DICT=[
   {en:'pizza',es:'pizza',p:'pítsa',c:'sustantivo',n:'Palabra italiana que el inglés tomó tal cual; suena "pítsa".'},
   {en:'wood',es:'madera',p:'wud',c:'sustantivo'},{en:'hammer',es:'martillo',p:'jámer',c:'sustantivo'},{en:'table',es:'mesa',p:'téibol',c:'sustantivo'},
@@ -560,8 +546,12 @@ const EXTRA_FORMATS=[
   {formato:'vf', q:'"I are happy" es correcto.', answer:false, r:'Falso: con "I" se usa "am" → "I am happy".', sentence:'I am happy.', trad:'Yo estoy feliz.', pron:'ái am jápi', form:'I → am', cat:'', extra:''},
   {formato:'vf', q:'"forty" es la forma correcta de escribir 40.', answer:true, r:'Verdadero: 40 = forty (sin la U de "four").', sentence:'40 = forty', trad:'cuarenta', pron:'fórti', form:'40 pierde la U.', cat:'número', extra:''},
   {formato:'escribir', q:'Escribe el pasado del verbo "go".', answer:'went', respuestas:['went'], sentence:'go → went', trad:'ir → fui/fue', pron:'went', form:'Irregular, no usa -ed.', cat:'verbo', extra:''},
-  {formato:'completar', q:'Completa con el verbo to be:', template:'She ___ a teacher and they ___ students.', answers:['is','are'], sentence:'She is a teacher and they are students.', trad:'Ella es profesora y ellos son estudiantes.', pron:'shi is a tícher and déi ar stiúdents', form:'She→is · They→are', cat:'', extra:''},
-  {formato:'huecos', q:'Completa tocando las palabras:', template:'The ___ is ___.', answers:['dog','busy'], bank:['dog','cat','busy','happy'], sentence:'The dog is busy.', trad:'El perro está ocupado.', pron:'de dog is bísi', form:'Sujeto + is + adjetivo', cat:'', extra:''},
+  {formato:'completar', q:'Completa con el verbo to be:', template:'She ___ a teacher and they ___ students.', answers:['is','are'], sentence:'She is a teacher and they are students.', trad:'Ella es profesora y ellos son estudiantes.', pron:'shi is a tícher and déi ar stiúdents', form:'She→is · They→are', cat:'', extra:'"teacher" = profesor(a), "students" = estudiantes.'},
+  {formato:'completar', q:'Completa con am / is / are:', template:'I ___ from Colombia and my brother ___ tall.', answers:['am','is'], sentence:'I am from Colombia and my brother is tall.', trad:'Yo soy de Colombia y mi hermano es alto.', pron:'ái am from Colómbia and mái bráder is tol', form:'I→am · He→is', cat:'', extra:'"brother" = hermano, "tall" = alto.'},
+  {formato:'completar', q:'Completa con el presente simple:', template:'He ___ (work) with wood and she ___ (cook) dinner.', answers:['works','cooks'], sentence:'He works with wood and she cooks dinner.', trad:'Él trabaja con madera y ella cocina la cena.', pron:'ji uérks uíd wud and shi cuks díner', form:'He/She/It + verbo + -s', cat:'', extra:'"cook" = cocinar, "dinner" = cena.'},
+  {formato:'opcion', q:'Elige el artículo correcto: "She is ___ engineer."', tema:'Articles', opts:shuffle([{t:'an',c:1,r:'✅ "an" porque "engineer" empieza con sonido de VOCAL (e-n-gineer).'},{t:'a',c:0,r:'❌ "a" no: va antes de sonido de CONSONANTE (a dog, a table). "engineer" empieza en vocal.'},{t:'the',c:0,r:'❌ "the" es "el/la" (algo específico), no sirve para presentar una profesión.'}]), sentence:'She is an engineer.', trad:'Ella es ingeniera.', pron:'shi is an enyiníar', form:'an + sonido de vocal · a + sonido de consonante', estructura:'Sujeto + to be + a/an + profesión', cat:'', extra:'Se usa "an" antes de a, e, i, o, u (por el sonido).'},
+  {formato:'opcion', q:'Elige el artículo correcto: "He is ___ driver."', tema:'Articles', opts:shuffle([{t:'a',c:1,r:'✅ "a" porque "driver" empieza con sonido de CONSONANTE (d).'},{t:'an',c:0,r:'❌ "an" solo va antes de sonido de vocal (an apple, an egg). "driver" empieza en consonante.'},{t:'the',c:0,r:'❌ "the" = el/la; aquí presentamos una profesión, va "a".'}]), sentence:'He is a driver.', trad:'Él es conductor.', pron:'ji is a dráiver', form:'a + sonido de consonante · an + sonido de vocal', estructura:'Sujeto + to be + a/an + profesión', cat:'', extra:'"driver" = conductor.'},
+  {formato:'huecos', q:'Completa tocando las palabras:', template:'The ___ is ___.', answers:['dog','busy'], bank:['dog','cat','busy','happy'], sentence:'The dog is busy.', trad:'El perro está ocupado.', pron:'de dog is bísi', form:'Sujeto + is + adjetivo', cat:'', extra:'"dog" = perro, "busy" = ocupado.'},
   {formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:['I','am','a','carpenter'], sentence:'I am a carpenter.', trad:'Yo soy carpintero.', pron:'ái am a cárpenter', form:'Sujeto + to be + complemento', cat:'', extra:'"carpenter" = carpintero.'},
   {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:[{a:'dog',b:'perro'},{a:'wood',b:'madera'},{a:'table',b:'mesa'},{a:'water',b:'agua'}], trad:'dog=perro · wood=madera · table=mesa · water=agua', pron:'', form:'Vocabulario básico.', cat:'', extra:''},
   {formato:'lectura', q:'Lee este texto sobre un carpintero:',
@@ -569,21 +559,21 @@ const EXTRA_FORMATS=[
    trad:"Me llamo Diego y soy carpintero. Tengo 39 años y vivo en Soacha con mi familia. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis perros Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
    pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".',
    subs:[
-     {formato:'opcion', tema:'Comprensión de lectura', q:'How old is Diego?',
+     {formato:'opcion', tema:'Reading Comprehension', q:'How old is Diego?',
       opts:shuffle([{t:'He is 39 years old.',c:1,r:'¡Correcto! El texto dice "I am 39 years old".'},
         {t:'He is 29 years old.',c:0,r:'Vuelve al texto: dice 39, no 29.'},
         {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 39, no 49.'},
         {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 39, no 19.'}]),
       sentence:'Diego is 39 years old.', trad:'Diego tiene 39 años.', pron:'Diego is zérti-náin íars óuld', estructura:'Sujeto + verbo to be + edad', extra:'"years old" = años de edad.'},
-     {formato:'escribir', tema:'Comprensión de lectura', q:'¿En qué material trabaja Diego? (una palabra en inglés)',
+     {formato:'escribir', tema:'Reading Comprehension', q:'¿En qué material trabaja Diego? (una palabra en inglés)',
       answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del texto', extra:'"wood" = madera.'},
-     {formato:'vf', tema:'Comprensión de lectura', q:'"Diego wakes up at six in the morning" es correcto según el texto.',
+     {formato:'vf', tema:'Reading Comprehension', q:'"Diego wakes up at six in the morning" es correcto según el texto.',
       answer:true, r:'Verdadero: el texto dice "Every day I wake up at six in the morning".', sentence:'Diego wakes up at six in the morning.', trad:'Diego se despierta a las seis de la mañana.', pron:'Diego uéiks ap at six in de mórning', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
    ]}
 ];
 // estructura GENÉRICA por formato (no revela la respuesta) para el quiz de ejemplo
 const DEFAULT_EST={completar:'Sujeto + verbo + complemento', huecos:'Sujeto + verbo + complemento', ordenar:'Sujeto + verbo + complemento', emparejar:'Une cada palabra con su significado', vf:'Decide si la oración está bien o mal', escribir:'Escribe la palabra o forma correcta', multiple:'Marca todas las que cumplan la condición'};
-const DEFAULT_TEMA={multiple:'Clasificar palabras', vf:'Verdadero o Falso', escribir:'Escribir en inglés', completar:'Verbo To Be', huecos:'Preposiciones', ordenar:'Orden de la frase', emparejar:'Vocabulario', lectura:'Lectura'};
+const DEFAULT_TEMA={multiple:'Word Types', vf:'True or False', escribir:'Writing', completar:'Fill in the Blanks', huecos:'Fill in the Blanks', ordenar:'Sentence Order', emparejar:'Vocabulary', lectura:'Reading'};
 EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estructura=DEFAULT_EST[q.formato]; if(!q.tema && DEFAULT_TEMA[q.formato]) q.tema=DEFAULT_TEMA[q.formato]; });
 
 /* ============================================================ IMPORTAR CÓDIGO DE UNA IA ============================================================ */
@@ -650,7 +640,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
 7. "estructura": la fórmula gramatical GENÉRICA de cómo se responde, con nombres de categorías: "Sujeto + verbo to be + adjetivo", "Sujeto + verbo (+ -s con He/She/It)", "¿Cuál es el plural del sustantivo?", "Artículo + sustantivo". NUNCA reveles la respuesta exacta (no pongas "She→is"), solo el patrón con Sujeto/verbo/sustantivo/adjetivo/etc.
-8. "tema": el tema de esa pregunta (ej: "Verbo To Be", "Presente Simple", "Pasado Simple", "Preposiciones", "Vocabulario", "Números"). Va ENCIMA de la pregunta.
+8. "tema": el tema de esa pregunta EN INGLÉS (ej: "Verb To Be", "Present Simple", "Simple Past", "Prepositions", "Vocabulary", "Numbers", "Articles", "Reading Comprehension"). Va ENCIMA de la pregunta; el alumno lo toca para ver el significado en español.
 9. En la "razon" de la opción CORRECTA explica POR QUÉ es esa y NO las otras (que también están bien escritas). Ejemplo: "Se usa 'a' cuando la profesión empieza en sonido de consonante; con vocal sería 'an'." Di con qué palabra se une la respuesta en la frase y qué significa esa unión. Muchos datos.
 
 B) POR FORMATO:
@@ -682,12 +672,6 @@ D) CHECKLIST FINAL (revísalo antes de responder):
 
 Ahora crea 40 preguntas de: [ESCRIBE EL TEMA. Ej: verbo To Be en presente simple], mezclando los formatos.`;
 
-function copyAIPrompt(){
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(AI_PROMPT).then(()=>alert('✅ Instrucciones copiadas.\n\nPégalas en Claude, Gemini o ChatGPT, agrega tu tema (ej: 40 preguntas de To Be) y copia el JSON que te devuelva en la ventana de la derecha.')).catch(fb);
-  } else fb();
-  function fb(){ const ta=document.getElementById('import-input'); ta.value=AI_PROMPT; ta.focus(); ta.select(); alert('Copia el texto del recuadro (Ctrl+C) y pégalo en la IA. Luego bórralo y pega ahí el JSON que te devuelva.'); }
-}
 function extractJson(text){ let t=text.trim(); const iC=t.indexOf('{'),iB=t.indexOf('['); let start=Infinity; if(iC>=0)start=Math.min(start,iC); if(iB>=0)start=Math.min(start,iB); const end=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']')); if(start!==Infinity&&end>start)t=t.slice(start,end+1); return JSON.parse(t); }
 function baseMeta(it){ return { trad: it.traduccion||it['traducción']||it.trad||it.translation||'', pron: it.pronunciacion||it['pronunciación']||it.pron||it.pronunciation||'', form: it.regla||it.form||it.formula||it['fórmula']||it.rule||'', cat: it.tipo||it.categoria||it['categoría']||it.cat||'', extra: it.dato||it.contexto||it.extra||it.nota||it.note||'', estructura: it.estructura||it.structure||'', tema: it.tema||it.topic||it.subtema||it.theme||'' }; }
 function toBool(v){ if(v===true||v===1)return true; if(v===false||v===0)return false; const s=String(v).toLowerCase().trim(); if(['true','1','si','sí','verdadero','v','yes'].indexOf(s)>=0)return true; if(['false','0','no','falso','f'].indexOf(s)>=0)return false; return null; }
@@ -720,21 +704,21 @@ function autoLecturaQuestions(text){
     if(type===0){
       const distract=shuffle(allWords.filter(w=>w!==clean.toLowerCase())).slice(0,3);
       if(distract.length<3) continue;
-      out.push({formato:'opcion', tema:'Comprensión de lectura', q:'Según el texto, completa: "'+sent.replace(target,'_____')+'"',
+      out.push({formato:'opcion', tema:'Reading Comprehension', q:'Según el texto, completa: "'+sent.replace(target,'_____')+'"',
         opts:shuffle([{t:clean,c:1,r:'¡Correcto! El texto dice: "'+sent+'".'}].concat(distract.map(d=>({t:d,c:0,r:'En el texto la palabra era "'+clean+'", no "'+d+'". Relee: "'+sent+'".'})))),
         sentence:sent, estructura:'Elige la palabra que aparece en el texto', extra:'Pregunta generada del texto.'});
     } else if(type===1){
-      out.push({formato:'escribir', tema:'Comprensión de lectura', q:'Escribe la palabra que falta según el texto: "'+sent.replace(target,'_____')+'"',
+      out.push({formato:'escribir', tema:'Reading Comprehension', q:'Escribe la palabra que falta según el texto: "'+sent.replace(target,'_____')+'"',
         answer:clean, respuestas:[clean], sentence:sent, estructura:'Escribe la palabra exacta del texto', extra:'La respuesta está en el texto.'});
     } else if(type===2){
       const makeFalse=Math.random()<0.5; let stmt=sent, ans=true;
       if(makeFalse){ const other=pick(allWords.filter(w=>w!==clean.toLowerCase())||[clean]); if(other){ stmt=sent.replace(target,other); ans=false; } }
-      out.push({formato:'vf', tema:'Comprensión de lectura', q:'¿Es correcto según el texto?: "'+stmt+'"',
+      out.push({formato:'vf', tema:'Reading Comprehension', q:'¿Es correcto según el texto?: "'+stmt+'"',
         answer:ans, r:ans?'Verdadero: aparece así en el texto.':('Falso: el texto dice "'+sent+'".'), sentence:sent, estructura:'Verdadero o Falso según el texto'});
     } else {
       const w2=words.filter(w=>w.replace(/[^a-zA-Z']/g,'').length>0);
       if(w2.length<3 || w2.length>8) continue;
-      out.push({formato:'ordenar', tema:'Comprensión de lectura', q:'Ordena las palabras para formar una frase del texto:',
+      out.push({formato:'ordenar', tema:'Reading Comprehension', q:'Ordena las palabras para formar una frase del texto:',
         order:w2, sentence:sent, estructura:'Ordena: Sujeto + verbo + complemento', extra:'Es una frase del texto.'});
     }
   }
@@ -823,6 +807,11 @@ const ui={ qText:document.getElementById('question-text'), area:document.getElem
   counter:document.getElementById('question-counter'), score:document.getElementById('score-counter'), progress:document.getElementById('progress-bar'), topicLabel:document.getElementById('topic-label') };
 function show(el,on){ el.style.display=on?'':'none'; }
 const FORMAT_LABELS={opcion:'🔘 Opción múltiple', multiple:'☑️ Varias correctas', vf:'✅❌ Verdadero / Falso', escribir:'⌨️ Escribe la respuesta', completar:'📝 Completa los espacios', huecos:'🧩 Completa con fichas', ordenar:'🔀 Ordena las palabras', emparejar:'🔗 Une las columnas', lectura:'📚 Lectura'};
+/* Temas en inglés → español (para el badge tocable) */
+const TEMA_ES={'verb to be':'Verbo To Be','present simple':'Presente Simple','simple past':'Pasado Simple','past simple':'Pasado Simple','present continuous':'Presente Continuo','reading':'Lectura','reading comprehension':'Comprensión de lectura','word types':'Tipos de palabra','true or false':'Verdadero o Falso','writing':'Escritura','fill in the blanks':'Completar espacios','sentence order':'Orden de la frase','vocabulary':'Vocabulario','numbers':'Números','articles':'Artículos (a/an)','pronouns':'Pronombres','possessives':'Posesivos','prepositions':'Preposiciones','adjectives':'Adjetivos','plurals':'Plurales','questions':'Preguntas','wh questions':'Preguntas Wh-','family':'Familia','colors':'Colores','food':'Comida'};
+function temaEs(t){ if(!t) return ''; const k=norm(t); if(TEMA_ES[k]) return TEMA_ES[k]; const sp=lookupWord(t); return sp?sp.es:''; }
+/* Toca el badge de tema → muestra/oculta el significado en español */
+function tapTema(el){ const en=el.getAttribute('data-en')||''; const es=el.getAttribute('data-es')||''; if(el.getAttribute('data-open')==='1'){ el.textContent='📗 '+en; el.setAttribute('data-open','0'); } else { el.textContent='📗 '+en+(es?(' = '+es):' (sin traducción)'); el.setAttribute('data-open','1'); } }
 
 function loadDemo(){ const base=buildQuiz(()=>pick(ALL_FACTORIES)(), 18); quiz=shuffle(base.concat(EXTRA_FORMATS.map(x=>Object.assign({},x)))); customQuestions=quiz; extraGlossary={}; extraPhrases={}; launchQuiz('Quiz de ejemplo ('+quiz.length+' preguntas)'); }
 function startCustomImport(){
@@ -834,7 +823,34 @@ function startCustomImport(){
 function repeatQuiz(){ if(customQuestions){ quiz=shuffle(customQuestions); launchQuiz(ui.topicLabel.textContent);} else goHome(); }
 function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; computeQuizMax(); updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
 function updateStreak(animate){ const el=document.getElementById('streak-counter'); el.textContent='🔥 '+streak; if(animate){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } }
-function goHome(){ screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.home.classList.remove('hidden'); renderResume(); renderSaved(); window.scrollTo(0,0); }
+function goHome(){ screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.home.classList.remove('hidden'); renderResume(); renderSaved(); renderRanking(); window.scrollTo(0,0); }
+
+/* ============================================================
+   RANKING DE ESTUDIANTES (localStorage)
+============================================================ */
+function getStats(){ try{ return JSON.parse(localStorage.getItem('mj_stats')||'{}'); }catch(e){ return {}; } }
+function recordStats(name, correct, wrong, best){
+  if(!name) name='Invitado';
+  const all=getStats(); const s=all[name]||{games:0,correct:0,wrong:0,best:0};
+  s.games+=1; s.correct+=correct; s.wrong+=wrong; if(best>s.best) s.best=best;
+  all[name]=s; try{ localStorage.setItem('mj_stats', JSON.stringify(all)); }catch(e){}
+}
+function renderRanking(){
+  const sec=document.getElementById('ranking-section'), list=document.getElementById('ranking-list');
+  const all=getStats(); const names=Object.keys(all);
+  if(!names.length){ sec.classList.add('hidden'); return; }
+  sec.classList.remove('hidden');
+  const rows=names.map(n=>Object.assign({name:n}, all[n])).sort((a,b)=> b.correct-a.correct || b.best-a.best);
+  const medal=['🥇','🥈','🥉'];
+  list.innerHTML='<div class="grid grid-cols-12 gap-1 text-[10px] md:text-xs font-bold text-slate-400 px-2 pb-1"><div class="col-span-4">Estudiante</div><div class="col-span-2 text-center">Partidas</div><div class="col-span-2 text-center text-green-600">Buenas</div><div class="col-span-2 text-center text-red-500">Malas</div><div class="col-span-2 text-center text-orange-500">Racha</div></div>'+
+    rows.map((r,i)=>'<div class="grid grid-cols-12 gap-1 items-center p-2 rounded-xl '+(i===0?'bg-amber-50 border border-amber-200':'bg-slate-50')+' text-sm">'+
+      '<div class="col-span-4 font-bold text-slate-700 truncate">'+(medal[i]||('#'+(i+1)))+' '+escapeHtml(r.name)+'</div>'+
+      '<div class="col-span-2 text-center font-bold text-slate-600">'+r.games+'</div>'+
+      '<div class="col-span-2 text-center font-bold text-green-600">'+r.correct+'</div>'+
+      '<div class="col-span-2 text-center font-bold text-red-500">'+r.wrong+'</div>'+
+      '<div class="col-span-2 text-center font-bold text-orange-500">🔥'+r.best+'</div>'+
+    '</div>').join('');
+}
 
 /* ============================================================
    BURBUJA DE PALABRA (long-press / toque)
@@ -953,9 +969,9 @@ function deleteSaved(id){ const s=getSavedList().find(x=>x.id===id); if(!s) retu
 function loadQuestion(){
   answered=false; const q=quiz[idx]; const fmt=q.formato||'opcion';
   ui.badge.textContent=FORMAT_LABELS[fmt]||'';
-  // tema encima de la pregunta
+  // tema (en inglés) encima de la pregunta; al tocarlo muestra el español
   const tb=document.getElementById('tema-badge');
-  if(q.tema){ tb.textContent='📗 '+q.tema; tb.classList.remove('hidden'); } else tb.classList.add('hidden');
+  if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
@@ -1049,15 +1065,6 @@ function copyToClipboard(text){
     navigator.clipboard.writeText(text).then(done).catch(fallback);
   } else { fallback(); }
 }
-/* Genera + copia + abre la IA elegida (solo falta pegar con Ctrl+V) */
-function openIA(which){
-  const full=generatePrompt(); if(!full) return; // sin tema, ya avisó
-  const url = which==='gemini' ? 'https://gemini.google.com/app'
-            : which==='claude' ? 'https://claude.ai/new'
-            : 'https://chatgpt.com';
-  window.open(url,'_blank','noopener');
-}
-
 /* Despacha el render según el formato, dentro del contexto dado (área + callback) */
 function dispatchRender(q, ctx){
   const fmt=q.formato||'opcion';
@@ -1227,9 +1234,17 @@ function renderLectura(q){
   if(subs.length){ contBtn.disabled=true; contBtn.classList.add('btn-disabled'); }
   contBtn.onclick=()=>{ saveProgress(idx+1); if(idx<quiz.length-1){ idx++; loadQuestion(); window.scrollTo(0,0);} else showEnd(); };
   subs.forEach((sq,si)=>{
-    const card=document.createElement('div'); card.className='mt-4 rounded-2xl border-2 border-slate-100 p-3 md:p-4 bg-white sub-card'; card.dataset.sub=si;
-    let bh='<div class="flex flex-wrap gap-2 mb-2">'; if(sq.tema) bh+='<span class="text-xs font-bold px-2 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700">📗 '+escapeHtml(sq.tema)+'</span>'; bh+='<span class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">'+(FORMAT_LABELS[sq.formato||'opcion']||'')+'</span></div>';
+    const card=document.createElement('div'); card.className='mt-4 rounded-2xl border-2 border-fuchsia-100 p-3 md:p-4 bg-fuchsia-50/40 sub-card'; card.dataset.sub=si;
+    let bh='<div class="flex flex-wrap gap-2 mb-2 items-center">';
+    if(sq.tema) bh+='<span class="tema-chip text-xs font-bold px-2 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700 cursor-pointer" title="Toca para ver el significado en español" data-en="'+escapeHtml(sq.tema)+'" data-es="'+escapeHtml(temaEs(sq.tema))+'" data-open="0">📗 '+escapeHtml(sq.tema)+'</span>';
+    bh+='<span class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">'+(FORMAT_LABELS[sq.formato||'opcion']||'')+'</span>';
+    bh+='<button class="eye-text text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200">👁️ Ver texto</button></div>';
     const head=document.createElement('div'); head.innerHTML=bh; card.appendChild(head);
+    const temaChip=head.querySelector('.tema-chip'); if(temaChip) temaChip.onclick=()=>tapTema(temaChip);
+    const textPeek=document.createElement('div'); textPeek.className='hidden mb-2 bg-amber-50/70 border border-amber-200 rounded-xl p-3 text-sm md:text-base leading-relaxed space-y-2';
+    textPeek.innerHTML=paras.map(p=>'<p>'+wordSpanify(p)+'</p>').join('');
+    head.querySelector('.eye-text').onclick=()=>{ textPeek.classList.toggle('hidden'); };
+    card.appendChild(textPeek);
     const qh=document.createElement('h4'); qh.className='font-bold text-slate-800 mb-1 text-base md:text-lg'; qh.innerHTML='Pregunta '+(si+1)+': '+wordSpanify(sq.q); card.appendChild(qh);
     if(sq.estructura){ const st=document.createElement('p'); st.className='text-xs font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-2 py-1 mb-2'; st.textContent='⚙️ '+sq.estructura; card.appendChild(st); }
     card.appendChild(buildSubHint(sq));
@@ -1258,7 +1273,9 @@ function nextQuestion(){ idx++; if(idx<quiz.length){ loadQuestion(); window.scro
 function showEnd(){
   clearProgress();
   screens.quiz.classList.add('hidden'); screens.end.classList.remove('hidden');
-  const maxTotal=quizMax||quiz.length; document.getElementById('final-score').textContent=`${score} / ${maxTotal}`; const pct=Math.round((score/maxTotal)*100);
+  const maxTotal=quizMax||quiz.length;
+  recordStats(getName(), score, Math.max(0,maxTotal-score), maxStreak); // guarda en el ranking
+  document.getElementById('final-score').textContent=`${score} / ${maxTotal}`; const pct=Math.round((score/maxTotal)*100);
   document.getElementById('final-percentage').textContent=`${pct}% de acierto`;
   document.getElementById('final-streak').textContent=`🔥 Racha máxima: ${maxStreak}`;
   const nm=getName();
@@ -1273,9 +1290,9 @@ function showEnd(){
 }
 document.getElementById('import-file').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; document.getElementById('import-input').value=await f.text(); });
 
-// Arranque: estudiante activo, avance pendiente y quizzes guardados
+// Arranque: estudiante activo, avance pendiente, guardados y ranking
 selectStudent(getName()||getStudents()[0]);
-renderResume(); renderSaved();
+renderResume(); renderSaved(); renderRanking();
 </script>
 </body>
 </html>

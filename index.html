@@ -183,6 +183,12 @@
       <button onclick="loadDemo()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">🎯 Cargar quiz de ejemplo</button>
     </div>
 
+    <div class="bg-white rounded-2xl shadow p-4 border-2 border-teal-200 text-center mt-5">
+      <h3 class="font-extrabold text-teal-700 text-lg mb-1">👥 Jugar de a dos (en vivo)</h3>
+      <p class="text-slate-500 text-sm mb-3">Conéctate con otra persona por un código QR y jueguen el mismo quiz, cada uno en su celular, con marcador en vivo. Necesita internet.</p>
+      <button onclick="openMulti()" class="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">👥 Crear sala para dos</button>
+    </div>
+
     <div id="saved-section" class="hidden bg-white rounded-2xl shadow p-4 border border-amber-200 mt-5">
       <h3 class="font-extrabold text-amber-600 text-lg mb-1">⭐ Mis quizzes guardados</h3>
       <p class="text-xs text-slate-400 mb-3">Toca ⭐ para marcar tu favorito (queda de primero como predeterminado).</p>
@@ -204,6 +210,7 @@
         <div id="progress-bar" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
       </div>
       <p id="topic-label" class="text-center text-xs text-indigo-500 font-bold mt-2"></p>
+      <div id="multi-bar" class="hidden mt-2 flex justify-center gap-3 text-sm font-bold"></div>
     </div>
 
     <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 flex-1 flex flex-col mb-4">
@@ -256,6 +263,7 @@
     <div id="end-emoji" class="text-7xl mb-4">🏆</div>
     <h2 class="text-3xl font-extrabold text-slate-800 mb-2">¡Misión Cumplida!</h2>
     <p id="end-player" class="text-slate-600 text-lg mb-6">Terminaste tu reto.</p>
+    <div id="multi-result" class="hidden bg-teal-50 border-4 border-teal-100 rounded-3xl p-6 max-w-md mx-auto mb-6"></div>
     <div class="bg-indigo-50 border-4 border-indigo-100 rounded-3xl p-8 max-w-sm mx-auto mb-6">
       <div class="text-6xl font-black text-blue-600" id="final-score">0 / 0</div>
       <div class="text-slate-500 font-bold mt-2 text-xl" id="final-percentage">0%</div>
@@ -265,6 +273,18 @@
     <div class="flex flex-col md:flex-row gap-3 justify-center">
       <button onclick="repeatQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg">Repetir 🔄</button>
       <button onclick="goHome()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-8 rounded-full text-lg">Subir otro código 📥</button>
+    </div>
+  </div>
+
+  <!-- ============ SALA DE 2 JUGADORES ============ -->
+  <div id="multi-screen" class="hidden fade-in max-w-xl w-full mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl p-5 md:p-7 border-2 border-teal-200 text-center">
+      <div class="flex justify-between items-center mb-3">
+        <button onclick="goHome()" class="text-slate-400 hover:text-slate-700 text-xs font-bold">✕ Salir</button>
+        <h3 class="font-extrabold text-teal-700 text-lg">👥 Sala de dos jugadores</h3>
+        <span></span>
+      </div>
+      <div id="multi-body"></div>
     </div>
   </div>
 
@@ -666,7 +686,8 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
 
 B) POR FORMATO:
 - "opcion": exactamente 4 opciones, SOLO UNA verdaderamente correcta. REGLA CRÍTICA: las otras 3 deben estar CLARAMENTE mal (gramática incorrecta o significado equivocado). Si dos opciones fueran válidas al mismo tiempo (ej. "The dog is busy" y "The cat is happy" ambas correctas), NO uses "opcion": usa "multiple" y marca las dos como correctas. Nunca dejes dos respuestas buenas en una pregunta de una sola correcta. CADA opción con su "razon". Incluye "frase".
-- "multiple": 4-6 opciones, 2 o más correctas, cada una con "razon".
+- "multiple": 4-6 opciones con 2, 3 o MÁS correctas; marca TODAS las correctas con "correcta":true y cada una con su "razon". Úsalo SIEMPRE que haya más de una respuesta válida.
+- ⚖️ LÓGICA DE CORRECTAS (obligatoria): cuenta cuántas opciones son verdaderamente válidas. Si es 1 → usa "opcion". Si son 2, 3 o más → usa "multiple" y márcalas TODAS. Está PROHIBIDO dejar dos opciones válidas en una "opcion" (de una sola correcta) o marcar solo una cuando hay varias buenas.
 - "vf": "respuesta":true/false + "razon" + "frase" (la forma correcta).
 - "escribir": "respuesta" + "respuestas" con TODAS las formas válidas alternativas (ej. ["I am","I'm"]). No importan mayúsculas ni tildes.
 - "completar": "frase" con ___ por cada espacio + "respuestas" en el MISMO orden que los espacios.
@@ -689,6 +710,8 @@ D) CHECKLIST FINAL (revísalo antes de responder):
 [ ] ¿Toda pregunta tiene tema, traduccion, pronunciacion, estructura, regla y dato extenso?
 [ ] ¿Toda pregunta tiene glosario con TODAS sus palabras clave (inglés y español)?
 [ ] ¿La razon de la correcta explica por qué esa y no las otras?
+[ ] ¿Contaste las correctas? 1 → "opcion"; 2, 3 o más → "multiple" con TODAS marcadas. ¿Ninguna "opcion" tiene dos respuestas válidas?
+[ ] ¿En "escribir"/"completar" pusiste en "respuestas" todas las formas válidas?
 [ ] ¿Incluiste las frases de 2-3 palabras que aparecen?
 [ ] ¿Las lecturas traen texto + traduccion completa + de 2 a 8 preguntas con respuestas?
 [ ] ¿El JSON es válido (empieza con { y termina con })?
@@ -827,7 +850,7 @@ function normalizeImported(text){
 /* ============================================================ ESTADO Y RENDER ============================================================ */
 let quiz=[],idx=0,score=0,answered=false,customQuestions=null,streak=0,maxStreak=0,quizMax=0;
 function computeQuizMax(){ quizMax=quiz.reduce((s,it)=> s + ((it.subs&&it.subs.length)? it.subs.length : 1), 0); }
-const screens={home:document.getElementById('home-screen'),quiz:document.getElementById('quiz-screen'),end:document.getElementById('end-screen')};
+const screens={home:document.getElementById('home-screen'),quiz:document.getElementById('quiz-screen'),end:document.getElementById('end-screen'),multi:document.getElementById('multi-screen')};
 const ui={ qText:document.getElementById('question-text'), area:document.getElementById('answer-area'), badge:document.getElementById('format-badge'),
   feedback:document.getElementById('feedback-box'), fTitle:document.getElementById('feedback-title'), fRat:document.getElementById('feedback-rationale'),
   nextBtn:document.getElementById('next-btn'), hintBtn:document.getElementById('hint-btn'), hint:document.getElementById('hint-content'),
@@ -850,9 +873,116 @@ function startCustomImport(){
   quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; launchQuiz(res.titulo+' ('+res.qs.length+' preguntas)');
 }
 function repeatQuiz(){ if(customQuestions){ quiz=shuffle(customQuestions); launchQuiz(ui.topicLabel.textContent);} else goHome(); }
-function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; computeQuizMax(); updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
+function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; computeQuizMax(); updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.multi.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; if(!multi.active)saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
 function updateStreak(animate){ const el=document.getElementById('streak-counter'); el.textContent='🔥 '+streak; if(animate){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } }
-function goHome(){ screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.home.classList.remove('hidden'); renderResume(); renderSaved(); renderRanking(); window.scrollTo(0,0); }
+function goHome(){ multiReset(); screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.multi.classList.add('hidden'); screens.home.classList.remove('hidden'); renderResume(); renderSaved(); renderRanking(); window.scrollTo(0,0); }
+
+/* ============================================================
+   MODO 2 JUGADORES EN VIVO (PeerJS / WebRTC, gratis, sin cuenta)
+============================================================ */
+const multi={active:false, peer:null, conn:null, isHost:false, meName:'', otherName:'', meScore:0, otherScore:0, meDone:false, otherDone:false, advanced:false, advanceBtn:null, otherFinal:null};
+function multiReset(){ try{ if(multi.conn)multi.conn.close(); if(multi.peer)multi.peer.destroy(); }catch(e){} multi.active=false; multi.peer=null; multi.conn=null; multi.isHost=false; multi.otherScore=0; multi.meScore=0; multi.meDone=false; multi.otherDone=false; multi.advanced=false; multi.advanceBtn=null; multi.otherFinal=null; document.getElementById('multi-bar').classList.add('hidden'); }
+function mbody(html){ document.getElementById('multi-body').innerHTML=html; }
+function showMultiScreen(){ screens.home.classList.add('hidden'); screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.multi.classList.remove('hidden'); window.scrollTo(0,0); }
+
+/* Carga PeerJS + QR por CDN (solo cuando se usa). Devuelve true/false */
+let libsTried=false;
+function ensureMultiLibs(cb){
+  if(window.Peer){ cb(true); return; }
+  if(libsTried && !window.Peer){ cb(false); return; }
+  libsTried=true;
+  const s=document.createElement('script'); s.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+  s.onload=()=>{ const q=document.createElement('script'); q.src='https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js'; q.onload=()=>cb(!!window.Peer); q.onerror=()=>cb(!!window.Peer); document.head.appendChild(q); };
+  s.onerror=()=>cb(false);
+  document.head.appendChild(s);
+}
+
+function openMulti(){
+  if(!customQuestions || !customQuestions.length){
+    showMultiScreen();
+    mbody('<p class="text-slate-600 mb-4">Primero necesitas un quiz para jugar de a dos. Carga uno:</p>'+
+      '<div class="flex flex-col gap-2"><button onclick="loadDemo()" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-full">🎯 Usar el quiz de ejemplo</button>'+
+      '<button onclick="goHome()" class="bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-full">Volver y pegar mi código</button></div>');
+    return;
+  }
+  hostCreateRoom();
+}
+function hostCreateRoom(){
+  showMultiScreen(); multi.isHost=true; multi.meName=getName()||'Jugador 1';
+  mbody('<p class="text-slate-500 mb-3">Creando sala…</p>');
+  ensureMultiLibs(ok=>{
+    if(!ok){ multiNoLibs(); return; }
+    try{ multi.peer=new Peer(); }catch(e){ multiNoLibs(); return; }
+    multi.peer.on('open', id=>{
+      const url=location.origin+location.pathname+'?sala='+id;
+      mbody(
+        '<p class="text-slate-600 mb-1">Que la otra persona <b>escanee este QR</b> o abra el enlace:</p>'+
+        '<div id="qr-box" class="flex justify-center my-3"></div>'+
+        '<p class="text-xs text-slate-400 mb-1">o dile este código (para pegar en el enlace):</p>'+
+        '<div class="font-mono font-bold text-teal-700 text-sm break-all bg-teal-50 rounded-lg p-2 mb-3">'+escapeHtml(id)+'</div>'+
+        '<button onclick="copyJoinLink(\''+id+'\')" class="text-xs text-teal-600 underline mb-3">📋 Copiar enlace de invitación</button>'+
+        '<p id="multi-wait" class="text-amber-600 font-bold">⏳ Esperando a que se una tu compañero…</p>'+
+        '<p class="text-xs text-slate-400 mt-4">Si en un minuto no conecta (a veces pasa en datos móviles), pueden <button onclick="passPlay()" class="underline text-teal-600 font-bold">jugar pasando el celular</button>.</p>'
+      );
+      try{ new QRCode(document.getElementById('qr-box'), {text:url, width:180, height:180, colorDark:'#0F766E'}); }
+      catch(e){ document.getElementById('qr-box').innerHTML='<a href="'+url+'" class="underline text-teal-600 break-all">'+escapeHtml(url)+'</a>'; }
+    });
+    multi.peer.on('connection', c=>{ multi.conn=c; wireConn(); c.on('open',()=>{ multiSend({t:'quiz', data:customQuestions, title:document.getElementById('topic-label').textContent||'Quiz', host:multi.meName}); }); });
+    multi.peer.on('error', e=>{ mbody('<p class="text-red-600 font-bold mb-3">No se pudo crear la sala ('+escapeHtml(e.type||'error')+').</p><button onclick="passPlay()" class="bg-teal-600 text-white font-bold py-2.5 px-6 rounded-full">Jugar pasando el celular</button> <button onclick="goHome()" class="ml-2 underline text-slate-500">Volver</button>'); });
+  });
+}
+function guestJoin(id){
+  showMultiScreen(); multi.isHost=false; multi.meName=getName()||'Jugador 2';
+  mbody('<p class="text-slate-500 mb-3">Conectando con la sala…</p>');
+  ensureMultiLibs(ok=>{
+    if(!ok){ multiNoLibs(); return; }
+    try{ multi.peer=new Peer(); }catch(e){ multiNoLibs(); return; }
+    multi.peer.on('open', ()=>{ multi.conn=multi.peer.connect(id,{reliable:true}); wireConn(); multi.conn.on('open',()=>{ multiSend({t:'hello', name:multi.meName}); mbody('<p class="text-teal-700 font-bold">✅ ¡Conectado! Esperando que el anfitrión inicie…</p>'); }); });
+    multi.peer.on('error', e=>{ mbody('<p class="text-red-600 font-bold mb-3">No pude conectar con la sala.</p><p class="text-xs text-slate-400 mb-3">A veces las redes móviles bloquean la conexión directa.</p><button onclick="goHome()" class="bg-slate-200 py-2.5 px-6 rounded-full font-bold">Volver</button>'); });
+    setTimeout(()=>{ if(!multi.active && multi.conn && !multi.conn.open){ mbody('<p class="text-amber-600 font-bold mb-3">Está tardando… puede que la red no permita la conexión directa.</p><button onclick="goHome()" class="bg-slate-200 py-2.5 px-6 rounded-full font-bold">Volver</button>'); } }, 20000);
+  });
+}
+function wireConn(){
+  multi.conn.on('data', d=>{ let m; try{ m=(typeof d==='string')?JSON.parse(d):d; }catch(e){ return; } handleMulti(m); });
+  multi.conn.on('close', ()=>{ if(multi.active){ alert('Se perdió la conexión con el otro jugador.'); goHome(); } });
+}
+function multiSend(o){ try{ if(multi.conn&&multi.conn.open) multi.conn.send(JSON.stringify(o)); }catch(e){} }
+function handleMulti(m){
+  if(m.t==='hello'){ multi.otherName=m.name||'Jugador 2'; const w=document.getElementById('multi-wait'); if(w)w.textContent='✅ '+multi.otherName+' se unió. Iniciando…'; }
+  else if(m.t==='quiz'){ multi.otherName=m.host||'Anfitrión'; quiz=m.data; customQuestions=quiz; computeQuizMax(); multiSend({t:'start', name:multi.meName}); startMultiQuiz(m.title||'Quiz en pareja'); }
+  else if(m.t==='start'){ multi.otherName=m.name||multi.otherName||'Jugador 2'; startMultiQuiz('Quiz en pareja'); }
+  else if(m.t==='answer'){ if(m.idx===idx){ multi.otherDone=true; multi.otherScore=m.score; updateMultiBar(); updateAdvanceGate(); } }
+  else if(m.t==='go'){ if(m.idx===idx && !multi.advanced){ multi.advanced=true; doAdvance(); } }
+  else if(m.t==='end'){ multi.otherFinal=m.score; if(!screens.end.classList.contains('hidden')) renderMultiResult(); }
+}
+function startMultiQuiz(title){
+  if(multi.active) return; multi.active=true; multi.meScore=0; multi.otherScore=0;
+  document.getElementById('multi-bar').classList.remove('hidden');
+  launchQuiz(title);
+}
+function passPlay(){ /* respaldo: por turnos en un solo celular */ multiReset(); alert('Modo por turnos: jueguen en este mismo celular. Cada quien responde su ronda y al final comparan el puntaje. (Se usa el quiz cargado.)'); if(customQuestions&&customQuestions.length){ quiz=shuffle(customQuestions); launchQuiz('Juego por turnos'); } else goHome(); }
+function multiNoLibs(){ mbody('<p class="text-amber-600 font-bold mb-3">No se pudo cargar el modo en línea (¿sin internet?).</p><button onclick="passPlay()" class="bg-teal-600 text-white font-bold py-2.5 px-6 rounded-full">Jugar pasando el celular</button> <button onclick="goHome()" class="ml-2 underline text-slate-500">Volver</button>'); }
+function copyJoinLink(id){ const url=location.origin+location.pathname+'?sala='+id; copyToClipboard(url); alert('✅ Enlace copiado. Envíaselo a la otra persona por WhatsApp.'); }
+
+/* marcador en vivo + control de avance conjunto */
+function updateMultiBar(){ if(!multi.active) return; const bar=document.getElementById('multi-bar');
+  bar.innerHTML='<span class="bg-teal-100 text-teal-700 px-3 py-1 rounded-full">🟢 '+escapeHtml(multi.meName)+': '+multi.meScore+(multi.meDone?' ✔️':' ⏳')+'</span>'+
+                '<span class="bg-fuchsia-100 text-fuchsia-700 px-3 py-1 rounded-full">🟣 '+escapeHtml(multi.otherName||'…')+': '+multi.otherScore+(multi.otherDone?' ✔️':' ⏳')+'</span>';
+}
+function markMineAnswered(btn){ if(!multi.active) return; multi.meDone=true; multi.meScore=score; multi.advanceBtn=btn||ui.nextBtn; multiSend({t:'answer', idx:idx, score:score}); updateMultiBar(); updateAdvanceGate(); }
+function updateAdvanceGate(){ if(!multi.active) return; const btn=multi.advanceBtn; if(!btn) return; const both=multi.meDone&&multi.otherDone; btn.disabled=!both; if(both){ btn.classList.remove('btn-disabled'); btn.textContent=(idx<quiz.length-1?'Siguiente ➡️':'Ver resultados 🏆'); } else { btn.classList.add('btn-disabled'); btn.textContent='⏳ Esperando a '+(multi.otherName||'tu compañero')+'…'; } }
+function multiAdvance(){ if(!multi.active) return true; if(!(multi.meDone&&multi.otherDone)) return false; if(multi.advanced) return false; multi.advanced=true; multiSend({t:'go', idx:idx}); doAdvance(); return false; }
+function doAdvance(){ if(idx<quiz.length-1){ idx++; loadQuestion(); window.scrollTo(0,0);} else showEnd(); }
+function renderMultiResult(){
+  const box=document.getElementById('multi-result'); if(!multi.active){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  const mine=score, other=(multi.otherFinal==null?multi.otherScore:multi.otherFinal);
+  let verdict = mine>other?('🏆 ¡Ganaste, '+escapeHtml(multi.meName)+'!') : mine<other?('👏 Ganó '+escapeHtml(multi.otherName)+'. ¡La próxima es tuya!') : '🤝 ¡Empate! Bien jugado los dos.';
+  box.innerHTML='<div class="font-extrabold text-teal-700 text-lg mb-2">Resultado del dúo</div>'+
+    '<div class="flex justify-around text-center"><div><div class="text-3xl font-black text-teal-600">'+mine+'</div><div class="text-xs font-bold">🟢 '+escapeHtml(multi.meName)+'</div></div>'+
+    '<div><div class="text-3xl font-black text-fuchsia-600">'+other+'</div><div class="text-xs font-bold">🟣 '+escapeHtml(multi.otherName)+'</div></div></div>'+
+    '<div class="mt-3 font-bold text-slate-700">'+verdict+'</div>';
+}
 
 /* ============================================================
    RANKING DE ESTUDIANTES (localStorage)
@@ -1015,6 +1145,7 @@ function loadQuestion(){
   if(hayPista) ui.hintBtn.classList.remove('hidden'); else ui.hintBtn.classList.add('hidden');
   ui.counter.textContent=`${idx+1}/${quiz.length}`; ui.score.textContent=`Puntaje: ${score}`; ui.progress.style.width=`${(idx/quiz.length)*100}%`;
   ui.feedback.classList.add('hidden'); ui.nextBtn.classList.add('hidden'); ui.area.innerHTML='';
+  if(multi.active){ multi.meDone=false; multi.otherDone=false; multi.advanced=false; multi.advanceBtn=null; updateMultiBar(); }
   if(fmt==='lectura'||fmt==='dialogo'){ renderLectura(q); return; }
   const ctx={ area:ui.area, answered:false, done:(ok,exp,qq)=>finalize(ok,exp,qq) };
   dispatchRender(q, ctx);
@@ -1158,13 +1289,16 @@ function renderMultiple(q,ctx){
   });
   ctx.area.appendChild(box);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  chk.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); let ok=true;
+  chk.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); let ok=true; const falto=[], sobro=[];
     q.opts.forEach((opt,i)=>{ const b=buttons[i]; b.disabled=true; b.classList.add('btn-disabled'); const chosen=sel.has(i);
-      if(opt.c===1){ b.classList.add('bg-green-100','border-green-400'); b.querySelector('.check-box').textContent=chosen?'✅':'✔️'; if(!chosen)ok=false; }
-      else if(chosen){ b.classList.add('bg-red-100','border-red-400'); b.querySelector('.check-box').textContent='❌'; ok=false; } });
+      if(opt.c===1){ b.classList.add('bg-green-100','border-green-400'); b.querySelector('.check-box').textContent=chosen?'✅':'✔️'; if(!chosen){ok=false; falto.push(opt.t);} }
+      else if(chosen){ b.classList.add('bg-red-100','border-red-400'); b.querySelector('.check-box').textContent='❌'; ok=false; sobro.push(opt.t); } });
     chk.disabled=true; chk.classList.add('btn-disabled');
     const cr=q.opts.filter(o=>o.c===1).map(o=>o.t);
-    ctx.answered=true; ctx.done(ok, ok?'¡Correcto! Elegiste todas las correctas.':('Las correctas eran: '+cr.join(', ')+'.'), q);
+    let msg;
+    if(ok){ msg='¡Correcto! '+(cr.length>1?('Las '+cr.length+' correctas eran: '+cr.join(', ')+'.'):'Marcaste la correcta.'); }
+    else { const p=[]; if(falto.length)p.push('te faltó marcar: '+falto.join(', ')); if(sobro.length)p.push('sobró: '+sobro.join(', ')); msg='Casi. '+p.join(' · ')+'. En total había '+cr.length+' correcta'+(cr.length>1?'s':'')+': '+cr.join(', ')+'.'; }
+    ctx.answered=true; ctx.done(ok, msg, q);
   };
   ctx.area.appendChild(chk);
 }
@@ -1284,7 +1418,7 @@ function renderLectura(q){
   const contBtn=document.createElement('button'); contBtn.className='bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-8 rounded-full shadow-lg';
   contBtn.textContent = subs.length ? 'Responde las '+subs.length+' preguntas' : '✅ Continuar';
   if(subs.length){ contBtn.disabled=true; contBtn.classList.add('btn-disabled'); }
-  contBtn.onclick=()=>{ saveProgress(idx+1); if(idx<quiz.length-1){ idx++; loadQuestion(); window.scrollTo(0,0);} else showEnd(); };
+  contBtn.onclick=()=>{ if(multi.active){ multiAdvance(); return; } saveProgress(idx+1); if(idx<quiz.length-1){ idx++; loadQuestion(); window.scrollTo(0,0);} else showEnd(); };
   subs.forEach((sq,si)=>{
     const card=document.createElement('div'); card.className='mt-4 rounded-2xl border-2 border-fuchsia-100 p-3 md:p-4 bg-fuchsia-50/40 sub-card'; card.dataset.sub=si;
     let bh='<div class="flex flex-wrap gap-2 mb-2 items-center">';
@@ -1302,7 +1436,7 @@ function renderLectura(q){
     card.appendChild(buildSubHint(sq));
     const ansArea=document.createElement('div'); ansArea.className='mt-2'; card.appendChild(ansArea);
     const fb=document.createElement('div'); fb.className='hidden'; card.appendChild(fb);
-    const subCtx={ area:ansArea, answered:false, done:(ok,exp,qq)=>{ finalizeSub(ok,exp,qq,fb); doneCount++; if(doneCount===subs.length){ contBtn.disabled=false; contBtn.classList.remove('btn-disabled'); contBtn.textContent='✅ Continuar'; } saveProgress(idx); } };
+    const subCtx={ area:ansArea, answered:false, done:(ok,exp,qq)=>{ finalizeSub(ok,exp,qq,fb); doneCount++; if(doneCount===subs.length){ contBtn.disabled=false; contBtn.classList.remove('btn-disabled'); contBtn.textContent='✅ Continuar'; if(multi.active) markMineAnswered(contBtn); } saveProgress(idx); } };
     dispatchRender(sq, subCtx);
     cont.appendChild(card);
   });
@@ -1319,9 +1453,10 @@ function finalize(ok, explanation, q){
   show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-extra-wrap'),!!q.extra);
   saveProgress(idx+1);
   ui.feedback.classList.remove('hidden'); ui.nextBtn.textContent=idx<quiz.length-1?'Siguiente ➡️':'Ver resultados 🏆'; ui.nextBtn.classList.remove('hidden');
+  if(multi.active) markMineAnswered(ui.nextBtn); // en dúo: espera al otro antes de avanzar
   setTimeout(()=>ui.nextBtn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
 }
-function nextQuestion(){ idx++; if(idx<quiz.length){ loadQuestion(); window.scrollTo(0,0);} else showEnd(); }
+function nextQuestion(){ if(multi.active){ multiAdvance(); return; } idx++; if(idx<quiz.length){ loadQuestion(); window.scrollTo(0,0);} else showEnd(); }
 function showEnd(){
   clearProgress();
   screens.quiz.classList.add('hidden'); screens.end.classList.remove('hidden');
@@ -1338,6 +1473,7 @@ function showEnd(){
   else if(pct>=70){ em.textContent='🚀'; msg.textContent='¡Muy bien, '+saludo+'! Vas sólido. Repite para afinar los detalles.'; }
   else if(pct>=50){ em.textContent='💪'; msg.textContent='¡Buen esfuerzo, '+saludo+'! Usa "Ver Pista" y lee la tarjeta de cada respuesta.'; }
   else { em.textContent='📚'; msg.textContent='Este quiz necesita más práctica, '+saludo+'. Repite y usa las pistas sin miedo.'; }
+  if(multi.active){ multiSend({t:'end', score:score}); renderMultiResult(); } else { document.getElementById('multi-result').classList.add('hidden'); }
   window.scrollTo(0,0);
 }
 document.getElementById('import-file').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; document.getElementById('import-input').value=await f.text(); });
@@ -1345,6 +1481,8 @@ document.getElementById('import-file').addEventListener('change', async e=>{ con
 // Arranque: estudiante activo, avance pendiente, guardados y ranking
 selectStudent(getName()||getStudents()[0]);
 renderResume(); renderSaved(); renderRanking();
+// Si abriste un enlace de invitación (?sala=ID), entras como invitado
+(function(){ try{ const sala=new URLSearchParams(location.search).get('sala'); if(sala){ guestJoin(sala); } }catch(e){} })();
 </script>
 </body>
 </html>

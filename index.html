@@ -218,7 +218,8 @@
         <span id="tema-badge" class="hidden text-xs font-bold px-2 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700"></span>
         <span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span>
       </div>
-      <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-2 text-slate-800 leading-snug"></h3>
+      <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-1 text-slate-800 leading-snug"></h3>
+      <p id="q-pron" class="hidden mb-2 text-sm text-purple-700 italic">🗣️ </p>
       <!-- Estructura de cómo responder, siempre visible -->
       <p id="structure-line" class="hidden mb-4 text-xs md:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5"></p>
 
@@ -309,6 +310,20 @@ function norm(s){ return String(s).toLowerCase().normalize('NFD').replace(/[̀-�
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 /* envuelve cada palabra en un span tocable (long-press = traducción) */
 function wordSpanify(text){ return String(text).split(/(\s+)/).map(tok=>{ if(/[A-Za-zÀ-ÿ]/.test(tok)) return '<span class="wtap">'+escapeHtml(tok)+'</span>'; return escapeHtml(tok); }).join(''); }
+/* Convierte una frase en inglés a "cómo suena" en español latino, palabra por palabra (glosario).
+   Devuelve '' si no reconoce suficientes palabras en inglés (para no ensuciar textos en español). */
+function phon(text){
+  const toks=String(text).split(/(\s+)/); let hits=0, engWords=0; const out=[];
+  toks.forEach(tok=>{
+    const w=tok.replace(/[^A-Za-z']/g,'');
+    if(!w){ out.push(tok); return; }
+    engWords++;
+    const g=(typeof extraGlossary!=='undefined'&&extraGlossary[norm(w)])||GLOSSARY[norm(w)];
+    if(g&&g.pron){ hits++; out.push(tok.replace(w, g.pron)); } else { out.push(tok); }
+  });
+  if(!engWords || hits/engWords < 0.5) return ''; // mayormente no-inglés → no mostrar
+  return out.join('');
+}
 function fillBlanks(tpl, answers){ let i=0; return String(tpl).replace(/_{2,}/g, ()=> (answers[i++]!=null?answers[i-1]:'___')); }
 function makeOptions(correct, pool, rGood, rBad){
   const wrongs=shuffle(pool.filter(x=>x.toLowerCase()!==correct.toLowerCase())).slice(0,3);
@@ -680,7 +695,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
-7. "estructura": la fórmula gramatical GENÉRICA de cómo se responde, con nombres de categorías: "Sujeto + verbo to be + adjetivo", "Sujeto + verbo (+ -s con He/She/It)", "¿Cuál es el plural del sustantivo?", "Artículo + sustantivo". NUNCA reveles la respuesta exacta (no pongas "She→is"), solo el patrón con Sujeto/verbo/sustantivo/adjetivo/etc.
+7. "estructura": una PISTA LÓGICA tipo regla/fórmula gramatical, SIN dar la respuesta. Di la regla en palabras: "con He/She/It se agrega -s al verbo", "para -ing se quita la e y se agrega -ing", "an antes de sonido de vocal / a antes de consonante", "Sujeto + to be + adjetivo", "¿cuál es el plural del sustantivo?". PROHIBIDO poner la respuesta literal (nada de "She→is" ni "run→running"); solo el patrón/regla.
 8. "tema": el tema de esa pregunta EN INGLÉS (ej: "Verb To Be", "Present Simple", "Simple Past", "Prepositions", "Vocabulary", "Numbers", "Articles", "Reading Comprehension"). Va ENCIMA de la pregunta; el alumno lo toca para ver el significado en español.
 9. En la "razon" de la opción CORRECTA explica POR QUÉ es esa y NO las otras (que también están bien escritas). Ejemplo: "Se usa 'a' cuando la profesión empieza en sonido de consonante; con vocal sería 'an'." Di con qué palabra se une la respuesta en la frase y qué significa esa unión. Muchos datos.
 
@@ -700,6 +715,8 @@ C) CALIDAD DE LA INFORMACIÓN (obligatoria y extensa):
 - Inglés 100% correcto y natural; español latino claro.
 - "traduccion", "pronunciacion" (español latino), "dato" (extenso) y "glosario" (TODAS las palabras, inglés y español) en CADA pregunta. Ninguna palabra sin traducción.
 - La "razon" enseña: por qué es esa respuesta y no las otras, con qué se une en la frase y qué significa.
+- DISTRACTORES que induzcan al error: las opciones malas deben ser errores COMUNES y tentadores (ej. is/are, forty/fourty, go/goes, his/her), NO absurdos; y en su "razon" explica por qué está mal. Así se aprende del error, pero siempre queda claro cuál es la correcta.
+- En "completar"/"huecos" también incluye alguna ficha/opción tentadora que parezca correcta pero no lo sea.
 - "tema" y "estructura" (genérica, sin revelar la respuesta) en cada pregunta.
 - MUCHO CONTEXTO: en "dato" cuenta la vida real de la palabra/frase — de dónde viene, cuándo se usa, con qué se combina, error típico de un hispanohablante, y un ejemplo extra de uso. Que el alumno aprenda historia y contexto, no solo la respuesta.
 - Usa muchas lecturas y diálogos con historias de la vida del alumno (trabajo, familia, ciudad) para dar contexto rico.
@@ -898,11 +915,16 @@ function ensureMultiLibs(cb){
 }
 
 function openMulti(){
+  // 1) si hay código pegado en el recuadro, se usa ESE quiz (diálogos u otro generado por la IA)
+  const raw=(document.getElementById('import-input')||{}).value||'';
+  if(raw.trim()){ try{ const res=normalizeImported(raw); if(res.qs.length){ quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; } }catch(e){ showMultiScreen(); mbody('<p class="text-red-600 font-bold mb-3">El código que pegaste tiene un error:</p><p class="text-sm text-slate-600 mb-3">'+escapeHtml(e.message)+'</p><button onclick="goHome()" class="bg-slate-200 py-2.5 px-6 rounded-full font-bold">Volver a revisarlo</button>'); return; } }
+  // 2) si aún no hay quiz, pedir que cargue uno
   if(!customQuestions || !customQuestions.length){
     showMultiScreen();
-    mbody('<p class="text-slate-600 mb-4">Primero necesitas un quiz para jugar de a dos. Carga uno:</p>'+
-      '<div class="flex flex-col gap-2"><button onclick="loadDemo()" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-full">🎯 Usar el quiz de ejemplo</button>'+
-      '<button onclick="goHome()" class="bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-full">Volver y pegar mi código</button></div>');
+    mbody('<p class="text-slate-600 mb-4">Para jugar de a dos primero necesitas un quiz. Puedes:</p>'+
+      '<div class="flex flex-col gap-2">'+
+      '<button onclick="goHome()" class="bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-full">📥 Volver y pegar el código de tu IA (quiz o diálogos)</button>'+
+      '<button onclick="loadDemo()" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-full">🎯 O usar el quiz de ejemplo</button></div>');
     return;
   }
   hostCreateRoom();
@@ -1132,6 +1154,9 @@ function loadQuestion(){
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
+  // pronunciación (español latino) debajo de la pregunta si tiene inglés (no revela la traducción)
+  const qp=document.getElementById('q-pron'); const qphon=(fmt==='lectura'||fmt==='dialogo')?'':phon(q.q);
+  if(qphon){ qp.textContent='🗣️ '+qphon; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
   if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
@@ -1269,10 +1294,11 @@ function renderChoice(q,ctx){
   const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach(opt=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    btn.innerHTML='<span>'+wordSpanify(opt.t)+'</span><span class="hidden icon-status text-lg"></span>';
+    const ph=phon(opt.t);
+    btn.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+escapeHtml(ph)+'</span>':'')+'</span><span class="hidden icon-status text-lg"></span>';
     btn.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
-      else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('span').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
+      else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
       btn.querySelector('.icon-status').classList.remove('hidden'); ctx.answered=true; ctx.done(opt.c===1, opt.r, q);
     };
     box.appendChild(btn);
@@ -1283,7 +1309,8 @@ function renderChoice(q,ctx){
 function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    b.innerHTML='<span>'+wordSpanify(opt.t)+'</span><span class="check-box text-lg">⬜</span>';
+    const ph=phon(opt.t);
+    b.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+escapeHtml(ph)+'</span>':'')+'</span><span class="check-box text-lg">⬜</span>';
     b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });

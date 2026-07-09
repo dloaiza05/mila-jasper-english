@@ -51,29 +51,24 @@
       <div id="ranking-list" class="space-y-2"></div>
     </div>
 
-    <!-- ===== 1) GENERADOR ===== -->
+    <!-- ===== PESTAÑAS: Quiz normal / Diálogos ===== -->
+    <div class="flex gap-2 mb-4">
+      <button id="tab-normal" onclick="switchTab('normal')" class="flex-1 font-extrabold py-3 px-3 rounded-2xl text-sm md:text-base shadow bg-violet-600 text-white">📝 Quiz normal</button>
+      <button id="tab-dialogo" onclick="switchTab('dialogo')" class="flex-1 font-extrabold py-3 px-3 rounded-2xl text-sm md:text-base bg-white text-slate-500 border-2 border-slate-200">💬 Diálogos de a dos</button>
+    </div>
+
+    <!-- ===== PANEL: QUIZ NORMAL (como estaba) ===== -->
+    <div id="panel-normal">
     <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
-      <h3 class="font-extrabold text-violet-700 text-lg mb-4">🧙 1) Arma el instructivo para tu IA</h3>
+      <h3 class="font-extrabold text-violet-700 text-lg mb-4">🧙 1) Arma el instructivo del quiz</h3>
       <div class="space-y-4">
         <div>
-          <p class="text-sm font-bold text-slate-700 mb-2">🎛️ ¿Qué tipo de código quieres?</p>
-          <select id="gen-type" onchange="onGenType()" class="w-full border-2 border-violet-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none font-bold">
-            <option value="normal">📝 Quiz normal — para practicar solo</option>
-            <option value="dialogo">💬 Diálogos — para jugar de a dos (multijugador)</option>
-          </select>
-          <p id="gen-type-help" class="text-xs text-slate-400 mt-1">Quiz normal: preguntas variadas (opción, completar, ordenar…) para ti solo.</p>
-        </div>
-        <div>
-          <p id="who-label" class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién va a estudiar?</p>
+          <p class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién va a estudiar?</p>
           <div id="students-row" class="flex flex-wrap gap-2"></div>
-        </div>
-        <div id="partner-wrap" class="hidden">
-          <p class="text-sm font-bold text-slate-700 mb-2">🧑‍🤝‍🧑 ¿Con quién va a jugar? (nombre de la otra persona)</p>
-          <input id="gen-partner" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: Leidy"/>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <p id="gen-count-label" class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de preguntas</p>
+            <p class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de preguntas</p>
             <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
               <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
             </select>
@@ -83,8 +78,8 @@
             <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be / pasado simple / vocabulario de carpintería"/>
           </div>
         </div>
-        <button id="gen-btn" onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz normal</button>
-        <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en Claude, Gemini o ChatGPT y te devolverá el código. Luego pégalo abajo en el paso 2.</p>
+        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz</button>
+        <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en tu IA y trae el código al paso 2.</p>
       </div>
     </div>
 
@@ -185,18 +180,52 @@
 
       <textarea id="import-input" class="w-full min-h-[200px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-emerald-400 outline-none scroll-soft" placeholder='Pega aquí tu código...'></textarea>
       <input id="import-file" type="file" accept=".json,.txt" class="block w-full mt-2 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-emerald-100 file:text-emerald-700 file:font-bold"/>
-      <div class="flex flex-wrap gap-2 justify-end mt-3">
-        <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 px-6 rounded-full text-base shadow-lg transition-transform hover:scale-105">⚡ Generar quiz (yo solo)</button>
-        <button onclick="openMulti()" class="bg-gradient-to-r from-fuchsia-500 to-pink-600 hover:from-fuchsia-600 hover:to-pink-700 text-white font-extrabold py-3 px-6 rounded-full text-base shadow-lg transition-transform hover:scale-105">👥 Jugar de a dos</button>
+      <div class="text-right mt-3">
+        <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">⚡ Generar quiz</button>
       </div>
-      <p class="text-xs text-slate-400 text-right mt-1">👥 usa este código con otra persona por QR (ideal con el código de Diálogos).</p>
     </div>
 
     <div class="bg-white rounded-2xl shadow p-4 border border-blue-100 text-center">
-      <p class="text-slate-600 text-sm mb-3">¿Quieres probar sin pegar nada? Carga un quiz de ejemplo con los 10 tipos de pregunta (incluye 📚 lectura y 💬 diálogo).</p>
+      <p class="text-slate-600 text-sm mb-3">¿Quieres probar sin pegar nada? Carga un quiz de ejemplo con todos los tipos de pregunta.</p>
       <button onclick="loadDemo()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">🎯 Cargar quiz de ejemplo</button>
     </div>
+    </div><!-- /panel-normal -->
 
+    <!-- ===== PANEL: DIÁLOGOS DE A DOS ===== -->
+    <div id="panel-dialogo" class="hidden">
+      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
+        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">💬 1) Arma el instructivo de diálogos</h3>
+        <p class="text-xs text-slate-500 mb-4">Conversaciones en inglés con pronunciación español latino y traducción, para jugar de a dos.</p>
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién juega? (tú)</p>
+            <div id="students-row-d" class="flex flex-wrap gap-2"></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <p class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de diálogos</p>
+              <select id="gen-count-d" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-fuchsia-400 outline-none">
+                <option>5</option><option selected>10</option><option>20</option><option>30</option><option>40</option><option>50</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <p class="text-sm font-bold text-slate-700 mb-2">✏️ Tema</p>
+              <input id="gen-topic-d" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-fuchsia-400 outline-none" placeholder="Ej: nacionalidades / saludos / poesía"/>
+            </div>
+          </div>
+          <button onclick="generatePromptD()" class="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo de diálogos</button>
+          <p id="gen-status-d" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en tu IA y trae el código abajo.</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
+        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">📥 2) Pega el código y crea la sala</h3>
+        <p class="text-xs text-slate-500 mb-3">Al generar aparece el <b>diálogo + un QR</b>. La otra persona escanea el QR y ven la misma pantalla. Necesita internet.</p>
+        <textarea id="import-input-d" class="w-full min-h-[180px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-fuchsia-400 outline-none scroll-soft" placeholder='Pega aquí el código de diálogos...'></textarea>
+        <div class="text-right mt-3">
+          <button onclick="openMulti('import-input-d')" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">👥 Generar diálogo y crear sala (QR)</button>
+        </div>
+      </div>
+    </div><!-- /panel-dialogo -->
 
     <div id="saved-section" class="hidden bg-white rounded-2xl shadow p-4 border border-amber-200 mt-5">
       <h3 class="font-extrabold text-amber-600 text-lg mb-1">⭐ Mis quizzes guardados</h3>
@@ -957,9 +986,9 @@ function ensureMultiLibs(cb){
   document.head.appendChild(s);
 }
 
-function openMulti(){
+function openMulti(boxId){
   // 1) si hay código pegado en el recuadro, se usa ESE quiz (diálogos u otro generado por la IA)
-  const raw=(document.getElementById('import-input')||{}).value||'';
+  const raw=(document.getElementById(boxId||'import-input')||{}).value||'';
   if(raw.trim()){ try{ const res=normalizeImported(raw); if(res.qs.length){ quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; } }catch(e){ showMultiScreen(); mbody('<p class="text-red-600 font-bold mb-3">El código que pegaste tiene un error:</p><p class="text-sm text-slate-600 mb-3">'+escapeHtml(e.message)+'</p><button onclick="goHome()" class="bg-slate-200 py-2.5 px-6 rounded-full font-bold">Volver a revisarlo</button>'); return; } }
   // 2) si aún no hay quiz, pedir que cargue uno
   if(!customQuestions || !customQuestions.length){
@@ -1256,67 +1285,57 @@ function selectStudent(name){
 function selectStudentIdx(i){ selectStudent(getStudents()[i]); }
 function addStudent(){ const n=prompt('Nombre del nuevo estudiante:'); if(!n||!n.trim()) return; selectStudent(n.trim().slice(0,30)); }
 function renderStudents(){
-  const row=document.getElementById('students-row'); if(!row) return;
   const active=getName();
-  row.innerHTML=getStudents().map((n,i)=>
+  const html=getStudents().map((n,i)=>
     '<button onclick="selectStudentIdx('+i+')" class="font-bold py-2 px-4 rounded-full text-sm '+(n===active?'bg-violet-600 text-white shadow':'bg-slate-100 text-slate-600 hover:bg-slate-200')+'">'+(n===active?'✓ ':'')+escapeHtml(n)+'</button>'
   ).join('')+'<button onclick="addStudent()" class="font-bold py-2 px-4 rounded-full text-sm bg-white border-2 border-dashed border-violet-300 text-violet-600 hover:bg-violet-50">＋ Otro</button>';
+  ['students-row','students-row-d'].forEach(id=>{ const row=document.getElementById(id); if(row) row.innerHTML=html; });
 }
 function toggleInstructivo(){
   const p=document.getElementById('instructivo-panel');
   p.classList.toggle('hidden');
   document.getElementById('eye-btn').textContent=p.classList.contains('hidden')?'🙈':'👁️';
 }
-/* Cambia la interfaz según el tipo de código elegido en el desplegable */
-function onGenType(){
-  const t=(document.getElementById('gen-type')||{}).value||'normal';
-  const help=document.getElementById('gen-type-help'), lbl=document.getElementById('gen-count-label'), btn=document.getElementById('gen-btn');
-  const partner=document.getElementById('partner-wrap'), who=document.getElementById('who-label');
-  if(t==='dialogo'){
-    if(help) help.textContent='Diálogos: conversaciones en inglés (con pronunciación español latino y traducción) + preguntas, para jugar de a dos.';
-    if(lbl) lbl.textContent='🔢 Cantidad de diálogos';
-    if(btn) btn.textContent='📋 Copiar instructivo de DIÁLOGOS (para jugar de a dos)';
-    if(who) who.textContent='👤 ¿Quién juega primero? (tú)';
-    if(partner) partner.classList.remove('hidden');
-  } else {
-    if(help) help.textContent='Quiz normal: preguntas variadas (opción, completar, ordenar…) para ti solo.';
-    if(lbl) lbl.textContent='🔢 Cantidad de preguntas';
-    if(btn) btn.textContent='📋 Copiar instructivo del quiz normal';
-    if(who) who.textContent='👤 ¿Quién va a estudiar?';
-    if(partner) partner.classList.add('hidden');
-  }
+/* Pestañas: Quiz normal / Diálogos */
+function switchTab(t){
+  const pn=document.getElementById('panel-normal'), pd=document.getElementById('panel-dialogo');
+  const tn=document.getElementById('tab-normal'), td=document.getElementById('tab-dialogo');
+  const on='flex-1 font-extrabold py-3 px-3 rounded-2xl text-sm md:text-base shadow ', off='flex-1 font-extrabold py-3 px-3 rounded-2xl text-sm md:text-base bg-white text-slate-500 border-2 border-slate-200';
+  if(t==='dialogo'){ pn.classList.add('hidden'); pd.classList.remove('hidden'); td.className=on+'bg-fuchsia-600 text-white'; tn.className=off; }
+  else { pd.classList.add('hidden'); pn.classList.remove('hidden'); tn.className=on+'bg-violet-600 text-white'; td.className=off; }
+  renderStudents();
 }
+/* Instructivo del QUIZ NORMAL (los 8 formatos, sin lectura ni diálogo) */
 function generatePrompt(){
   const name=getName()||'el estudiante';
   const count=document.getElementById('gen-count').value;
   const topic=(document.getElementById('gen-topic').value||'').trim();
-  const type=(document.getElementById('gen-type')||{}).value||'normal';
-  if(!topic){ alert('✏️ Escribe el tema (ej: verbo to be / saludos).'); document.getElementById('gen-topic').focus(); return null; }
+  if(!topic){ alert('✏️ Escribe el tema (ej: verbo to be).'); document.getElementById('gen-topic').focus(); return null; }
   const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.';
-  let full;
-  if(type==='dialogo'){
-    const partner=((document.getElementById('gen-partner')||{}).value||'').trim()||'su compañero/a';
-    const finalLine='Ahora crea '+count+' diálogos de: '+topic+', para que jueguen '+name+' y '+partner+'. Usa los nombres "'+name+'" y "'+partner+'" como las personas que hablan en las conversaciones. Cada diálogo con sus preguntas de comprensión.'+autoriza;
-    full=AI_PROMPT_DIALOGO.replace(/Ahora crea diálogos de:[\s\S]*$/,'')+finalLine;
-  } else {
-    const finalLine='Ahora crea '+count+' preguntas de: '+topic+' para el estudiante '+name+', usando SOLO los formatos opcion, multiple, vf, escribir, completar, huecos, ordenar y emparejar (NO uses lectura ni dialogo aquí).'+autoriza;
-    full=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'')+finalLine;
-  }
-  copyToClipboard(full);
-  return full;
+  const finalLine='Ahora crea '+count+' preguntas de: '+topic+' para el estudiante '+name+', usando SOLO los formatos opcion, multiple, vf, escribir, completar, huecos, ordenar y emparejar (NO uses lectura ni dialogo aquí).'+autoriza;
+  const full=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'')+finalLine;
+  copyToClipboard(full,'gen-status'); return full;
+}
+/* Instructivo de DIÁLOGOS (para jugar de a dos) */
+function generatePromptD(){
+  const name=getName()||'Jugador 1';
+  const count=document.getElementById('gen-count-d').value;
+  const topic=(document.getElementById('gen-topic-d').value||'').trim();
+  if(!topic){ alert('✏️ Escribe el tema de los diálogos (ej: nacionalidades / saludos).'); document.getElementById('gen-topic-d').focus(); return null; }
+  const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; personaliza los diálogos con su vida, trabajo y gustos.';
+  const finalLine='Ahora crea '+count+' diálogos de: '+topic+', para que jueguen de a dos. Usa el nombre "'+name+'" para una persona y otro nombre para la otra en las conversaciones. Cada diálogo con sus preguntas de comprensión.'+autoriza;
+  const full=AI_PROMPT_DIALOGO.replace(/Ahora crea diálogos de:[\s\S]*$/,'')+finalLine;
+  copyToClipboard(full,'gen-status-d'); return full;
 }
 /* Copia SIEMPRE (PC y celular). Respaldo con textarea + execCommand si falla la API */
-function copyToClipboard(text){
-  const done=()=>{ const st=document.getElementById('gen-status'); if(st){ st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 12000); } };
+function copyToClipboard(text, statusId){
+  const done=()=>{ const st=document.getElementById(statusId||'gen-status'); if(st){ st.classList.remove('hidden'); setTimeout(()=>st.classList.add('hidden'), 12000); } };
   function fallback(){
     try{ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.top='-9999px'; document.body.appendChild(ta); ta.focus(); ta.select(); const okc=document.execCommand('copy'); document.body.removeChild(ta); if(okc){ done(); return true; } }catch(e){}
-    // último recurso: dejarlo en el recuadro de la derecha para copiar a mano
     const inp=document.getElementById('import-input'); if(inp){ inp.value=text; inp.focus(); inp.select(); }
     done(); return false;
   }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(done).catch(fallback);
-  } else { fallback(); }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(fallback); } else { fallback(); }
 }
 /* Despacha el render según el formato, dentro del contexto dado (área + callback) */
 function dispatchRender(q, ctx){

@@ -222,7 +222,7 @@
         <p class="text-xs text-slate-500 mb-3">Al generar aparece el <b>diálogo + un QR</b>. La otra persona escanea el QR y ven la misma pantalla. Necesita internet.</p>
         <textarea id="import-input-d" class="w-full min-h-[180px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-fuchsia-400 outline-none scroll-soft" placeholder='Pega aquí el código de diálogos...'></textarea>
         <div class="text-right mt-3">
-          <button onclick="openMulti('import-input-d')" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">👥 Generar diálogo y crear sala (QR)</button>
+          <button onclick="shareDialogue('import-input-d')" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">👥 Generar diálogo y compartir (QR)</button>
         </div>
       </div>
     </div><!-- /panel-dialogo -->
@@ -356,7 +356,8 @@ function phon(text){
     const w=tok.replace(/[^A-Za-z']/g,'');
     if(!w){ out.push(tok); return; }
     engWords++;
-    const g=(typeof extraGlossary!=='undefined'&&extraGlossary[norm(w)])||GLOSSARY[norm(w)];
+    const kk=norm(w);
+    const g=(typeof extraGlossary!=='undefined'&&extraGlossary[kk])||(typeof LEARNED!=='undefined'&&LEARNED[kk])||GLOSSARY[kk];
     if(g&&g.pron){ hits++; out.push(tok.replace(w, g.pron)); } else { out.push(tok); }
   });
   if(!engWords || hits/engWords < 0.5) return ''; // mayormente no-inglés → no mostrar
@@ -511,6 +512,15 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
  ['egg','huevo','sustantivo','eg'],['food','comida','sustantivo','fud'],['cakes','pasteles','sustantivo','kéiks'],
  ['red','rojo','adjetivo (color)','red'],['blue','azul','adjetivo (color)','blu'],['green','verde','adjetivo (color)','grin'],
  ['yellow','amarillo','adjetivo (color)','iélou'],['black','negro','adjetivo (color)','blak'],['white','blanco','adjetivo (color)','uáit'],['brown','marrón','adjetivo (color)','bráun'],
+ // formas -ing (gerundio: acción en curso)
+ ['going','yendo (gerundio de go)','verbo -ing','góuing'],['working','trabajando','verbo -ing','uérking'],['playing','jugando','verbo -ing','pléing'],
+ ['eating','comiendo','verbo -ing','íting'],['drinking','bebiendo','verbo -ing','drínking'],['making','haciendo','verbo -ing','méiking'],
+ ['doing','haciendo','verbo -ing','dúing'],['running','corriendo','verbo -ing','ráning'],['cooking','cocinando','verbo -ing','cúking'],
+ ['studying','estudiando','verbo -ing','stádying'],['living','viviendo','verbo -ing','líving'],['teaching','enseñando','verbo -ing','tíching'],
+ ['watching','mirando','verbo -ing','uátching'],['reading','leyendo','verbo -ing','ríding'],['writing','escribiendo','verbo -ing','ráiting'],
+ ['sleeping','durmiendo','verbo -ing','slíping'],['buying','comprando','verbo -ing','báing'],['coming','viniendo','verbo -ing','káming'],
+ ['giving','dando','verbo -ing','guíving'],['taking','tomando','verbo -ing','téiking'],['building','construyendo','verbo -ing','bílding'],
+ ['speaking','hablando','verbo -ing','spíking'],['learning','aprendiendo','verbo -ing','lérning'],['walking','caminando','verbo -ing','uóking'],
  // palabras de lecturas
  ['year','año','sustantivo','íar'],['years','años','sustantivo','íars'],['workshop','taller','sustantivo','uérkshop'],
  ['clients','clientes','sustantivo','cláients'],['client','cliente','sustantivo','cláient'],['cabinets','gabinetes','sustantivo','cábinets'],
@@ -530,7 +540,19 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
 // también todo el diccionario de vocabulario entra al glosario
 DICT.forEach(d=>{ addG(d.en,d.es,d.c,d.p); if(d.en.indexOf('to ')===0) addG(d.en.slice(3),d.es,'verbo',(d.p||'').replace(/^tu /,'')); });
 let extraGlossary={}; // glosario extra que viene en el código de la IA
-function lookupWord(w){ const k=norm(w); if(!k) return null; return extraGlossary[k]||GLOSSARY[k]||null; }
+/* DICCIONARIO APRENDIDO: cada palabra/frase que la IA manda en un quiz se guarda
+   para SIEMPRE en el dispositivo y se reutiliza en todos los quizzes futuros. */
+let LEARNED={}, LEARNED_FR={};
+try{ LEARNED=JSON.parse(localStorage.getItem('mj_dict')||'{}'); }catch(e){ LEARNED={}; }
+try{ LEARNED_FR=JSON.parse(localStorage.getItem('mj_dict_fr')||'{}'); }catch(e){ LEARNED_FR={}; }
+function learnDict(glossary, phrases){
+  let n=0;
+  for(const k in (glossary||{})){ if(!LEARNED[k] || !LEARNED[k].pron){ LEARNED[k]=glossary[k]; n++; } }
+  for(const k in (phrases||{})){ if(!LEARNED_FR[k]){ LEARNED_FR[k]=phrases[k]; n++; } }
+  if(n){ try{ localStorage.setItem('mj_dict', JSON.stringify(LEARNED)); localStorage.setItem('mj_dict_fr', JSON.stringify(LEARNED_FR)); }catch(e){} }
+  return n;
+}
+function lookupWord(w){ const k=norm(w); if(!k) return null; return extraGlossary[k]||LEARNED[k]||GLOSSARY[k]||null; }
 /* Diccionario español -> inglés (palabras de instrucciones y vida diaria) */
 const SPANISH_EXTRA={};
 function addS(es,en,pron){ const k=norm(es); if(k && !SPANISH_EXTRA[k]) SPANISH_EXTRA[k]={en:en, tipo:'', pron:pron||''}; }
@@ -549,7 +571,13 @@ function addS(es,en,pron){ const k=norm(es); if(k && !SPANISH_EXTRA[k]) SPANISH_
  ['país','country','cántri'],['escuela','school','skul'],['estudiante','student','stiúdent'],['profesor','teacher','tícher'],
  ['amigo','friend','frend'],['carpintero','carpenter','cárpenter'],['taller','workshop','uérkshop'],['muebles','furniture','férnicher'],
  ['gustos','likes','láiks'],['espacio','blank / space','blank'],['ficha','tile / chip','táil'],['significa','means','mins'],
- ['cuál','which / what','uích'],['cuáles','which ones','uích uáns'],['este','this','dis'],['ese','that','dat'],['aquí','here','jíar'],['allá','there','der']
+ ['cuál','which / what','uích'],['cuáles','which ones','uích uáns'],['este','this','dis'],['ese','that','dat'],['aquí','here','jíar'],['allá','there','der'],
+ ['presente','present (tense)','présent'],['pasado','past (tense)','past'],['futuro','future','fiúcher'],['simple','simple','símpol'],
+ ['plural','plural','plúral'],['singular','singular','síngiular'],['gramática','grammar','grámar'],['verbo','verb','verb'],
+ ['sustantivo','noun','náun'],['adjetivo','adjective','ádyectiv'],['pronombre','pronoun','prónaun'],['conector','connector / linker','conéctor'],
+ ['artículo','article','árticol'],['sujeto','subject','sábyect'],['complemento','complement','cómplement'],['estructura','structure','strákcher'],
+ ['pista','hint / clue','jint'],['dato','fact / tip','fact'],['ordena','sort / order','órder'],['forma','form','form'],['número','number','námber'],
+ ['con','with','uíd'],['del','of the','of de'],['los','the','de'],['las','the','de'],['una','a / an','a'],['para','for / to','for'],['según','according to','acórding tu']
 ].forEach(a=>addS(a[0],a[1],a[2]));
 /* búsqueda inversa: palabra en ESPAÑOL -> cómo se dice en inglés */
 function lookupSpanish(w){
@@ -581,7 +609,7 @@ function addP(f,es,pron){ const k=norm(f); if(k && !PHRASES[k]) PHRASES[k]={fras
  ['best friends','mejores amigos','best frends'],['best friend','mejor amigo','best frend']
 ].forEach(a=>addP(a[0],a[1],a[2]));
 let extraPhrases={}; // frases extra que vienen en el código de la IA
-function lookupPhrase(words){ const k=norm(words.join(' ')); if(!k) return null; return extraPhrases[k]||PHRASES[k]||null; }
+function lookupPhrase(words){ const k=norm(words.join(' ')); if(!k) return null; return extraPhrases[k]||LEARNED_FR[k]||PHRASES[k]||null; }
 /* mira las palabras vecinas de la tocada por si forman una frase conocida */
 function findPhrase(el){
   const parent=el.parentElement; if(!parent) return null;
@@ -732,6 +760,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
    {"palabra":"dog","es":"perro","tipo":"sustantivo","pron":"dog"}
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
+   IMPORTANTE: la app GUARDA cada palabra del glosario para siempre y la reutiliza en todos los quizzes futuros del alumno — entre más completo el glosario, más aprende la app. Sé exhaustivo y usa traducciones REALES y exactas (nunca inventadas).
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
 7. "estructura": una PISTA LÓGICA tipo regla/fórmula gramatical, SIN dar la respuesta. Di la regla en palabras: "con He/She/It se agrega -s al verbo", "para -ing se quita la e y se agrega -ing", "an antes de sonido de vocal / a antes de consonante", "Sujeto + to be + adjetivo", "¿cuál es el plural del sustantivo?". PROHIBIDO poner la respuesta literal (nada de "She→is" ni "run→running"); solo el patrón/regla.
 8. "tema": el tema de esa pregunta EN INGLÉS (ej: "Verb To Be", "Present Simple", "Simple Past", "Prepositions", "Vocabulary", "Numbers", "Articles", "Reading Comprehension"). Va ENCIMA de la pregunta; el alumno lo toca para ver el significado en español.
@@ -937,7 +966,7 @@ function normalizeImported(text){
 }
 
 /* ============================================================ ESTADO Y RENDER ============================================================ */
-let quiz=[],idx=0,score=0,answered=false,customQuestions=null,streak=0,maxStreak=0,quizMax=0;
+let quiz=[],idx=0,score=0,answered=false,customQuestions=null,streak=0,maxStreak=0,quizMax=0,quizPlayer='';
 function computeQuizMax(){ quizMax=quiz.reduce((s,it)=> s + ((it.subs&&it.subs.length)? it.subs.length : 1), 0); }
 const screens={home:document.getElementById('home-screen'),quiz:document.getElementById('quiz-screen'),end:document.getElementById('end-screen'),multi:document.getElementById('multi-screen')};
 const ui={ qText:document.getElementById('question-text'), area:document.getElementById('answer-area'), badge:document.getElementById('format-badge'),
@@ -959,10 +988,10 @@ function startCustomImport(){
   const raw=document.getElementById('import-input').value; if(!raw.trim()){ alert('Pega el código (JSON) que te generó la IA.'); return; }
   let res; try{ res=normalizeImported(raw); } catch(e){ alert('No pude leer el código:\n'+e.message+'\n\nRevisa que el JSON esté completo (empieza con { y termina con }).'); return; }
   if(!res.qs.length){ alert('No encontré preguntas.'); return; }
-  quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; launchQuiz(res.titulo+' ('+res.qs.length+' preguntas)');
+  quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; learnDict(res.glossary,res.phrases); launchQuiz(res.titulo+' ('+res.qs.length+' preguntas)');
 }
 function repeatQuiz(){ if(customQuestions){ quiz=shuffle(customQuestions); launchQuiz(ui.topicLabel.textContent);} else goHome(); }
-function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; computeQuizMax(); updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.multi.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent=label; if(!multi.active)saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
+function launchQuiz(label){ idx=0; score=0; streak=0; maxStreak=0; quizPlayer=getName()||'Invitado'; computeQuizMax(); updateStreak(false); screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.multi.classList.add('hidden'); screens.quiz.classList.remove('hidden'); ui.topicLabel.textContent='👤 '+quizPlayer+' · '+label; if(!multi.active)saveProgress(0); loadQuestion(); window.scrollTo(0,0); }
 function updateStreak(animate){ const el=document.getElementById('streak-counter'); el.textContent='🔥 '+streak; if(animate){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } }
 function goHome(){ multiReset(); screens.quiz.classList.add('hidden'); screens.end.classList.add('hidden'); screens.multi.classList.add('hidden'); screens.home.classList.remove('hidden'); renderResume(); renderSaved(); renderRanking(); window.scrollTo(0,0); }
 
@@ -989,7 +1018,7 @@ function ensureMultiLibs(cb){
 function openMulti(boxId){
   // 1) si hay código pegado en el recuadro, se usa ESE quiz (diálogos u otro generado por la IA)
   const raw=(document.getElementById(boxId||'import-input')||{}).value||'';
-  if(raw.trim()){ try{ const res=normalizeImported(raw); if(res.qs.length){ quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; } }catch(e){ showMultiScreen(); mbody('<p class="text-red-600 font-bold mb-3">El código que pegaste tiene un error:</p><p class="text-sm text-slate-600 mb-3">'+escapeHtml(e.message)+'</p><button onclick="goHome()" class="bg-slate-200 py-2.5 px-6 rounded-full font-bold">Volver a revisarlo</button>'); return; } }
+  if(raw.trim()){ try{ const res=normalizeImported(raw); if(res.qs.length){ quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; learnDict(res.glossary,res.phrases); } }catch(e){ showMultiScreen(); mbody('<p class="text-red-600 font-bold mb-3">El código que pegaste tiene un error:</p><p class="text-sm text-slate-600 mb-3">'+escapeHtml(e.message)+'</p><button onclick="goHome()" class="bg-slate-200 py-2.5 px-6 rounded-full font-bold">Volver a revisarlo</button>'); return; } }
   // 2) si aún no hay quiz, pedir que cargue uno
   if(!customQuestions || !customQuestions.length){
     showMultiScreen();
@@ -1148,7 +1177,9 @@ document.addEventListener('contextmenu', e=>{ if(e.target.closest('.wtap')) e.pr
 document.addEventListener('click', e=>{
   if(lpFired){ e.preventDefault(); e.stopPropagation(); lpFired=false; return; } // el long-press NO responde la pregunta
   const w=e.target.closest('.wtap');
-  if(w && w.closest('#question-text')){ showWordPopup(w); return; } // en la pregunta basta un toque
+  // UN SOLO CLIC traduce cualquier palabra que NO esté dentro de un botón de respuesta
+  // (en los botones de opciones/fichas, el clic responde; ahí se usa mantener presionado)
+  if(w && !w.closest('button')){ showWordPopup(w); e.stopPropagation(); return; }
   if(!e.target.closest('#word-popup')) hideWordPopup();
 }, true);
 
@@ -1180,7 +1211,7 @@ function resumeSaved(restart){
   quiz=p.quiz; customQuestions=quiz; extraGlossary=p.glossary||{}; extraPhrases=p.phrases||{};
   if(p.player) selectStudent(p.player); // restaura quién lo estaba haciendo
   if(restart){ launchQuiz(p.title); return; }
-  idx=p.idx; score=p.score||0; streak=p.streak||0; maxStreak=p.maxStreak||0; computeQuizMax();
+  idx=p.idx; score=p.score||0; streak=p.streak||0; maxStreak=p.maxStreak||0; quizPlayer=p.player||getName()||'Invitado'; computeQuizMax();
   screens.home.classList.add('hidden'); screens.end.classList.add('hidden'); screens.quiz.classList.remove('hidden');
   ui.topicLabel.textContent=p.title; updateStreak(false); loadQuestion(); window.scrollTo(0,0);
 }
@@ -1255,7 +1286,7 @@ function buildAutoHint(q){
   const src=String(q.q+' '+(q.sentence||'')+' '+((q.opts||[]).map(o=>o.t).join(' '))+' '+(q.text||'').slice(0,200)).match(/[A-Za-zÀ-ÿ']+/g)||[];
   for(let i=0;i<src.length;i++){
     const k=norm(src[i]); if(!k||seen.has(k)) continue; seen.add(k);
-    const g=extraGlossary[k]||GLOSSARY[k];
+    const g=extraGlossary[k]||LEARNED[k]||GLOSSARY[k];
     if(g){ out.push(src[i].toLowerCase()+' = '+g.es); if(out.length>=6) break; }
   }
   return out.join(' · ');
@@ -1575,7 +1606,8 @@ function showEnd(){
   clearProgress();
   screens.quiz.classList.add('hidden'); screens.end.classList.remove('hidden');
   const maxTotal=quizMax||quiz.length;
-  recordStats(getName(), score, Math.max(0,maxTotal-score), maxStreak); // guarda en el ranking
+  // registra al jugador que INICIÓ este quiz (no al chip activo del momento)
+  recordStats(quizPlayer||getName(), score, Math.max(0,maxTotal-score), maxStreak);
   document.getElementById('final-score').textContent=`${score} / ${maxTotal}`; const pct=Math.round((score/maxTotal)*100);
   document.getElementById('final-percentage').textContent=`${pct}% de acierto`;
   document.getElementById('final-streak').textContent=`🔥 Racha máxima: ${maxStreak}`;

@@ -12,6 +12,7 @@
   #progress-bar { background: linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899); }
   .pop { animation: pop .3s ease-out; }
   @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1)} }
+  .lig { color:#db2777; font-weight:800; padding:0 1px; }
   .wtap { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:pointer; border-bottom:1px dotted #a5b4fc; }
   .wtap:active { background:#e0e7ff; border-radius:4px; }
   #word-popup { max-width:280px; }
@@ -232,6 +233,8 @@
       <p class="text-xs text-slate-400 mb-3">Toca ⭐ para marcar tu favorito (queda de primero como predeterminado).</p>
       <div id="saved-list" class="space-y-2"></div>
     </div>
+
+    <p class="text-center mt-4"><button onclick="exportLearned()" class="text-xs text-slate-400 underline hover:text-teal-600">📤 Copiar mi diccionario aprendido (para agregarlo al código en GitHub)</button></p>
   </div>
 
   <!-- ============ QUIZ ============ -->
@@ -257,6 +260,7 @@
         <span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span>
       </div>
       <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-1 text-slate-800 leading-snug"></h3>
+      <p id="q-trad" class="hidden mb-0.5 text-sm text-blue-700 font-medium border-l-4 border-blue-300 pl-2">📖 </p>
       <p id="q-pron" class="hidden mb-2 text-sm text-purple-700 italic">🗣️ </p>
       <!-- Estructura de cómo responder, siempre visible -->
       <p id="structure-line" class="hidden mb-4 text-xs md:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5"></p>
@@ -363,6 +367,30 @@ function phon(text){
   });
   if(!engWords || hits/engWords < 0.5) return ''; // mayormente no-inglés → no mostrar
   return out.join('');
+}
+/* Igual que phon() pero en HTML y con ENLACES de pronunciación:
+   cuando una palabra termina en consonante y la siguiente empieza en vocal,
+   se pegan con ‿ en color (linking): "can I" -> "can‿ái". */
+function phonHTML(text){
+  const toks=String(text).split(/(\s+)/); let hits=0, eng=0; const parts=[];
+  toks.forEach(tok=>{
+    if(/^\s+$/.test(tok)){ parts.push({sp:tok}); return; }
+    const w=tok.replace(/[^A-Za-z']/g,'');
+    if(!w){ parts.push({txt:tok}); return; }
+    eng++;
+    const kk=norm(w); const g=extraGlossary[kk]||LEARNED[kk]||GLOSSARY[kk];
+    if(g&&g.pron){ hits++; parts.push({txt:tok.replace(w,g.pron)}); } else parts.push({txt:tok});
+  });
+  if(!eng || hits/eng<0.5) return '';
+  const vocalIni=s=>/^[aeiouáéíóú]/i.test(String(s).replace(/^[^A-Za-zÀ-ÿ]+/,''));
+  const consFin=s=>/[bcdfghjklmnpqrstvwxyz]$/i.test(String(s).replace(/[^A-Za-zÀ-ÿ]+$/,''));
+  let html='', last='';
+  parts.forEach(p=>{
+    if(p.sp!==undefined){ html+=p.sp; return; }
+    if(last && consFin(last) && vocalIni(p.txt)){ html=html.replace(/\s+$/,''); html+='<span class="lig">‿</span>'; }
+    html+=escapeHtml(p.txt); last=p.txt;
+  });
+  return html;
 }
 function fillBlanks(tpl, answers){ let i=0; return String(tpl).replace(/_{2,}/g, ()=> (answers[i++]!=null?answers[i-1]:'___')); }
 function makeOptions(correct, pool, rGood, rBad){
@@ -568,6 +596,13 @@ function learnDict(glossary, phrases){
   return n;
 }
 function lookupWord(w){ const k=norm(w); if(!k) return null; return extraGlossary[k]||LEARNED[k]||GLOSSARY[k]||null; }
+/* Exporta lo aprendido para que Claude lo consolide en la biblioteca del código (GitHub) */
+function exportLearned(){
+  const n=Object.keys(LEARNED).length, f=Object.keys(LEARNED_FR).length;
+  if(!n&&!f){ alert('Aún no hay palabras aprendidas. Juega un quiz generado por la IA (con glosario) y se irán guardando.'); return; }
+  copyToClipboard(JSON.stringify({palabras:LEARNED, frases:LEARNED_FR}), 'gen-status');
+  alert('✅ Copiado: '+n+' palabras y '+f+' frases aprendidas.\n\nPégamelo a mí (Claude) en el chat y las agrego a la biblioteca del código en GitHub, para que queden fijas para todos tus dispositivos.');
+}
 /* Diccionario español -> inglés (palabras de instrucciones y vida diaria) */
 const SPANISH_EXTRA={};
 function addS(es,en,pron){ const k=norm(es); if(k && !SPANISH_EXTRA[k]) SPANISH_EXTRA[k]={en:en, tipo:'', pron:pron||''}; }
@@ -1198,7 +1233,7 @@ function showWordPopup(el){
   document.getElementById('wp-pron').textContent = (g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
   // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
   const kSrc=norm(word); let srcMsg='';
-  if(g){ if(extraGlossary[kSrc]) srcMsg='📌 significado del quiz actual (contexto)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes anteriores'; else srcMsg='📚 biblioteca de la app'; }
+  if(g){ if(extraGlossary[kSrc]) srcMsg='🤖 traducción generada por la IA (contexto de este quiz)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes (generada por IA)'; else srcMsg='📚 biblioteca del código'; }
   document.getElementById('wp-src').textContent=srcMsg;
   const ph=findPhrase(el); const phEl=document.getElementById('wp-phrase');
   if(ph){
@@ -1304,9 +1339,12 @@ function loadQuestion(){
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
-  // pronunciación (español latino) debajo de la pregunta si tiene inglés (no revela la traducción)
-  const qp=document.getElementById('q-pron'); const qphon=(fmt==='lectura'||fmt==='dialogo')?'':phon(q.q);
-  if(qphon){ qp.textContent='🗣️ '+qphon; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
+  // arriba: traducción general de la frase · abajo: pronunciación con enlaces (can‿ái)
+  const qt=document.getElementById('q-trad');
+  const showTrad = q.trad && fmt!=='lectura' && fmt!=='dialogo' && phon(q.q); // solo si la pregunta es en inglés
+  if(showTrad){ qt.textContent='📖 = '+q.trad; qt.classList.remove('hidden'); } else qt.classList.add('hidden');
+  const qp=document.getElementById('q-pron'); const qphon=(fmt==='lectura'||fmt==='dialogo')?'':phonHTML(q.q);
+  if(qphon){ qp.innerHTML='🗣️ '+qphon; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
   if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
@@ -1459,8 +1497,8 @@ function renderChoice(q,ctx){
   const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach(opt=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phon(opt.t);
-    btn.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+escapeHtml(ph)+'</span>':'')+'</span><span class="hidden icon-status text-lg"></span>';
+    const ph=phonHTML(opt.t);
+    btn.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span><span class="hidden icon-status text-lg"></span>';
     btn.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
@@ -1474,8 +1512,8 @@ function renderChoice(q,ctx){
 function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phon(opt.t);
-    b.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+escapeHtml(ph)+'</span>':'')+'</span><span class="check-box text-lg">⬜</span>';
+    const ph=phonHTML(opt.t);
+    b.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span><span class="check-box text-lg">⬜</span>';
     b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });

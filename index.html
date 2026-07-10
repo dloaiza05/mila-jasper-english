@@ -337,6 +337,7 @@
   <div id="wp-tipo" class="text-indigo-300 text-xs font-bold mt-0.5"></div>
   <div id="wp-pron" class="text-purple-300 italic text-xs mt-0.5"></div>
   <div id="wp-phrase" class="text-emerald-300 text-xs font-bold mt-1 border-t border-slate-700 pt-1"></div>
+  <div id="wp-src" class="text-slate-400 text-[10px] mt-1"></div>
 </div>
 
 <script>
@@ -512,6 +513,20 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
  ['egg','huevo','sustantivo','eg'],['food','comida','sustantivo','fud'],['cakes','pasteles','sustantivo','kéiks'],
  ['red','rojo','adjetivo (color)','red'],['blue','azul','adjetivo (color)','blu'],['green','verde','adjetivo (color)','grin'],
  ['yellow','amarillo','adjetivo (color)','iélou'],['black','negro','adjetivo (color)','blak'],['white','blanco','adjetivo (color)','uáit'],['brown','marrón','adjetivo (color)','bráun'],
+ // términos de gramática (como en un libro de inglés)
+ ['gerund','gerundio (forma -ing)','gramática','yérund'],['tense','tiempo verbal','gramática','tens'],
+ ['participle','participio','gramática','párticipol'],['infinitive','infinitivo (to + verbo)','gramática','infínitiv'],
+ ['comparative','comparativo (más que...)','gramática','compárativ'],['superlative','superlativo (el más...)','gramática','supérlativ'],
+ ['auxiliary','auxiliar (do/does/did)','gramática','ogsíliari'],['negative','negativo','gramática','négativ'],
+ ['affirmative','afirmativo','gramática','afírmativ'],['interrogative','interrogativo (pregunta)','gramática','interrógativ'],
+ ['singular','singular (uno)','gramática','síngiular'],['plural','plural (varios)','gramática','plúral'],
+ ['verb','verbo','gramática','verb'],['noun','sustantivo','gramática','náun'],['adjective','adjetivo','gramática','ádyectiv'],
+ ['adverb','adverbio','gramática','ádverb'],['pronoun','pronombre','gramática','prónaun'],['preposition','preposición','gramática','preposíshon'],
+ ['article','artículo (a/an/the)','gramática','árticol'],['subject','sujeto','gramática','sábyect'],['object','objeto / complemento','gramática','óbyect'],
+ ['grammar','gramática','sustantivo','grámar'],['vocabulary','vocabulario','sustantivo','vocábiulari'],['spelling','ortografía','sustantivo','spéling'],
+ ['sentence','oración','sustantivo','séntens'],['phrase','frase','sustantivo','fréis'],['word','palabra','sustantivo','uérd'],
+ ['question','pregunta','sustantivo','cuéstion'],['answer','respuesta','sustantivo','ánser'],['example','ejemplo','sustantivo','igsámpol'],
+ ['level','nivel (A1, A2, B1...)','sustantivo','lével'],['beginner','principiante','sustantivo','biguíner'],['conversation','conversación','sustantivo','converséishon'],
  // formas -ing (gerundio: acción en curso)
  ['going','yendo (gerundio de go)','verbo -ing','góuing'],['working','trabajando','verbo -ing','uérking'],['playing','jugando','verbo -ing','pléing'],
  ['eating','comiendo','verbo -ing','íting'],['drinking','bebiendo','verbo -ing','drínking'],['making','haciendo','verbo -ing','méiking'],
@@ -761,9 +776,10 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
    IMPORTANTE: la app GUARDA cada palabra del glosario para siempre y la reutiliza en todos los quizzes futuros del alumno — entre más completo el glosario, más aprende la app. Sé exhaustivo y usa traducciones REALES y exactas (nunca inventadas).
+   Si una palabra tiene VARIOS significados, en "es" pon PRIMERO el significado según el CONTEXTO de esta frase, y en "dato" menciona los otros significados (ej: saw = "vio (pasado de see)" en este contexto; también significa "sierra" la herramienta).
 6. "frases": TODAS las expresiones de 2-3 palabras presentes en la pregunta o el texto ("years old","wake up","a lot of","at night") con {"frase","es","pron"}.
 7. "estructura": una PISTA LÓGICA tipo regla/fórmula gramatical, SIN dar la respuesta. Di la regla en palabras: "con He/She/It se agrega -s al verbo", "para -ing se quita la e y se agrega -ing", "an antes de sonido de vocal / a antes de consonante", "Sujeto + to be + adjetivo", "¿cuál es el plural del sustantivo?". PROHIBIDO poner la respuesta literal (nada de "She→is" ni "run→running"); solo el patrón/regla.
-8. "tema": el tema de esa pregunta EN INGLÉS (ej: "Verb To Be", "Present Simple", "Simple Past", "Prepositions", "Vocabulary", "Numbers", "Articles", "Reading Comprehension"). Va ENCIMA de la pregunta; el alumno lo toca para ver el significado en español.
+8. "tema": el tema EN INGLÉS + el nivel tipo curso/libro entre paréntesis (ej: "Present Simple (A1)", "Past Continuous (A2)", "Gerunds -ing (A2)", "Comparatives (B1)"). Va ENCIMA de la pregunta; el alumno lo toca para ver el significado en español. Organiza todo el quiz como un LIBRO de inglés: nombra el tiempo verbal correcto (Present Simple, Past Simple, Present Continuous...), la categoría gramatical y el nivel MCER (A1, A2, B1, B2).
 9. En la "razon" de la opción CORRECTA explica POR QUÉ es esa y NO las otras (que también están bien escritas). Ejemplo: "Se usa 'a' cuando la profesión empieza en sonido de consonante; con vocal sería 'an'." Di con qué palabra se une la respuesta en la frase y qué significa esa unión. Muchos datos.
 
 B) POR FORMATO:
@@ -830,9 +846,9 @@ REGLAS OBLIGATORIAS (diálogos):
 - CADA línea del diálogo lleva: "quien" (nombre de la persona), "en" (inglés natural), "pron" (cómo suena en español latino, ej "jáu ar iú"), "es" (traducción).
 - Usa los nombres de los dos jugadores cuando aplique (por ejemplo los que te diga el usuario).
 - CADA diálogo lleva "preguntas" (de 2 a 5) de comprensión sobre lo que se dijo. En "opcion": SOLO una correcta; si hubiera varias válidas usa "multiple". Cada opción con su "razon".
-- "glosario" con TODAS las palabras difíciles (inglés y español, sin omitir); "frases" con las expresiones de 2-3 palabras.
-- Preguntas con "traduccion", "pronunciacion" (español latino), "estructura" (regla, sin dar la respuesta) y "dato" (contexto).
-- Inglés 100% correcto y cotidiano. No escribas NADA fuera del JSON.
+- "glosario" con TODAS las palabras difíciles (inglés y español, sin omitir); "frases" con las expresiones de 2-3 palabras. La app guarda el glosario para siempre: sé exhaustivo, con traducciones REALES. Si una palabra tiene varios significados, en "es" pon primero el del CONTEXTO del diálogo y menciona los otros en "dato".
+- Preguntas con "traduccion", "pronunciacion" (español latino), "estructura" (regla, sin dar la respuesta), "dato" (contexto) y "tema" en inglés con nivel tipo libro (ej: "Conversation: Greetings (A1)").
+- Inglés 100% correcto y cotidiano, organizado como un curso (nombra el tiempo verbal y el nivel A1/A2/B1 cuando aplique). No escribas NADA fuera del JSON.
 
 Ahora crea diálogos de: [ESCRIBE EL TEMA. Ej: saludos y presentarse], con sus preguntas.`;
 
@@ -1015,6 +1031,33 @@ function ensureMultiLibs(cb){
   document.head.appendChild(s);
 }
 
+/* COMPARTIR DIÁLOGO POR QR (pantalla duplicada, SIN conexión en vivo):
+   el QR/enlace lleva el diálogo ADENTRO. La otra persona lo abre y ve lo mismo
+   en su celular — puede subir/bajar, tocar palabras para traducir y responder. */
+let _shareUrl='';
+function copyShareUrl(){ if(_shareUrl){ copyToClipboard(_shareUrl,'gen-status-d'); alert('✅ Enlace copiado. Envíalo por WhatsApp y la otra persona verá el mismo diálogo.'); } }
+function shareDialogue(boxId){
+  const raw=(document.getElementById(boxId||'import-input-d')||{}).value||'';
+  if(!raw.trim()){ alert('Primero pega el código de diálogos que te dio la IA.'); return; }
+  let res; try{ res=normalizeImported(raw); }catch(e){ alert('El código tiene un error:\n'+e.message); return; }
+  if(!res.qs.length){ alert('No encontré diálogos en el código.'); return; }
+  // cargarlo aquí mismo y aprender su glosario
+  quiz=res.qs.slice(0,300); customQuestions=quiz; extraGlossary=res.glossary||{}; extraPhrases=res.phrases||{}; learnDict(res.glossary,res.phrases);
+  // empaquetar el diálogo dentro del enlace
+  let enc=''; try{ enc=btoa(unescape(encodeURIComponent(JSON.stringify({t:res.titulo,q:res.qs,g:res.glossary,f:res.phrases})))); }catch(e){}
+  _shareUrl=location.origin+location.pathname+'#d='+enc;
+  const fitsQR=enc && _shareUrl.length<2500;
+  showMultiScreen();
+  mbody('<p class="text-slate-600 mb-2">La otra persona <b>escanea el QR</b> o abre el enlace y ve <b>el mismo diálogo</b> en su celular: puede leer, subir y bajar, tocar cualquier palabra para su traducción y responder las preguntas.</p>'+
+    '<div id="qr-box" class="flex justify-center my-3"></div>'+
+    (fitsQR?'':'<p class="text-xs text-amber-600 font-bold mb-2">⚠️ Este diálogo es largo para un QR: comparte el enlace por WhatsApp 👇 (funciona igual).</p>')+
+    '<div class="flex flex-col gap-2 items-center">'+
+    '<button onclick="copyShareUrl()" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-2.5 px-6 rounded-full text-sm shadow">📋 Copiar enlace (WhatsApp)</button>'+
+    '<button onclick="screens.multi.classList.add(\'hidden\'); launchQuiz((customQuestions&&customQuestions.length? (document.getElementById(\'topic-label\').textContent||\'Diálogo\') : \'Diálogo\'))" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white font-bold py-2.5 px-6 rounded-full text-sm shadow">▶️ Empezar yo también</button>'+
+    '</div>');
+  if(fitsQR){ ensureMultiLibs(ok=>{ try{ if(window.QRCode) new QRCode(document.getElementById('qr-box'),{text:_shareUrl,width:190,height:190,colorDark:'#a21caf'}); else throw 0; }catch(e){ const qb=document.getElementById('qr-box'); if(qb) qb.innerHTML='<span class="text-xs text-slate-400">No se pudo dibujar el QR — usa el botón de copiar enlace.</span>'; } }); }
+  else { const qb=document.getElementById('qr-box'); if(qb) qb.innerHTML='<span class="text-5xl">💬</span>'; }
+}
 function openMulti(boxId){
   // 1) si hay código pegado en el recuadro, se usa ESE quiz (diálogos u otro generado por la IA)
   const raw=(document.getElementById(boxId||'import-input')||{}).value||'';
@@ -1153,6 +1196,10 @@ function showWordPopup(el){
   document.getElementById('wp-es').textContent = esMsg;
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
   document.getElementById('wp-pron').textContent = (g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
+  // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
+  const kSrc=norm(word); let srcMsg='';
+  if(g){ if(extraGlossary[kSrc]) srcMsg='📌 significado del quiz actual (contexto)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes anteriores'; else srcMsg='📚 biblioteca de la app'; }
+  document.getElementById('wp-src').textContent=srcMsg;
   const ph=findPhrase(el); const phEl=document.getElementById('wp-phrase');
   if(ph){
     const others=ph.frase.split(/\s+/).filter(x=>norm(x)!==norm(word)).join(' ');
@@ -1531,10 +1578,12 @@ function renderLectura(q){
     const speakers=[...new Set(q.dialogue.map(l=>l.quien).filter(Boolean))];
     const box=document.createElement('div'); box.className='bg-amber-50/70 border border-amber-200 rounded-2xl p-3 md:p-4 space-y-3 shadow-inner';
     q.dialogue.forEach(l=>{
+      // estilo chat: persona 1 en AZUL (izquierda), persona 2 en VERDE (derecha)
       const isB = speakers.length>1 && l.quien===speakers[1];
-      const row=document.createElement('div'); row.className='rounded-xl p-2.5 '+(isB?'bg-fuchsia-50 border border-fuchsia-100':'bg-white border border-slate-100');
+      const row=document.createElement('div');
+      row.className='rounded-2xl p-2.5 border-2 max-w-[92%] md:max-w-[85%] '+(isB?'bg-green-50 border-green-200 ml-auto':'bg-blue-50 border-blue-200 mr-auto');
       let h='';
-      if(l.quien) h+='<div class="text-xs font-bold '+(isB?'text-fuchsia-600':'text-teal-600')+' mb-0.5">'+(isB?'🟣 ':'🟢 ')+escapeHtml(l.quien)+'</div>';
+      if(l.quien) h+='<div class="text-xs font-bold '+(isB?'text-green-700':'text-blue-700')+' mb-0.5">'+(isB?'🟢 ':'🔵 ')+escapeHtml(l.quien)+'</div>';
       h+='<div class="text-base md:text-lg font-medium text-slate-800 leading-snug">'+wordSpanify(l.en)+'</div>';
       if(l.pron) h+='<div class="text-sm text-purple-700 italic">🗣️ '+escapeHtml(l.pron)+'</div>';
       row.innerHTML=h;
@@ -1627,8 +1676,20 @@ document.getElementById('import-file').addEventListener('change', async e=>{ con
 // Arranque: estudiante activo, avance pendiente, guardados y ranking
 selectStudent(getName()||getStudents()[0]);
 renderResume(); renderSaved(); renderRanking();
-// Si abriste un enlace de invitación (?sala=ID), entras como invitado
+// Si abriste un enlace de invitación (?sala=ID), entras como invitado (modo en vivo)
 (function(){ try{ const sala=new URLSearchParams(location.search).get('sala'); if(sala){ guestJoin(sala); } }catch(e){} })();
+// Si abriste un enlace compartido (#d=...), cargas el MISMO diálogo (pantalla duplicada)
+(function(){
+  try{
+    if(location.hash && location.hash.indexOf('#d=')===0){
+      const payload=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))));
+      if(payload && Array.isArray(payload.q) && payload.q.length){
+        quiz=payload.q; customQuestions=quiz; extraGlossary=payload.g||{}; extraPhrases=payload.f||{}; learnDict(payload.g,payload.f);
+        launchQuiz(payload.t||'Diálogo compartido');
+      }
+    }
+  }catch(e){}
+})();
 </script>
 </body>
 </html>

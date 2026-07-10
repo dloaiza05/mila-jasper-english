@@ -75,8 +75,51 @@
             </select>
           </div>
           <div class="md:col-span-2">
-            <p class="text-sm font-bold text-slate-700 mb-2">✏️ Tema</p>
-            <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="Ej: verbo to be / pasado simple / vocabulario de carpintería"/>
+            <p class="text-sm font-bold text-slate-700 mb-2">📚 Tema — elige del curso (A1 → B2) o escribe el tuyo</p>
+            <select id="gen-course" onchange="onCourseSel()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none mb-2">
+              <option value="">— Elige un tema del curso —</option>
+              <optgroup label="🟢 A1 · Principiante (aquí se empieza)">
+                <option>Verb To Be — am/is/are (A1)</option>
+                <option>Subject Pronouns — I, you, he... (A1)</option>
+                <option>Articles — a/an/the (A1)</option>
+                <option>Plurals — regular and irregular (A1)</option>
+                <option>Possessive Adjectives — my/your/his (A1)</option>
+                <option>Present Simple (A1)</option>
+                <option>Adjectives — descriptions (A1)</option>
+                <option>Numbers, Days and Dates (A1)</option>
+                <option>There is / There are (A1)</option>
+                <option>Prepositions of Place — in/on/at/under (A1)</option>
+                <option>Family and People Vocabulary (A1)</option>
+                <option>Daily Routines (A1)</option>
+              </optgroup>
+              <optgroup label="🟡 A2 · Básico">
+                <option>Past Simple — regular and irregular verbs (A2)</option>
+                <option>Present Continuous — -ing (A2)</option>
+                <option>Countable and Uncountable — some/any (A2)</option>
+                <option>Comparatives and Superlatives (A2)</option>
+                <option>Adverbs of Frequency — always/never (A2)</option>
+                <option>Future — going to / will (A2)</option>
+                <option>Object Pronouns — me/him/her (A2)</option>
+                <option>Question Words — Wh questions (A2)</option>
+              </optgroup>
+              <optgroup label="🟠 B1 · Intermedio">
+                <option>Present Perfect (B1)</option>
+                <option>Past Continuous (B1)</option>
+                <option>Modals — can/could/should/must (B1)</option>
+                <option>First and Second Conditional (B1)</option>
+                <option>Passive Voice — basics (B1)</option>
+                <option>Phrasal Verbs — common (B1)</option>
+                <option>Relative Clauses — who/which/that (B1)</option>
+              </optgroup>
+              <optgroup label="🔴 B2 · Intermedio alto">
+                <option>Present Perfect Continuous (B2)</option>
+                <option>Third Conditional (B2)</option>
+                <option>Reported Speech (B2)</option>
+                <option>Advanced Passive Voice (B2)</option>
+                <option>Wish / If only (B2)</option>
+              </optgroup>
+            </select>
+            <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="✏️ O escribe tu propio tema aquí (ej: vocabulario de carpintería)"/>
           </div>
         </div>
         <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz</button>
@@ -392,6 +435,15 @@ function phonHTML(text){
   });
   return html;
 }
+/* Traducción de una ORACIÓN completa: 1º la que dio la IA (sentMap); si no hay,
+   se arma palabra por palabra con la biblioteca (marcada como aproximada). */
+function sentenceTrans(sent, sentMap){
+  const k=norm(sent);
+  if(sentMap && sentMap[k]) return {es:sentMap[k].es, pron:sentMap[k].pron||'', src:'🤖 traducción de la IA'};
+  const parts=[];
+  String(sent).split(/\s+/).forEach(t=>{ const w=t.replace(/[^A-Za-z']/g,''); if(!w) return; const g=lookupWord(w); if(g) parts.push(w.toLowerCase()+'='+String(g.es).split('/')[0].trim()); });
+  return {es: parts.length? parts.join(' · ') : 'Sin traducción disponible para esta frase.', pron:'', src: parts.length?'≈ palabra por palabra (biblioteca)':''};
+}
 function fillBlanks(tpl, answers){ let i=0; return String(tpl).replace(/_{2,}/g, ()=> (answers[i++]!=null?answers[i-1]:'___')); }
 function makeOptions(correct, pool, rGood, rBad){
   const wrongs=shuffle(pool.filter(x=>x.toLowerCase()!==correct.toLowerCase())).slice(0,3);
@@ -555,6 +607,7 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
  ['sentence','oración','sustantivo','séntens'],['phrase','frase','sustantivo','fréis'],['word','palabra','sustantivo','uérd'],
  ['question','pregunta','sustantivo','cuéstion'],['answer','respuesta','sustantivo','ánser'],['example','ejemplo','sustantivo','igsámpol'],
  ['level','nivel (A1, A2, B1...)','sustantivo','lével'],['beginner','principiante','sustantivo','biguíner'],['conversation','conversación','sustantivo','converséishon'],
+ ['true','verdadero','adjetivo','tru'],['false','falso','adjetivo','fols'],['complete','completa(r)','verbo','complít'],['choose','elige / escoger','verbo','chus'],['correct','correcto','adjetivo','corréct'],
  // formas -ing (gerundio: acción en curso)
  ['going','yendo (gerundio de go)','verbo -ing','góuing'],['working','trabajando','verbo -ing','uérking'],['playing','jugando','verbo -ing','pléing'],
  ['eating','comiendo','verbo -ing','íting'],['drinking','bebiendo','verbo -ing','drínking'],['making','haciendo','verbo -ing','méiking'],
@@ -827,9 +880,10 @@ B) POR FORMATO:
 - "huecos": igual que completar + "banco" con las respuestas correctas Y 2-4 fichas distractoras.
 - "ordenar": "palabras" en el ORDEN CORRECTO (la app las revuelve sola).
 - "emparejar": "pares" de 3 a 6 elementos {"en","es"}.
-- "lectura": "texto" de 1 a 8 párrafos cortos separados por \n\n + "traduccion" COMPLETA del texto + "glosario" con TODAS las palabras difíciles del texto + "frases" del texto + "preguntas" (2 a 5 preguntas de comprensión sobre el texto, cada una CUMPLIENDO también todas estas reglas).
+- "lectura": "texto" de 1 a 8 párrafos cortos separados por \n\n + "traduccion" COMPLETA del texto + "oraciones" OBLIGATORIO (la traducción de CADA oración del texto: [{"en":"oración exacta en inglés","es":"su traducción","pron":"su pronunciación español latino"}]) + "glosario" con TODAS las palabras difíciles + "frases" + "preguntas" (2 a 5 de comprensión, cada una CUMPLIENDO todas estas reglas).
 
 C) CALIDAD DE LA INFORMACIÓN (obligatoria y extensa):
+- TODO EN INGLÉS: los enunciados ("q"), los textos y las opciones van EN INGLÉS — el alumno estudia inglés. El español va SOLO en "traduccion", "razon", "dato" y el glosario. (Ej: "q":"Complete the sentence: She ___ a teacher." y su "traduccion":"Completa la oración: Ella es profesora.")
 - Inglés 100% correcto y natural; español latino claro.
 - "traduccion", "pronunciacion" (español latino), "dato" (extenso) y "glosario" (TODAS las palabras, inglés y español) en CADA pregunta. Ninguna palabra sin traducción.
 - La "razon" enseña: por qué es esa respuesta y no las otras, con qué se une en la frase y qué significa.
@@ -985,7 +1039,10 @@ function normalizeImported(text){
     }
     if(fmt.indexOf('lect')>=0 || fmt==='reading' || fmt==='passage' || ((fmt==='texto'||fmt==='text') && (it.texto||it.text))){
       const text=it.texto||it.text||it.passage||it.parrafos||it['párrafos']; if(!text) throw new Error('La pregunta '+(i+1)+' (lectura) necesita "texto".');
-      return Object.assign({formato:'lectura', q:String(q), text:Array.isArray(text)?text.join('\n\n'):String(text)}, meta, {sentence:''});
+      // "oraciones": traducción por oración que manda la IA -> mapa normalizado
+      const sentMap={}; const sents=it.oraciones||it.sentences;
+      if(Array.isArray(sents)) sents.forEach(s=>{ const en=s.en||s.ingles||s.english; const es=s.es||s.traduccion||s['traducción']; if(en&&es) sentMap[norm(en)]={es:String(es), pron:String(s.pron||s.pronunciacion||'')}; });
+      return Object.assign({formato:'lectura', q:String(q), text:Array.isArray(text)?text.join('\n\n'):String(text), sentMap:sentMap}, meta, {sentence:''});
     }
     if(fmt.indexOf('empar')>=0||fmt.indexOf('unir')>=0||fmt.indexOf('match')>=0){
       const raw=it.pares||it.parejas||it.pairs; if(!Array.isArray(raw)||raw.length<2) throw new Error('La pregunta '+(i+1)+' (emparejar) necesita "pares".');
@@ -1421,6 +1478,8 @@ function switchTab(t){
   else { pd.classList.add('hidden'); pn.classList.remove('hidden'); tn.className=on+'bg-violet-600 text-white'; td.className=off; }
   renderStudents();
 }
+/* Al elegir un tema del curso, se escribe en la casilla (editable) */
+function onCourseSel(){ const s=document.getElementById('gen-course'); const t=document.getElementById('gen-topic'); if(s && s.value){ t.value=s.value; } }
 /* Instructivo del QUIZ NORMAL (los 8 formatos, sin lectura ni diálogo) */
 function generatePrompt(){
   const name=getName()||'el estudiante';
@@ -1535,12 +1594,13 @@ function renderMultiple(q,ctx){
 /* verdadero / falso */
 function renderVF(q,ctx){
   const box=document.createElement('div'); ctx.area.appendChild(box);
-  [['✅ Verdadero',true],['❌ Falso',false]].forEach((pair,i)=>{
-    const b=document.createElement('button'); b.className='w-full p-4 rounded-xl border-2 border-slate-200 bg-white font-bold btn-option text-base '+(i>0?'mt-2':''); b.textContent=pair[0];
+  [['True',true,'verdadero · tru'],['False',false,'falso · fols']].forEach((pair,i)=>{
+    const b=document.createElement('button'); b.className='w-full p-4 rounded-xl border-2 border-slate-200 bg-white font-bold btn-option text-base '+(i>0?'mt-2':''); b.dataset.val=String(pair[1]);
+    b.innerHTML=(pair[1]?'✅ ':'❌ ')+pair[0]+' <span class="text-xs text-slate-400 font-normal">('+pair[2]+')</span>';
     b.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(x=>{x.disabled=true;x.classList.add('btn-disabled');});
       const ok=(pair[1]===q.answer); b.classList.add(ok?'btn-selected-correct':'btn-selected-incorrect');
-      if(!ok){ buttons.forEach(x=>{ if((x.textContent.indexOf('Verdadero')>=0)===q.answer) x.classList.add('bg-green-100','border-green-400'); }); }
-      ctx.answered=true; ctx.done(ok, q.r||(ok?'¡Correcto!':('La respuesta correcta es: '+(q.answer?'Verdadero':'Falso')+'.')), q);
+      if(!ok){ buttons.forEach(x=>{ if((x.dataset.val==='true')===q.answer) x.classList.add('bg-green-100','border-green-400'); }); }
+      ctx.answered=true; ctx.done(ok, q.r||(ok?'¡Correcto!':('La respuesta correcta es: '+(q.answer?'True (verdadero)':'False (falso)')+'.')), q);
     };
     box.appendChild(b);
   });
@@ -1635,8 +1695,23 @@ function renderLectura(q){
     const tip=document.createElement('p'); tip.className='text-xs text-slate-400 mt-2 text-center'; tip.textContent='💡 Mantén presionada cualquier palabra para ver su traducción. Cada línea tiene su pronunciación y su traducción oculta.';
     textCard.appendChild(tip);
   } else {
-    textCard.innerHTML='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-3 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+paras.map(p=>'<p>'+wordSpanify(p)+'</p>').join('')+'</div>'+
-      '<p class="text-xs text-slate-400 mt-2 text-center">💡 Mantén presionada cualquier palabra del texto para ver su traducción.</p>';
+    // cada ORACIÓN lleva su botón ＝ para ver la traducción del tramo completo
+    let si=0; const sentList=[];
+    const inner=paras.map(p=>{
+      const sents=p.split(/(?<=[.!?])\s+/).filter(Boolean);
+      return '<p>'+sents.map(s=>{ sentList.push(s); return '<span class="sent-wrap">'+wordSpanify(s)+' <button class="s-eq align-middle text-[11px] font-bold bg-blue-100 text-blue-700 rounded px-1.5 hover:bg-blue-200" data-si="'+(si++)+'" title="Ver traducción de esta frase">＝</button></span><span class="s-tr hidden block text-sm text-blue-900 bg-blue-50 border-l-4 border-blue-300 rounded-r px-2 py-1 my-1"></span> '; }).join('')+'</p>';
+    }).join('');
+    textCard.innerHTML='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-3 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+inner+'</div>'+
+      '<p class="text-xs text-slate-400 mt-2 text-center">💡 Toca una palabra para su significado · toca ＝ para la traducción de la frase completa.</p>';
+    textCard.querySelectorAll('.s-eq').forEach(btn=>{
+      btn.onclick=(ev)=>{ ev.stopPropagation();
+        const tr=btn.closest('.sent-wrap').nextElementSibling;
+        if(!tr.classList.contains('hidden')){ tr.classList.add('hidden'); return; }
+        const st=sentenceTrans(sentList[parseInt(btn.dataset.si,10)], q.sentMap);
+        tr.innerHTML='📜 '+escapeHtml(st.es)+(st.pron?' <span class="text-purple-700 italic">('+escapeHtml(st.pron)+')</span>':'')+' <span class="text-[10px] text-slate-400">'+st.src+'</span>';
+        tr.classList.remove('hidden');
+      };
+    });
   }
   cont.appendChild(textCard);
   if(q.trad && !(q.dialogue&&q.dialogue.length)){

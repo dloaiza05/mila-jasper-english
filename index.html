@@ -363,13 +363,15 @@
       <!-- DERECHA: quiz listo por tema -->
       <div class="bg-teal-50/50 rounded-xl p-3 border border-teal-100">
         <h4 class="font-extrabold text-teal-700 mb-1">🎯 Elige un quiz listo</h4>
-        <p class="text-xs text-slate-500 mb-2">Sin pegar nada: escoge tema, tipo y cantidad, y a jugar. Las preguntas se barajan cada vez.</p>
-        <p class="text-xs font-bold text-slate-700 mb-1">📚 Tema</p>
+        <p class="text-xs text-slate-500 mb-2">Sin pegar nada: escoge uno o VARIOS temas para mezclar, el tipo y la cantidad. Las preguntas se barajan cada vez.</p>
+        <p class="text-xs font-bold text-slate-700 mb-1">📚 Temas — puedes elegir varios para mezclar</p>
         <select id="ready-course" onchange="onReadyCourse()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-teal-400 outline-none mb-2"></select>
         <div class="flex gap-2">
-          <input id="ready-topic" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();playReady();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-teal-400 outline-none" placeholder="✏️ O escribe tu propio tema"/>
+          <input id="ready-topic" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();addReadyTopic();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-teal-400 outline-none" placeholder="✏️ O escribe tu tema y toca ➕"/>
+          <button type="button" onclick="addReadyTopic()" title="Agregar tema a la mezcla" class="bg-teal-100 hover:bg-teal-200 text-teal-700 font-extrabold rounded-xl px-4 text-lg">➕</button>
         </div>
-        <p class="text-xs font-bold text-slate-700 mb-1 mt-3">🧩 Tipo de pregunta</p>
+        <div id="ready-chips" class="flex flex-wrap gap-1.5 mt-2"></div>
+        <p class="text-xs font-bold text-slate-700 mb-1 mt-3">🧩 Tipo de pregunta <span class="font-normal text-slate-400">(solo se activan los que el tema tiene)</span></p>
         <div id="ready-fmts" class="flex flex-wrap gap-1.5"></div>
         <p class="text-xs font-bold text-slate-700 mb-1 mt-3">🔢 Cantidad</p>
         <div id="ready-counts" class="flex flex-wrap gap-1.5"></div>
@@ -1164,29 +1166,40 @@ function grammarMultiple(pool){
   if(!opts.some(o=>!o.c)){ const sd=seeds[1]; if(sd.o&&sd.o.length&&sd.s.indexOf(sd.a)>=0){ opts[1]={t:sd.s.replace(sd.a,pick(sd.o)),c:0,r:'❌ Mal: lo correcto es "'+sd.s+'".'}; } }
   return {formato:'multiple', q:'Marca TODAS las oraciones CORRECTAS:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Marca todas las oraciones que estén bien'};
 }
+/* EMPAREJAR para gramática: une la frase en inglés con su traducción (siempre correcto) */
+function grammarMatch(pool){
+  const uniq=[]; const seenT=new Set();
+  shuffle(pool).forEach(s=>{ if(s.s&&s.t&&!seenT.has(s.t)){ seenT.add(s.t); uniq.push(s); } });
+  const seeds=uniq.slice(0,4); if(seeds.length<3) return null;
+  return {formato:'emparejar', q:'Une cada frase en inglés con su traducción:', pairs:seeds.map(s=>({a:s.s,b:s.t})), trad:seeds.map(s=>s.s+' = '+s.t).join(' · '), pron:'', form:'', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Une la frase con su significado', concepto:conceptFor(seeds[0])};
+}
 /* Formatos que puede producir cada tipo de pack */
-const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar','multiple'];
+const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar'];
 const VOCAB_FMTS=['opcion','emparejar','escribir','vf','multiple'];
-/* Construye un quiz de un tema: pack curado o generador seguro; filtra por tipo; baraja; hasta count */
-function buildTopicQuiz(topicLabel, count, typeSet){
-  count=Math.max(1,Math.min(70,parseInt(count,10)||40));
+/* Motor de un tema: devuelve qué formatos puede producir y una función compose(fmt) */
+function topicEngine(topicLabel){
   const pack=TOPIC_PACKS[topicLabel];
+  if(pack && pack.kind==='vocab'){ const L=pack.list, tm=pack.tema||topicLabel; return {availFmts:VOCAB_FMTS, compose:(f)=> f==='multiple'?vocabMultiple(L,tm):composeVocab(L,f,tm)}; }
+  if(pack){ const pool=pack.seeds; return {availFmts:GRAMMAR_FMTS, compose:(f)=> f==='multiple'?grammarMultiple(pool): f==='emparejar'?grammarMatch(pool): composeGrammar(pick(pool),f)}; }
+  const sf=safeTopicPack(topicLabel); return {availFmts:VOCAB_FMTS, compose:(f)=> f==='multiple'?vocabMultiple(sf.list,sf.tema):composeVocab(sf.list,f,sf.tema)};
+}
+/* Une varios temas + filtra por tipo (estricto: solo produce lo pedido) + baraja */
+function buildMixedQuiz(topics, count, typeSet){
+  count=Math.max(1,Math.min(70,parseInt(count,10)||40));
   const wantAll=!typeSet || typeSet.has('todos') || typeSet.size===0;
-  let compose, pool, availFmts;
-  if(pack && pack.kind==='vocab'){ availFmts=VOCAB_FMTS; const L=pack.list; compose=(f)=> f==='multiple'?vocabMultiple(L,pack.tema||topicLabel):composeVocab(L,f,pack.tema||topicLabel); }
-  else if(pack){ availFmts=GRAMMAR_FMTS.slice(); pool=pack.seeds; compose=(f)=> f==='multiple'?grammarMultiple(pool):composeGrammar(pick(pool),f); }
-  else { const sf=safeTopicPack(topicLabel); availFmts=VOCAB_FMTS; compose=(f)=> f==='multiple'?vocabMultiple(sf.list,sf.tema):composeVocab(sf.list,f,sf.tema); }
-  let fmts = wantAll ? availFmts.slice() : availFmts.filter(f=>typeSet.has(f));
-  // 'lectura' pedida: si el pack no la trae, no hay lectura para ese tema; se cae a los formatos disponibles
-  if(!fmts.length) fmts=availFmts.slice();
-  const out=[], seen=new Set(); let tries=0, maxTries=count*80;
+  const engines={}, pairs=[];
+  topics.forEach(t=>{ const e=topicEngine(t); engines[t]=e; const fs= wantAll? e.availFmts : e.availFmts.filter(f=>typeSet.has(f)); fs.forEach(f=>pairs.push([t,f])); });
+  if(!pairs.length) return []; // el tipo pedido no existe para esos temas → no inventamos
+  const out=[], seen=new Set(); let tries=0, maxTries=count*100;
   while(out.length<count && tries<maxTries){ tries++;
-    const f=pick(fmts); const q=compose(f); if(!q) continue;
+    const pr=pick(pairs); const q=engines[pr[0]].compose(pr[1]); if(!q) continue;
     const key=(q.formato||'')+'|'+(q.q||'')+'|'+(q.template||'')+'|'+(q.order?q.order.join(','):'')+'|'+(q.opts?q.opts.map(o=>o.t).join('~'):'')+'|'+(q.pairs?q.pairs.map(p=>p.a).join(','):'');
     if(seen.has(key)) continue; seen.add(key); out.push(q);
   }
   return shuffle(out);
 }
+/* Un solo tema = mezcla de uno */
+function buildTopicQuiz(topicLabel, count, typeSet){ return buildMixedQuiz([topicLabel], count, typeSet); }
 /* Generador SEGURO para temas sin pack: arma una lista de vocabulario del GLOSARIO
    (filtrada por el tipo de palabra si el tema lo sugiere) -> preguntas siempre correctas */
 const TOPIC_TIPO_HINT=[
@@ -2349,21 +2362,46 @@ function onCourseSelD(){ const s=document.getElementById('gen-course-d'); if(s &
 /* ============================================================
    PICKER DE QUIZ LISTO (juega sin pegar código)
 ============================================================ */
-const readyFmts=new Set(['todos']); let readyCount=40;
+const readyFmts=new Set(['todos']); let readyCount=40; const selReady=[];
 function initReadyPicker(){
   // clona la lista de temas del generador (135) al picker, con marca ⭐ si es curado a fondo
   const src=document.getElementById('gen-course'), dst=document.getElementById('ready-course');
-  if(src && dst){ dst.innerHTML=src.innerHTML; dst.querySelectorAll('option').forEach(o=>{ const v=o.value; o.setAttribute('value',v); if(v && TOPIC_PACKS[v]) o.textContent='⭐ '+o.textContent; }); const first=dst.querySelector('option'); if(first) first.textContent='— Elige un tema y juega —'; }
+  if(src && dst){ dst.innerHTML=src.innerHTML; dst.querySelectorAll('option').forEach(o=>{ const v=o.value; o.setAttribute('value',v); if(v && TOPIC_PACKS[v]) o.textContent='⭐ '+o.textContent; }); const first=dst.querySelector('option'); if(first) first.textContent='— Elige un tema (puedes varios) —'; }
   const srcD=document.getElementById('gen-course-d'), dstD=document.getElementById('ready-course-d');
   if(srcD && dstD){ dstD.innerHTML=srcD.innerHTML; dstD.querySelectorAll('option').forEach(o=>{ const v=o.value; o.setAttribute('value',v); if(v && DIALOG_PACKS[v]) o.textContent='⭐ '+o.textContent; }); const f=dstD.querySelector('option'); if(f) f.textContent='— Elige una situación lista —'; }
-  buildReadyFmtChips(); buildReadyCountChips(); updateReadySummary();
+  buildReadyFmtChips(); buildReadyCountChips(); renderReadyChips(); updateReadySummary();
+}
+/* Temas elegidos para el quiz listo (se pueden mezclar) */
+function renderReadyChips(){
+  const box=document.getElementById('ready-chips'); if(!box) return; box.innerHTML='';
+  selReady.forEach((t,i)=>{
+    const curado=!!TOPIC_PACKS[t];
+    const ch=document.createElement('span'); ch.className='inline-flex items-center gap-1.5 text-xs font-bold rounded-full px-2.5 py-1 border '+(curado?'bg-teal-100 text-teal-800 border-teal-200':'bg-slate-100 text-slate-700 border-slate-200');
+    const tx=document.createElement('span'); tx.textContent=(curado?'⭐ ':'')+t; ch.appendChild(tx);
+    const x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.title='Quitar'; x.className='font-extrabold text-teal-500 hover:text-red-600';
+    x.onclick=()=>{ selReady.splice(i,1); renderReadyChips(); buildReadyFmtChips(); updateReadySummary(); };
+    ch.appendChild(x); box.appendChild(ch);
+  });
+}
+function pushReady(val){ const v=String(val||'').replace(/^⭐\s*/,'').trim(); if(!v) return; if(!selReady.some(t=>t.toLowerCase()===v.toLowerCase())) selReady.push(v); renderReadyChips(); buildReadyFmtChips(); updateReadySummary(); }
+function onReadyCourse(){ const s=document.getElementById('ready-course'); if(s&&s.value){ pushReady(s.value); s.value=''; } }
+function addReadyTopic(){ const t=document.getElementById('ready-topic'); pushReady(t.value); t.value=''; }
+/* Formatos disponibles para los temas elegidos (unión) */
+function availableReadyFmts(){
+  if(!selReady.length) return new Set(GEN_FMTS.map(p=>p[0]));
+  const s=new Set(['todos']); selReady.forEach(t=>{ topicEngine(t).availFmts.forEach(f=>s.add(f)); }); return s;
 }
 function buildReadyFmtChips(){
   const box=document.getElementById('ready-fmts'); if(!box) return; box.innerHTML='';
-  GEN_FMTS.forEach(pair=>{ const k=pair[0], on=readyFmts.has(k);
+  const avail=availableReadyFmts();
+  // limpia de la selección los tipos que ya no están disponibles
+  [...readyFmts].forEach(f=>{ if(f!=='todos' && !avail.has(f)) readyFmts.delete(f); }); if(!readyFmts.size) readyFmts.add('todos');
+  GEN_FMTS.forEach(pair=>{ const k=pair[0], on=readyFmts.has(k), enabled=avail.has(k);
     const b=document.createElement('button'); b.type='button'; b.textContent=pair[1];
-    b.className='text-xs font-bold rounded-full px-3 py-1.5 border-2 transition '+(on?'bg-teal-600 text-white border-teal-600 shadow':'bg-white text-slate-600 border-slate-200 hover:border-teal-300');
-    b.onclick=()=>{ if(k==='todos'){ readyFmts.clear(); readyFmts.add('todos'); } else { readyFmts.delete('todos'); if(readyFmts.has(k)) readyFmts.delete(k); else readyFmts.add(k); if(!readyFmts.size) readyFmts.add('todos'); } buildReadyFmtChips(); updateReadySummary(); };
+    if(!enabled){ b.className='text-xs font-bold rounded-full px-3 py-1.5 border-2 border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'; b.disabled=true; b.title='Este tipo no está disponible para el/los tema(s) elegido(s)'; }
+    else { b.className='text-xs font-bold rounded-full px-3 py-1.5 border-2 transition '+(on?'bg-teal-600 text-white border-teal-600 shadow':'bg-white text-slate-600 border-slate-200 hover:border-teal-300');
+      b.onclick=()=>{ if(k==='todos'){ readyFmts.clear(); readyFmts.add('todos'); } else { readyFmts.delete('todos'); if(readyFmts.has(k)) readyFmts.delete(k); else readyFmts.add(k); if(!readyFmts.size) readyFmts.add('todos'); } buildReadyFmtChips(); updateReadySummary(); };
+    }
     box.appendChild(b);
   });
 }
@@ -2376,24 +2414,23 @@ function buildReadyCountChips(){
     box.appendChild(b);
   });
 }
-function readyTopic(){ const t=(document.getElementById('ready-topic').value||'').trim(); if(t) return t; const s=document.getElementById('ready-course'); return s&&s.value?String(s.value).replace(/^⭐\s*/,''):''; }
-function onReadyCourse(){ const s=document.getElementById('ready-course'); if(s&&s.value){ document.getElementById('ready-topic').value=''; } updateReadySummary(); }
 function updateReadySummary(){
   const el=document.getElementById('ready-summary'); if(!el) return;
-  const topic=readyTopic();
   let tipos; if(readyFmts.has('todos')) tipos='Variados'; else tipos=GEN_FMTS.filter(p=>readyFmts.has(p[0])).map(p=>p[1].replace(/^[^ ]+ /,'')).join(', ');
-  if(!topic){ el.innerHTML='🎯 Elige un tema (o escribe el tuyo) para jugar ya.'; return; }
-  const curado=!!TOPIC_PACKS[topic];
-  el.innerHTML='▶️ <b>'+readyCount+'</b> preguntas · Tipo: <b>'+tipos+'</b> · '+(curado?'⭐ quiz de profesor (a fondo, con trampitas)':'✅ generado del diccionario (vocabulario del tema)');
+  if(!selReady.length){ el.innerHTML='🎯 Elige uno o varios temas para jugar ya.'; return; }
+  const curados=selReady.filter(t=>TOPIC_PACKS[t]).length;
+  const temaTxt = selReady.length===1 ? selReady[0] : ('mezcla de '+selReady.length+' temas');
+  el.innerHTML='▶️ <b>'+readyCount+'</b> preguntas · Tipo: <b>'+tipos+'</b> · Tema: <b>'+escapeHtml(temaTxt)+'</b> · '+(curados===selReady.length?'⭐ profesor':(curados?('⭐×'+curados+' + '+ (selReady.length-curados)+' del diccionario'):'✅ del diccionario'));
 }
 function playReady(){
-  const topic=readyTopic();
-  if(!topic){ alert('🎯 Elige un tema del curso o escribe el tuyo.'); return; }
-  const q=buildTopicQuiz(topic, readyCount, readyFmts);
-  if(!q || !q.length){ alert('No pude armar preguntas de ese tema con ese tipo. Prueba con "Variados" o con otro tipo.'); return; }
+  const tIn=document.getElementById('ready-topic'); if(tIn && tIn.value.trim()){ addReadyTopic(); }
+  if(!selReady.length){ alert('🎯 Elige al menos un tema (del listado o escribe el tuyo y toca ➕).'); return; }
+  const q=buildMixedQuiz(selReady, readyCount, readyFmts);
+  if(!q || !q.length){ alert('Ese tipo de pregunta no está disponible para el/los tema(s) elegido(s). Elige otro tipo o deja "Todos".'); return; }
   quiz=q; customQuestions=quiz; extraGlossary={}; extraPhrases={};
-  const tipos=readyFmts.has('todos')?'':' · '+GEN_FMTS.filter(p=>readyFmts.has(p[0])).map(p=>p[0]).join('/');
-  launchQuiz(topic.replace(/^⭐ /,'')+' ('+q.length+' preguntas'+tipos+')');
+  const label = selReady.length===1 ? selReady[0] : ('Mezcla de '+selReady.length+' temas');
+  const tipos=readyFmts.has('todos')?'':' · '+[...readyFmts].join('/');
+  launchQuiz(label+' ('+q.length+' preguntas'+tipos+')');
 }
 function playReadyD(){
   const s=document.getElementById('ready-course-d'); const sit=s&&s.value?String(s.value).replace(/^⭐\s*/,''):'';

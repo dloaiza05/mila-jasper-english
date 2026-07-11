@@ -27,6 +27,15 @@
   .btn-selected-incorrect { background:#ef4444!important; color:#fff!important; border-color:#dc2626!important; }
   .btn-disabled { opacity:.6; cursor:not-allowed; }
   .chip { transition: all .12s; }
+  /* Tarjeta de CONCEPTO (mini-tabla/resumen del tema) */
+  .concept-box { background:#eef2ff; border:1px solid #c7d2fe; border-left:4px solid #6366f1; border-radius:.6rem; padding:.6rem .7rem; margin-top:.35rem; font-size:.82rem; color:#312e81; }
+  .concept-box .c-title { font-weight:800; color:#4338ca; display:block; margin-bottom:.35rem; }
+  .concept-box table { border-collapse:collapse; width:100%; margin:.25rem 0; }
+  .concept-box th, .concept-box td { border:1px solid #c7d2fe; padding:.2rem .45rem; text-align:left; }
+  .concept-box th { background:#e0e7ff; font-weight:800; }
+  .concept-box .c-key { color:#7c3aed; font-weight:800; }
+  .concept-box ul { margin:.15rem 0 .15rem 1rem; list-style:disc; }
+  .concept-box li { margin:.1rem 0; }
   .chip:hover:not(:disabled){ transform: translateY(-2px); }
   .scroll-soft::-webkit-scrollbar { width:8px; height:8px; }
   .scroll-soft::-webkit-scrollbar-thumb { background:#c7d2fe; border-radius:8px; }
@@ -558,6 +567,7 @@
           <div id="learn-cat-wrap"><span class="font-bold text-slate-700">🏷️ Tipo:</span> <span id="learn-cat" class="text-indigo-700"></span></div>
           <div id="learn-vocab-wrap"><span class="font-bold text-slate-700">📚 Palabras:</span> <span id="learn-vocab" class="text-teal-700"></span></div>
           <div id="learn-extra-wrap"><span class="font-bold text-slate-700">💡 Dato:</span> <span id="learn-extra" class="text-emerald-700"></span></div>
+          <div id="learn-concept-wrap" class="mt-1" style="display:none"><div id="learn-concept" class="concept-box"></div></div>
         </div>
       </div>
     </div>
@@ -1198,6 +1208,41 @@ function safeTopicPack(topicLabel){
 }
 /* Helpers para armar seeds gramaticales de forma compacta */
 function gseed(q,a,o,s,t,p,f,dato,tema,est){ return {q,a,o,s,t,p,f,dato:dato||'',tema:tema||'',est:est||''}; }
+/* ---- CONCEPTOS: mini-tabla/resumen por tema (el "por qué", como en un cuaderno). HTML estático seguro ---- */
+const TOPIC_CONCEPT={
+ 'Verb To Be':`<span class="c-title">📊 Verb TO BE (ser / estar)</span><table><tr><th>Sujeto</th><th>to be</th><th>Ejemplo</th></tr><tr><td>I</td><td class="c-key">am</td><td>I am busy</td></tr><tr><td>He / She / It</td><td class="c-key">is</td><td>She is happy</td></tr><tr><td>You / We / They</td><td class="c-key">are</td><td>They are here</td></tr></table>Un solo "to be" = <b>ser Y estar</b>. Dos o más sujetos → siempre <b>are</b>.`,
+ 'Subject Pronouns':`<span class="c-title">📊 Pronombres personales (sujeto)</span><table><tr><td>I = yo</td><td>you = tú</td></tr><tr><td>he = él</td><td>she = ella</td></tr><tr><td>it = eso (cosa/animal)</td><td>we = nosotros</td></tr><tr><td colspan="2">they = ellos / ellas</td></tr></table><b>I</b> siempre en MAYÚSCULA. <b>it</b> para cosas y animales, no personas.`,
+ 'Articles':`<span class="c-title">📊 Artículos a / an / the</span><ul><li><span class="c-key">a</span> + sonido de CONSONANTE: a dog, a table</li><li><span class="c-key">an</span> + sonido de VOCAL (a,e,i,o,u): an apple, an egg</li><li><span class="c-key">the</span> = el/la/los/las (algo específico)</li></ul>Mira la palabra que SIGUE, no el objeto.`,
+ 'Plurals':`<span class="c-title">📊 Plurales</span><table><tr><th>Regla</th><th>Ejemplo</th></tr><tr><td>Normal: + s</td><td>dog → dogs</td></tr><tr><td>s, x, ch, sh: + es</td><td>box → boxes</td></tr><tr><td>consonante + y → ies</td><td>baby → babies</td></tr><tr><td>f/fe → ves</td><td>knife → knives</td></tr><tr><td>Irregulares</td><td>man→men, child→children, foot→feet</td></tr></table>`,
+ 'Possessives':`<span class="c-title">📊 Adjetivos posesivos</span><table><tr><td>I → my</td><td>you → your</td></tr><tr><td>he → his</td><td>she → her</td></tr><tr><td>it → its</td><td>we → our</td></tr><tr><td colspan="2">they → their</td></tr></table>Ojo: <b>their</b> (su, de ellos) ≠ <b>there</b> (allá).`,
+ 'Demonstratives':`<span class="c-title">📊 this / that / these / those</span><table><tr><th></th><th>Singular</th><th>Plural</th></tr><tr><th>Cerca</th><td class="c-key">this</td><td class="c-key">these</td></tr><tr><th>Lejos</th><td class="c-key">that</td><td class="c-key">those</td></tr></table>`,
+ 'Present Simple':`<span class="c-title">📊 Presente simple (rutinas)</span><table><tr><th>Sujeto</th><th>Verbo</th></tr><tr><td>I / You / We / They</td><td class="c-key">verbo base</td></tr><tr><td>He / She / It</td><td class="c-key">verbo + s</td></tr></table>-o → +es (go→goes) · -ch/-sh/-x → +es (watch→watches) · cons.+y → ies (study→studies)`,
+ 'Present Simple neg/quest':`<span class="c-title">📊 Negativo y pregunta (do/does)</span><table><tr><th>Sujeto</th><th>Negativo</th><th>Pregunta</th></tr><tr><td>I/You/We/They</td><td class="c-key">don't</td><td class="c-key">Do</td></tr><tr><td>He/She/It</td><td class="c-key">doesn't</td><td class="c-key">Does</td></tr></table>Con does/doesn't el verbo va en BASE (sin -s): "Does he <b>work</b>?"`,
+ 'Third person -s':`<span class="c-title">📊 Tercera persona: -s / -es / -ies</span><ul><li>Normal: + s → works, lives</li><li>-o, -ch, -sh, -x, -ss: + es → goes, watches, washes</li><li>consonante + y → ies → study→studies, fly→flies</li></ul>Solo con <b>he / she / it</b>.`,
+ 'Can':`<span class="c-title">📊 Can / Can't (poder)</span><ul><li>Afirmativo: Sujeto + <span class="c-key">can</span> + verbo base (I can swim)</li><li>Negativo: <span class="c-key">can't</span> = cannot (I can't swim)</li><li>Pregunta: <span class="c-key">Can</span> + sujeto + verbo? (Can you help?)</li></ul>Igual para todos: she <b>can</b>, no "she cans".`,
+ 'Imperatives':`<span class="c-title">📊 Imperativo (órdenes)</span><ul><li>Afirmativo: verbo base → <b>Open</b> the door.</li><li>Negativo: <span class="c-key">Don't</span> + verbo → <b>Don't</b> run.</li></ul>No lleva sujeto (se sobreentiende "you").`,
+ 'Have got':`<span class="c-title">📊 Have got / Has got (tener)</span><table><tr><td>I/You/We/They</td><td class="c-key">have got</td></tr><tr><td>He/She/It</td><td class="c-key">has got</td></tr></table>= posesión. "I have got two cats."`,
+ 'There is/are':`<span class="c-title">📊 There is / There are (hay)</span><table><tr><td class="c-key">There is</td><td>+ singular / incontable</td></tr><tr><td class="c-key">There are</td><td>+ plural</td></tr></table>"There is a table" · "There are two dogs".`,
+ 'Prepositions of Place':`<span class="c-title">📊 Preposiciones de lugar</span><ul><li><span class="c-key">in</span> = dentro (in the box)</li><li><span class="c-key">on</span> = sobre (on the table)</li><li><span class="c-key">under</span> = debajo (under the chair)</li><li><span class="c-key">at</span> = en un punto (at home, at work)</li></ul>`,
+ 'Prepositions of Time':`<span class="c-title">📊 Preposiciones de tiempo</span><table><tr><td class="c-key">at</td><td>hora: at six</td></tr><tr><td class="c-key">on</td><td>día: on Monday</td></tr><tr><td class="c-key">in</td><td>mes/año/parte del día: in July, in the morning</td></tr></table>Excepción: <b>at night</b>.`,
+ 'Telling the Time':`<span class="c-title">📊 La hora</span><table><tr><td>3:00</td><td>three <span class="c-key">o'clock</span></td></tr><tr><td>3:15</td><td>a quarter <span class="c-key">past</span> three</td></tr><tr><td>3:30</td><td><span class="c-key">half</span> past three</td></tr><tr><td>2:45</td><td>a quarter <span class="c-key">to</span> three</td></tr></table>past = pasada · to = para la siguiente.`,
+ 'Connectors':`<span class="c-title">📊 Conectores básicos</span><ul><li><span class="c-key">and</span> = y (suma)</li><li><span class="c-key">but</span> = pero (contraste)</li><li><span class="c-key">or</span> = o (opción)</li></ul>`,
+ 'Question Order':`<span class="c-title">📊 Orden de la pregunta</span><ul><li>Con TO BE: <span class="c-key">Am/Is/Are</span> + sujeto? → "Are you ready?"</li><li>Con otros verbos: <span class="c-key">Do/Does</span> + sujeto + verbo base? → "Does she work?"</li></ul>`,
+ 'Numbers':`<span class="c-title">📊 Números — trampas</span><table><tr><th>Bien</th><th>Mal</th></tr><tr><td>forty (40)</td><td>fourty ✗</td></tr><tr><td>fourteen (14)</td><td>forteen ✗</td></tr></table>13 thirteen ≠ 30 thirty · 14 fourteen ≠ 40 forty.`,
+ 'Past Simple':`<span class="c-title">📊 Pasado simple (regulares)</span><ul><li>Normal: + ed → work→worked</li><li>-e: + d → live→lived</li><li>cons.+y → ied → study→studied</li><li>vocal+consonante: doble + ed → stop→stopped</li></ul>`,
+ 'Past Simple irregular':`<span class="c-title">📊 Pasado irregular (memorizar)</span><table><tr><td>go→went</td><td>make→made</td></tr><tr><td>have→had</td><td>buy→bought</td></tr><tr><td>find→found</td><td>see→saw</td></tr></table>NO usan -ed.`,
+ 'Was/Were':`<span class="c-title">📊 Was / Were (pasado de to be)</span><table><tr><td>I / He / She / It</td><td class="c-key">was</td></tr><tr><td>You / We / They</td><td class="c-key">were</td></tr></table>`,
+ 'Present Continuous':`<span class="c-title">📊 Presente continuo (-ing)</span><ul><li>am/is/are + verbo-ing (ahora)</li><li>-e: quita e → make→making</li><li>vocal+cons: doble → run→running</li></ul>`,
+ 'Comparatives':`<span class="c-title">📊 Comparativos</span><ul><li>Corto: + er + than → bigger than</li><li>Largo: more + adj + than → more difficult than</li><li>Irregular: good→better, bad→worse</li></ul>`,
+ 'Superlatives':`<span class="c-title">📊 Superlativos</span><ul><li>Corto: the + adj-est → the biggest</li><li>Largo: the most + adj → the most expensive</li><li>Irregular: the best, the worst</li></ul>`,
+ 'Future going to':`<span class="c-title">📊 Futuro: going to (planes)</span><table><tr><td>I</td><td class="c-key">am going to</td></tr><tr><td>He/She/It</td><td class="c-key">is going to</td></tr><tr><td>You/We/They</td><td class="c-key">are going to</td></tr></table>+ verbo base: "I am going to build."`,
+ 'Some/Any':`<span class="c-title">📊 some / any</span><ul><li><span class="c-key">some</span> en afirmativo: I have some water.</li><li><span class="c-key">any</span> en negativo y pregunta: I don't have any / Is there any?</li></ul>`,
+ 'Object Pronouns':`<span class="c-title">📊 Pronombres objeto</span><table><tr><td>I→me</td><td>you→you</td></tr><tr><td>he→him</td><td>she→her</td></tr><tr><td>we→us</td><td>they→them</td></tr></table>El sujeto hace la acción; el objeto la recibe.`,
+ 'Verb To Be neg/quest':`<span class="c-title">📊 TO BE — negativo y pregunta</span><table><tr><th>Sujeto</th><th>Negativo</th><th>Pregunta</th></tr><tr><td>I</td><td class="c-key">am not</td><td class="c-key">Am I?</td></tr><tr><td>He/She/It</td><td class="c-key">isn't</td><td class="c-key">Is ...?</td></tr><tr><td>You/We/They</td><td class="c-key">aren't</td><td class="c-key">Are ...?</td></tr></table>No existe "amn't". La pregunta pone el verbo PRIMERO.`,
+ 'Alphabet':`<span class="c-title">📊 Letras que engañan</span><table><tr><td>H = "aitch" (éich)</td><td>W = "double-u" (dábliu)</td></tr><tr><td>Y = "why" (uái)</td><td>J = "jay" (yéi)</td></tr><tr><td>G = "gee" (yi)</td><td>I = "eye" (ái)</td></tr></table>Deletrear: "How do you spell...?" → letra por letra.`,
+ 'Ordinals':`<span class="c-title">📊 Números ordinales</span><table><tr><td>1º first</td><td>2º second</td><td>3º third</td></tr><tr><td>4º fourth</td><td>5º fifth</td><td>6º sixth</td></tr></table>Del 4 en adelante casi todos: número + <b>th</b> (fourth, tenth). Irregulares: first, second, third.`
+};
+function conceptFor(q){ return (q&&q.tema&&TOPIC_CONCEPT[q.tema])||''; }
 /* ---- PACKS CURADOS (a fondo, con contexto de Diego). El resto de temas usa safeTopicPack ---- */
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', seeds:[
@@ -1523,6 +1568,30 @@ const TOPIC_PACKS={
     {en:'often',es:'a menudo',p:'ófen',c:'adverbio'},{en:'sometimes',es:'a veces',p:'sámtaims',c:'adverbio'},
     {en:'rarely',es:'rara vez',p:'rérli',c:'adverbio'},{en:'never',es:'nunca',p:'néver',c:'adverbio'},
     {en:'every day',es:'todos los días',p:'évri déi',c:'adverbio'},{en:'once a week',es:'una vez por semana',p:'uáns a uík',c:'adverbio'}
+  ]},
+  'Verb To Be — negatives and questions (A1)':{ kind:'grammar', seeds:[
+    gseed('I ___ a doctor. (no soy)','am not',['is not','are not','not am'],'I am not a doctor.','No soy doctor.','ái am not a dóctor','I → am not','La negación de "am" es "am not" (no hay "amn\'t").','Verb To Be neg/quest','Sujeto + am/is/are + not + complemento'),
+    gseed('She ___ at home. (no está)','is not',['am not','are not','not is'],'She is not at home.','Ella no está en casa.','shi is not at jóum','He/She/It → is not (isn\'t)','','Verb To Be neg/quest','Sujeto + is + not + complemento'),
+    gseed('They ___ tired. (no están)','are not',['is not','am not','not are'],'They are not tired.','Ellos no están cansados.','déi ar not táierd','You/We/They → are not (aren\'t)','','Verb To Be neg/quest','Sujeto + are + not + complemento'),
+    gseed('___ you a carpenter? (¿eres?)','Are',['Is','Am','Do'],'Are you a carpenter?','¿Eres carpintero?','ar iú a cárpenter','pregunta → verbo primero','Con to be la pregunta empieza con am/is/are.','Verb To Be neg/quest','Am/Is/Are + sujeto + complemento?'),
+    gseed('___ she your wife? (¿es?)','Is',['Are','Am','Does'],'Is she your wife?','¿Ella es tu esposa?','is shi iór uáif','he/she/it → Is','','Verb To Be neg/quest','Is + sujeto + complemento?'),
+    gseed('___ I late? (¿estoy?)','Am',['Is','Are','Do'],'Am I late?','¿Estoy tarde?','am ái léit','I → Am','','Verb To Be neg/quest','Am + I + complemento?')
+  ]},
+  'Alphabet and Spelling — How do you spell...? (A1)':{ kind:'grammar', seeds:[
+    gseed('The letter "H" is called ___','aitch',['hache','ache','eich'],'The letter H is called "aitch".','La letra H se dice "aitch".','de léter éich is éich','H → "aitch"','La H suena "éich", no "hache".','Alphabet','La letra ___ se dice ___'),
+    gseed('The letter "W" is called ___','double-u',['doble-u','uve doble','ve'],'The letter W is called "double-u".','La letra W se dice "double-u".','de léter dábliu is dábliu','W → "double-u"','','Alphabet','La letra ___ se dice ___'),
+    gseed('The letter "Y" is called ___','why',['ye','yi','i griega'],'The letter Y is called "why".','La letra Y se dice "why".','de léter uái is uái','Y → "why" (suena igual que why)','','Alphabet','La letra ___ se dice ___'),
+    gseed('The letter "J" is called ___','jay',['yota','jota','ja'],'The letter J is called "jay".','La letra J se dice "jay".','de léter yéi is yéi','J → "jay"','No confundir J (jay) con G (jee).','Alphabet','La letra ___ se dice ___'),
+    gseed('The letter "G" is called ___','gee',['ge','yi','gue'],'The letter G is called "gee".','La letra G se dice "gee".','de léter yi is yi','G → "gee"','','Alphabet','La letra ___ se dice ___'),
+    gseed('You spell "wood" like this: ___','W-O-O-D',['U-O-O-D','W-U-D','W-O-D'],'You spell "wood" W-O-O-D.','"wood" se deletrea W-O-O-D.','iú spel wud dábliu-óu-óu-di','wood = W-O-O-D','"wood" (madera) lleva doble O.','Alphabet','How do you spell ...?')
+  ]},
+  'Ordinal Numbers — first, second, third (A1)':{ kind:'vocab', tema:'Ordinals', list:[
+    {en:'first',es:'primero',p:'ferst',c:'ordinal'},{en:'second',es:'segundo',p:'sécond',c:'ordinal'},
+    {en:'third',es:'tercero',p:'zerd',c:'ordinal'},{en:'fourth',es:'cuarto',p:'forz',c:'ordinal'},
+    {en:'fifth',es:'quinto',p:'fifz',c:'ordinal'},{en:'sixth',es:'sexto',p:'sixz',c:'ordinal'},
+    {en:'seventh',es:'séptimo',p:'sévenz',c:'ordinal'},{en:'eighth',es:'octavo',p:'éitz',c:'ordinal'},
+    {en:'ninth',es:'noveno',p:'náinz',c:'ordinal'},{en:'tenth',es:'décimo',p:'tenz',c:'ordinal'},
+    {en:'eleventh',es:'undécimo',p:'ilévenz',c:'ordinal'},{en:'twentieth',es:'vigésimo',p:'tuéntiez',c:'ordinal'}
   ]}
 };
 /* ---- DIÁLOGOS PREDETERMINADOS (situaciones curadas). El resto sigue por instructivo ---- */
@@ -1836,7 +1905,7 @@ const ui={ qText:document.getElementById('question-text'), area:document.getElem
   feedback:document.getElementById('feedback-box'), fTitle:document.getElementById('feedback-title'), fRat:document.getElementById('feedback-rationale'),
   nextBtn:document.getElementById('next-btn'), hintBtn:document.getElementById('hint-btn'), hint:document.getElementById('hint-content'),
   hTrad:document.getElementById('hint-trad'), hPron:document.getElementById('hint-pron'), hExtra:document.getElementById('hint-extra'), hForm:document.getElementById('hint-form'),
-  learnSent:document.getElementById('learn-sentence'), learnTrad:document.getElementById('learn-trad'), learnPron:document.getElementById('learn-pron'), learnCat:document.getElementById('learn-cat'), learnExtra:document.getElementById('learn-extra'),
+  learnSent:document.getElementById('learn-sentence'), learnTrad:document.getElementById('learn-trad'), learnPron:document.getElementById('learn-pron'), learnCat:document.getElementById('learn-cat'), learnExtra:document.getElementById('learn-extra'), learnConcept:document.getElementById('learn-concept'),
   counter:document.getElementById('question-counter'), score:document.getElementById('score-counter'), progress:document.getElementById('progress-bar'), topicLabel:document.getElementById('topic-label') };
 function show(el,on){ el.style.display=on?'':'none'; }
 const FORMAT_LABELS={opcion:'🔘 Opción múltiple', multiple:'☑️ Varias correctas', vf:'✅❌ Verdadero / Falso', escribir:'⌨️ Escribe la respuesta', completar:'📝 Completa los espacios', huecos:'🧩 Completa con fichas', ordenar:'🔀 Ordena las palabras', emparejar:'🔗 Une las columnas', lectura:'📚 Lectura', dialogo:'💬 Diálogo'};
@@ -2435,7 +2504,7 @@ function finalizeSub(ok, exp, sq, fb){
   if(sq.pron) h+='<div><b>🗣️ Se pronuncia:</b> <i>('+escapeHtml(sq.pron)+')</i></div>';
   if(sq.cat) h+='<div><b>🏷️ Tipo:</b> '+escapeHtml(sq.cat)+'</div>';
   if(sq.extra) h+='<div><b>💡 Dato:</b> '+escapeHtml(sq.extra)+'</div>';
-  h+='</div>'; fb.innerHTML=h; fb.classList.remove('hidden');
+  h+='</div>'; const cpt=sq.concepto||conceptFor(sq); if(cpt) h+='<div class="concept-box">'+cpt+'</div>'; fb.innerHTML=h; fb.classList.remove('hidden');
 }
 
 /* opción múltiple (1 correcta) */
@@ -2650,6 +2719,7 @@ function finalize(ok, explanation, q){
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
   ui.learnSent.innerHTML=q.sentence?wordSpanify(q.sentence):''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
   const learnVocab=buildAutoHint(q); document.getElementById('learn-vocab').textContent=learnVocab;
+  const concept=q.concepto||conceptFor(q); ui.learnConcept.innerHTML=concept||''; show(document.getElementById('learn-concept-wrap'),!!concept);
   show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-vocab-wrap'),!!learnVocab); show(document.getElementById('learn-extra-wrap'),!!q.extra);
   saveProgress(idx+1);
   ui.feedback.classList.remove('hidden'); ui.nextBtn.textContent=idx<quiz.length-1?'Siguiente ➡️':'Ver resultados 🏆'; ui.nextBtn.classList.remove('hidden');

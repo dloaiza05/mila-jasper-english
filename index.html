@@ -1176,12 +1176,27 @@ function grammarMatch(pool){
 /* Formatos que puede producir cada tipo de pack */
 const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar'];
 const VOCAB_FMTS=['opcion','emparejar','escribir','vf','multiple'];
+/* Qué formatos puede REALMENTE producir un pack de gramática (según sus seeds) */
+function grammarAvail(pool){
+  const wc=s=>String(s.s||'').replace(/[.?!]+$/,'').split(/\s+/).filter(Boolean).length;
+  const f=new Set(['escribir','vf']);
+  if(pool.some(s=>s.o&&s.o.length)) f.add('opcion');
+  if(pool.some(s=>s.s&&s.s.indexOf(s.a)>=0)) f.add('completar');
+  if(pool.some(s=>s.o&&s.o.length&&s.s&&s.s.indexOf(s.a)>=0)) f.add('huecos');
+  if(pool.some(s=>{const w=wc(s);return w>=3&&w<=8;})) f.add('ordenar');
+  if(pool.length>=3) f.add('multiple');
+  if(pool.filter(s=>s.s&&s.t).length>=3) f.add('emparejar');
+  return ['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar'].filter(x=>f.has(x));
+}
+function vocabAvail(list){
+  const f=['opcion','escribir','vf']; if(list.length>=4){ f.push('multiple'); } if(list.length>=3){ f.push('emparejar'); } return f;
+}
 /* Motor de un tema: devuelve qué formatos puede producir y una función compose(fmt) */
 function topicEngine(topicLabel){
   const pack=TOPIC_PACKS[topicLabel];
-  if(pack && pack.kind==='vocab'){ const L=pack.list, tm=pack.tema||topicLabel; return {availFmts:VOCAB_FMTS, compose:(f)=> f==='multiple'?vocabMultiple(L,tm):composeVocab(L,f,tm)}; }
-  if(pack){ const pool=pack.seeds; return {availFmts:GRAMMAR_FMTS, compose:(f)=> f==='multiple'?grammarMultiple(pool): f==='emparejar'?grammarMatch(pool): composeGrammar(pick(pool),f)}; }
-  const sf=safeTopicPack(topicLabel); return {availFmts:VOCAB_FMTS, compose:(f)=> f==='multiple'?vocabMultiple(sf.list,sf.tema):composeVocab(sf.list,f,sf.tema)};
+  if(pack && pack.kind==='vocab'){ const L=pack.list, tm=pack.tema||topicLabel; return {availFmts:vocabAvail(L), compose:(f)=> f==='multiple'?vocabMultiple(L,tm):composeVocab(L,f,tm)}; }
+  if(pack){ const pool=pack.seeds; return {availFmts:grammarAvail(pool), compose:(f)=> f==='multiple'?grammarMultiple(pool): f==='emparejar'?grammarMatch(pool): composeGrammar(pick(pool),f)}; }
+  const sf=safeTopicPack(topicLabel); return {availFmts:vocabAvail(sf.list), compose:(f)=> f==='multiple'?vocabMultiple(sf.list,sf.tema):composeVocab(sf.list,f,sf.tema)};
 }
 /* Une varios temas + filtra por tipo (estricto: solo produce lo pedido) + baraja */
 function buildMixedQuiz(topics, count, typeSet){
@@ -1190,12 +1205,16 @@ function buildMixedQuiz(topics, count, typeSet){
   const engines={}, pairs=[];
   topics.forEach(t=>{ const e=topicEngine(t); engines[t]=e; const fs= wantAll? e.availFmts : e.availFmts.filter(f=>typeSet.has(f)); fs.forEach(f=>pairs.push([t,f])); });
   if(!pairs.length) return []; // el tipo pedido no existe para esos temas → no inventamos
-  const out=[], seen=new Set(); let tries=0, maxTries=count*100;
+  const out=[], seen=new Set(); let tries=0, maxTries=count*120;
+  // 1) primero junta preguntas ÚNICAS
   while(out.length<count && tries<maxTries){ tries++;
     const pr=pick(pairs); const q=engines[pr[0]].compose(pr[1]); if(!q) continue;
     const key=(q.formato||'')+'|'+(q.q||'')+'|'+(q.template||'')+'|'+(q.order?q.order.join(','):'')+'|'+(q.opts?q.opts.map(o=>o.t).join('~'):'')+'|'+(q.pairs?q.pairs.map(p=>p.a).join(','):'');
     if(seen.has(key)) continue; seen.add(key); out.push(q);
   }
+  // 2) si el tema/tipo tiene pocas variaciones, COMPLETA hasta la cantidad pedida (repite con opciones re-barajadas)
+  let guard=0;
+  while(out.length<count && guard<count*60){ guard++; const pr=pick(pairs); const q=engines[pr[0]].compose(pr[1]); if(q) out.push(q); }
   return shuffle(out);
 }
 /* Un solo tema = mezcla de uno */
@@ -2236,11 +2255,14 @@ function loadQuestion(){
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
-  // arriba: traducción general de la frase · abajo: pronunciación con enlaces (can‿ái)
+  // frase en inglés de referencia: la pregunta si es inglés; si el enunciado es instrucción en español (completar/huecos/ordenar), la oración objetivo
+  const engPhrase = phon(q.q) ? q.q : (q.sentence||'');
+  // arriba: traducción (oculta tras "Ver traducción") · abajo: pronunciación con enlaces (can‿ái)
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
-  const showTrad = q.trad && fmt!=='lectura' && fmt!=='dialogo' && phon(q.q); // solo si la pregunta es en inglés
+  const showTrad = q.trad && fmt!=='lectura' && fmt!=='dialogo';
   if(showTrad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
-  const qp=document.getElementById('q-pron'); const qphon=(fmt==='lectura'||fmt==='dialogo')?'':phonHTML(q.q);
+  const qp=document.getElementById('q-pron'); let qphon=(fmt==='lectura'||fmt==='dialogo')?'':phonHTML(engPhrase);
+  if(!qphon && q.pron) qphon=escapeHtml(q.pron); // respaldo: pronunciación autorada (vocabulario, etc.)
   if(qphon){ qp.innerHTML='🗣️ '+qphon; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
@@ -2335,7 +2357,7 @@ function renderTopicChips(arr, boxId, dial){
 }
 function pushTopic(arr, boxId, dial, val){ const v=String(val||'').trim(); if(!v) return; if(!arr.some(t=>t.toLowerCase()===v.toLowerCase())) arr.push(v); renderTopicChips(arr,boxId,dial); updateGenSummary(); }
 /* Fichas de CANTIDAD (segmento) sincronizadas con el select oculto #gen-count */
-const GEN_COUNTS=[10,20,30,40,50,70];
+const GEN_COUNTS=[10,20,30,40,50,60,70];
 function buildCountChips(){
   const box=document.getElementById('gen-counts'); if(!box) return; const cur=document.getElementById('gen-count').value; box.innerHTML='';
   GEN_COUNTS.forEach(n=>{

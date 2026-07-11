@@ -1044,9 +1044,9 @@ const EXTRA_FORMATS=[
   {formato:'huecos', q:'Complete by tapping the words:', template:'The ___ is ___.', answers:[['dog','cat'],['busy','happy']], bank:['dog','cat','busy','happy'], sentence:'The dog is busy.', trad:'El perro está ocupado (también vale: el gato está feliz, etc.).', pron:'de dog is bísi', form:'Sujeto (sustantivo) + is + adjetivo', cat:'', extra:'Cualquier combinación válida cuenta: dog/cat en el primer espacio, busy/happy en el segundo.'},
   {formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:['I','am','a','carpenter'], sentence:'I am a carpenter.', trad:'Yo soy carpintero.', pron:'ái am a cárpenter', form:'Sujeto + to be + complemento', cat:'', extra:'"carpenter" = carpintero.'},
   {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:[{a:'dog',b:'perro'},{a:'wood',b:'madera'},{a:'table',b:'mesa'},{a:'water',b:'agua'}], trad:'dog=perro · wood=madera · table=mesa · water=agua', pron:'', form:'Vocabulario básico.', cat:'', extra:''},
-  {formato:'lectura', q:'Lee este texto sobre un carpintero:',
-   text:"My name is Diego and I am a carpenter. I am 29 years old and I live in Soacha with my wife Leidy. Every day I wake up at six in the morning.\n\nI work with wood in my workshop. I make tables, chairs and kitchen cabinets. My clients are happy because my furniture is beautiful and strong.\n\nAt night I come back home and I study English. My cats Mila and Jasper are always at home. They are my best friends.",
-   trad:"Me llamo Diego y soy carpintero. Tengo 29 años y vivo en Soacha con mi esposa Leidy. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis gatos Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
+  {formato:'lectura', q:'Read this text about Diego:',
+   text:"My name is Diego and I am a driver. I am 29 years old and I live in Soacha with my wife Leidy. Every morning I wake up at five o'clock.\n\nI drive a truck between Soacha, Bogotá and Mosquera. I love technology and I fly a small drone on weekends. My cats Mila and Jasper are always at home.\n\nAt night I study English with Leidy. I also watch South Park. They are my best friends.",
+   trad:"Me llamo Diego y soy conductor. Tengo 29 años y vivo en Soacha con mi esposa Leidy. Todas las mañanas me despierto a las cinco.\n\nManejo un camión entre Soacha, Bogotá y Mosquera. Me encanta la tecnología y vuelo un dron pequeño los fines de semana. Mis gatos Mila y Jasper siempre están en casa.\n\nEn la noche estudio inglés con Leidy. También veo South Park. Ellos son mis mejores amigos.",
    pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".',
    subs:[
      {formato:'opcion', tema:'Reading Comprehension', q:'How old is Diego?',
@@ -1055,22 +1055,22 @@ const EXTRA_FORMATS=[
         {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 29, no 49.'},
         {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 29, no 19.'}]),
       sentence:'Diego is 29 years old.', trad:'Diego tiene 29 años.', pron:'Diego is tuénti-náin íars óuld', estructura:'Sujeto + verbo to be + edad', extra:'"years old" = años de edad.'},
-     {formato:'escribir', tema:'Reading Comprehension', q:'¿En qué material trabaja Diego? (una palabra en inglés)',
-      answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del texto', extra:'"wood" = madera.'},
-     {formato:'vf', tema:'Reading Comprehension', q:'"Diego wakes up at six in the morning" es correcto según el texto.',
-      answer:true, r:'Verdadero: el texto dice "Every day I wake up at six in the morning".', sentence:'Diego wakes up at six in the morning.', trad:'Diego se despierta a las seis de la mañana.', pron:'Diego uéiks ap at six in de mórning', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
+     {formato:'escribir', tema:'Reading Comprehension', q:'What vehicle does Diego drive? (one word in English)',
+      answer:'truck', respuestas:['truck','a truck'], sentence:'Diego drives a truck.', trad:'Diego maneja un camión.', pron:'Diego dráivs a trak', estructura:'Escribe el sustantivo del texto', extra:'"truck" = camión.'},
+     {formato:'vf', tema:'Reading Comprehension', q:'"Diego wakes up at five o\'clock" es correcto según el texto.',
+      answer:true, r:'Verdadero: el texto dice "Every morning I wake up at five o\'clock".', sentence:'Diego wakes up at five o\'clock.', trad:'Diego se despierta a las cinco.', pron:'Diego uéiks ap at fáiv oclók', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
    ]},
-  {formato:'dialogo', tema:'Conversation', q:'Lee la conversación en la carpintería:',
+  {formato:'dialogo', tema:'Conversation', q:'Read this conversation between two friends:',
    dialogue:[
-     {quien:'Client', en:'Good morning! Are you the carpenter?', pron:'gud mórning! ar iú de cárpenter?', es:'¡Buenos días! ¿Eres el carpintero?'},
-     {quien:'Diego', en:'Yes, I am. How can I help you?', pron:'iés, ái am. jáu can ái jelp iú?', es:'Sí, lo soy. ¿En qué te puedo ayudar?'},
-     {quien:'Client', en:'I need a new kitchen table.', pron:'ái nid a niú kíchen téibol.', es:'Necesito una mesa de cocina nueva.'},
-     {quien:'Diego', en:'No problem. I work with wood every day.', pron:'nóu próblem. ái uérk uíd wud évri déi.', es:'No hay problema. Trabajo con madera todos los días.'}
+     {quien:'Andrés', en:'Hi Diego! Where do you drive today?', pron:'jái Diego! uér du iú dráiv tudéi?', es:'¡Hola Diego! ¿Para dónde manejas hoy?'},
+     {quien:'Diego', en:'Hi! I drive to Bogotá and then to Mosquera.', pron:'jái! ái dráiv tu Bogotá and den tu Mosquera.', es:'¡Hola! Manejo a Bogotá y luego a Mosquera.'},
+     {quien:'Andrés', en:'Nice! Do you like your new drone?', pron:'náis! du iú láik iór niú dróun?', es:'¡Qué bien! ¿Te gusta tu dron nuevo?'},
+     {quien:'Diego', en:'Yes, I love it. I fly it on weekends.', pron:'iés, ái lav it. ái flái it on uíkends.', es:'Sí, me encanta. Lo vuelo los fines de semana.'}
    ],
    subs:[
-     {formato:'opcion', tema:'Conversation', q:'What does the client need?', opts:shuffle([{t:'A kitchen table',c:1,r:'✅ El cliente dice "I need a new kitchen table".'},{t:'A chair',c:0,r:'❌ No pidió una silla.'},{t:'A door',c:0,r:'❌ No pidió una puerta.'}]), sentence:'The client needs a kitchen table.', trad:'El cliente necesita una mesa de cocina.', pron:'de cláient nids a kíchen téibol', estructura:'Sujeto + verbo + complemento', extra:'"kitchen table" = mesa de cocina.'},
-     {formato:'vf', tema:'Conversation', q:'"Diego is the carpenter" es correcto según el diálogo.', answer:true, r:'Verdadero: Diego responde "Yes, I am" cuando le preguntan si es el carpintero.', sentence:'Diego is the carpenter.', trad:'Diego es el carpintero.', pron:'Diego is de cárpenter', estructura:'Verdadero o Falso según el diálogo', extra:'"carpenter" = carpintero.'},
-     {formato:'escribir', tema:'Conversation', q:'¿Con qué material trabaja Diego? (una palabra en inglés)', answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del diálogo', extra:'"wood" = madera.'}
+     {formato:'opcion', tema:'Conversation', q:'Where does Diego drive today?', opts:shuffle([{t:'To Bogotá and Mosquera',c:1,r:'✅ Diego dice "I drive to Bogotá and then to Mosquera".'},{t:'To Cali',c:0,r:'❌ No mencionó Cali.'},{t:'To the beach',c:0,r:'❌ No mencionó la playa.'}]), sentence:'Diego drives to Bogotá and Mosquera.', trad:'Diego maneja a Bogotá y Mosquera.', pron:'Diego dráivs tu Bogotá and Mosquera', estructura:'Sujeto + verbo + lugar', extra:'"drive to" = manejar hacia.'},
+     {formato:'vf', tema:'Conversation', q:'"Diego flies his drone on weekends" es correcto según el diálogo.', answer:true, r:'Verdadero: Diego dice "I fly it on weekends".', sentence:'Diego flies his drone on weekends.', trad:'Diego vuela su dron los fines de semana.', pron:'Diego fláis jis dróun on uíkends', estructura:'Verdadero o Falso según el diálogo', extra:'"weekend" = fin de semana.'},
+     {formato:'escribir', tema:'Conversation', q:'What technology toy does Diego fly? (one word in English)', answer:'drone', respuestas:['drone','a drone'], sentence:'Diego flies a drone.', trad:'Diego vuela un dron.', pron:'Diego fláis a dróun', estructura:'Escribe el sustantivo del diálogo', extra:'"drone" = dron.'}
    ]}
 ];
 // estructura GENÉRICA por formato (no revela la respuesta) para el quiz de ejemplo
@@ -1120,26 +1120,63 @@ function composeGrammar(seed, fmt){
   }
   return null;
 }
+/* Emojis por palabra (para que se entienda con imagen cuando no hay foto). Clave = inglés en minúscula. */
+const EMOJI_MAP={
+ // familia y personas
+ mother:'👩',father:'👨',brother:'👦',sister:'👧',son:'👶',daughter:'👧',wife:'👰',husband:'🤵',grandmother:'👵',grandfather:'👴',uncle:'👨',aunt:'👩',cousin:'🧑',child:'🧒',baby:'👶',family:'👨‍👩‍👧‍👦',friend:'🧑‍🤝‍🧑',friends:'👥',
+ // trabajos
+ carpenter:'🪚',teacher:'👩‍🏫',doctor:'👨‍⚕️',engineer:'👷',driver:'🚚',nurse:'👩‍⚕️',cook:'👨‍🍳',farmer:'👨‍🌾','police officer':'👮',waiter:'🧑‍🍳',student:'🧑‍🎓',seller:'🧑‍💼',
+ // colores y ropa
+ red:'🟥',blue:'🟦',green:'🟩',yellow:'🟨',black:'⬛',white:'⬜',brown:'🟫',shirt:'👕',pants:'👖',shoes:'👟',jacket:'🧥',hat:'🎩',dress:'👗',socks:'🧦',
+ // comida
+ bread:'🍞',milk:'🥛',coffee:'☕',water:'💧',apple:'🍎',chicken:'🍗',rice:'🍚',egg:'🥚',meat:'🥩',fish:'🐟',cheese:'🧀',sugar:'🍬',soup:'🍲',juice:'🧃',food:'🍽️',cake:'🍰',cakes:'🍰',pizza:'🍕',
+ // animales
+ dog:'🐕',cat:'🐈',bird:'🐦',horse:'🐎',cow:'🐄',rabbit:'🐇',mouse:'🐁',pig:'🐖',duck:'🦆',sheep:'🐑',
+ // casa
+ house:'🏠',home:'🏠',kitchen:'🍳',bedroom:'🛏️',bathroom:'🚽',table:'🪑',chair:'🪑',bed:'🛏️',door:'🚪',window:'🪟',closet:'🚪',shelf:'🗄️',drawer:'🗄️',sofa:'🛋️',wall:'🧱',floor:'🔲',
+ // clima
+ sunny:'☀️',rainy:'🌧️',cloudy:'☁️',windy:'🌬️',cold:'🥶',hot:'🥵',warm:'🌡️',rain:'🌧️',sun:'☀️',wind:'🌬️',snow:'❄️',storm:'⛈️',
+ // lugares
+ school:'🏫',hospital:'🏥',park:'🌳',store:'🏬',market:'🛒',bank:'🏦',church:'⛪',restaurant:'🍽️',street:'🛣️',square:'🏛️',pharmacy:'💊',bakery:'🥖',
+ // sentimientos
+ happy:'😄',sad:'😢',tired:'😫',angry:'😠',scared:'😨',excited:'🤩',bored:'😐',nervous:'😰',hungry:'🍽️',thirsty:'🥤',sick:'🤒',proud:'😎',
+ // transporte
+ car:'🚗',bus:'🚌',taxi:'🚕',bike:'🚲',motorcycle:'🏍️',train:'🚆',plane:'✈️',truck:'🚚',boat:'⛵',subway:'🚇',drone:'🛸',
+ // meses y estaciones
+ january:'❄️',february:'💝',march:'🌱',april:'🌧️',may:'🌸',june:'☀️',july:'🏖️',august:'🌻',summer:'🏖️',winter:'⛄',spring:'🌷',autumn:'🍂',
+ // hobbies / verbos
+ read:'📖',cook:'👨‍🍳',dance:'💃',sing:'🎤',paint:'🎨',travel:'✈️','play football':'⚽','listen to music':'🎧','watch movies':'🎬',walk:'🚶',swim:'🏊',run:'🏃',
+ have:'🤲',go:'➡️',make:'🔨',work:'💼',live:'🏠',eat:'🍽️',drink:'🥤',want:'🙋',need:'❗',like:'👍',build:'🏗️',study:'📚',sleep:'😴',
+ // escuela
+ book:'📕',pen:'🖊️',pencil:'✏️',notebook:'📓',eraser:'🧽',ruler:'📏',desk:'🪑',board:'🖼️',backpack:'🎒',dictionary:'📖',
+ // adjetivos
+ big:'🐘',small:'🐜',tall:'📏',short:'📐',new:'🆕',old:'📜',good:'👍',bad:'👎',beautiful:'😍',strong:'💪',expensive:'💰',cheap:'🪙',easy:'😊',difficult:'😓',
+ // rutinas
+ 'wake up':'⏰','get up':'🛌','have breakfast':'🥐','take a shower':'🚿','go to work':'🏢','have lunch':'🍛','come back home':'🏠','have dinner':'🍽️','go to bed':'🛌','brush your teeth':'🪥',
+ // paises
+ colombia:'🇨🇴',mexico:'🇲🇽','the united states':'🇺🇸',brazil:'🇧🇷',england:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',spain:'🇪🇸'
+};
+function emojiFor(en){ if(!en) return ''; const k=String(en).toLowerCase().trim(); return EMOJI_MAP[k]||''; }
 /* Tabla-concepto para un tema de vocabulario (inglés · español · suena) */
 function vocabConcept(list, tema){
-  const rows=shuffle(list).slice(0,6).map(x=>'<tr><td class="c-key">'+escapeHtml(x.en)+'</td><td>'+escapeHtml(x.es)+'</td><td><i>'+escapeHtml(x.p||'')+'</i></td></tr>').join('');
-  return '<span class="c-title">📊 '+escapeHtml(tema||'Vocabulary')+'</span><table><tr><th>English</th><th>Español</th><th>Suena</th></tr>'+rows+'</table>';
+  const rows=shuffle(list).slice(0,6).map(x=>{ const e=emojiFor(x.en); return '<tr><td>'+(e||'📌')+'</td><td class="c-key">'+escapeHtml(x.en)+'</td><td>'+escapeHtml(x.es)+'</td><td><i>'+escapeHtml(x.p||'')+'</i></td></tr>'; }).join('');
+  return '<span class="c-title">📊 '+escapeHtml(tema||'Vocabulary')+'</span><table><tr><th></th><th>English</th><th>Español</th><th>Suena</th></tr>'+rows+'</table>';
 }
 /* De una lista de vocabulario [{en,es,p,c,n}] arma UNA pregunta del formato pedido.
    Superficie EN INGLÉS: opciones/respuestas en inglés con pronunciación; el español va en "Ver traducción". */
 function composeVocab(list, fmt, tema){
   const item=pick(list); const T=tema||'Vocabulary'; const cpt=vocabConcept(list,T);
   if(fmt==='opcion'){
-    // PRODUCIR: elige la palabra EN INGLÉS (opciones en inglés + pronunciación); la pista es el significado
+    // PRODUCIR: elige la palabra EN INGLÉS (opciones en inglés + pronunciación + emoji); la pista es el significado
     const d=vocabDistract(list,item,'en'); const pronOf=w=>{ const it=list.find(x=>x.en===w); return it?it.p:''; };
-    return {formato:'opcion', kind:'vocab', q:'Choose the English word for «'+item.es+'»:', opts:shuffle([{t:item.en,c:1,pron:item.p||'',r:'✅ «'+item.es+'» = '+item.en+'.'}].concat(d.map(x=>({t:x,c:0,pron:pronOf(x),r:'«'+item.es+'» = '+item.en+', no "'+x+'".'})))), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Choose the correct English word', concepto:cpt};
+    return {formato:'opcion', kind:'vocab', emoji:emojiFor(item.en), q:'Choose the English word for «'+item.es+'»:', opts:shuffle([{t:item.en,c:1,pron:item.p||'',emoji:emojiFor(item.en),r:'✅ «'+item.es+'» = '+item.en+'.'}].concat(d.map(x=>({t:x,c:0,pron:pronOf(x),emoji:emojiFor(x),r:'«'+item.es+'» = '+item.en+', no "'+x+'".'})))), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Choose the correct English word', concepto:cpt};
   }
   if(fmt==='escribir'){
-    return {formato:'escribir', kind:'vocab', q:'Write in English: «'+item.es+'»', answer:item.en, respuestas:[item.en], sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Write the English word', concepto:cpt};
+    return {formato:'escribir', kind:'vocab', emoji:emojiFor(item.en), q:'Write in English: «'+item.es+'»', answer:item.en, respuestas:[item.en], sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Write the English word', concepto:cpt};
   }
   if(fmt==='vf'){
     const other=pick(list); const same=Math.random()<0.5||other===item; const shown=same?item.es:other.es;
-    return {formato:'vf', kind:'vocab', q:'"'+item.en+'" means "'+shown+'".', answer:same, r:same?('✅ True: "'+item.en+'" = '+item.es+'.'):('❌ False: "'+item.en+'" = '+item.es+', not "'+shown+'".'), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'True or False', concepto:cpt};
+    return {formato:'vf', kind:'vocab', emoji:emojiFor(item.en), q:'"'+item.en+'" means "'+shown+'".', answer:same, r:same?('✅ True: "'+item.en+'" = '+item.es+'.'):('❌ False: "'+item.en+'" = '+item.es+', not "'+shown+'".'), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'True or False', concepto:cpt};
   }
   if(fmt==='emparejar'){
     const four=shuffle(list).slice(0,4); if(four.length<3) return null;
@@ -1202,7 +1239,7 @@ function topicEngine(topicLabel){
 }
 /* Une varios temas + filtra por tipo (estricto: solo produce lo pedido) + baraja */
 function buildMixedQuiz(topics, count, typeSet){
-  count=Math.max(1,Math.min(70,parseInt(count,10)||40));
+  count=Math.max(1,Math.min(200,parseInt(count,10)||40));
   const wantAll=!typeSet || typeSet.has('todos') || typeSet.size===0;
   const engines={}, pairs=[];
   topics.forEach(t=>{ const e=topicEngine(t); engines[t]=e; const fs= wantAll? e.availFmts : e.availFmts.filter(f=>typeSet.has(f)); fs.forEach(f=>pairs.push([t,f])); });
@@ -1290,7 +1327,10 @@ const TOPIC_PACKS={
     gseed('The table ___ new.','is',['are','am','be'],'The table is new.','La mesa es nueva.','de téibol is niú','El/la (una cosa) → is','','Verb To Be','Sujeto + to be + adjetivo'),
     gseed('You ___ a good student.','are',['am','is','be'],'You are a good student.','Tú eres un buen estudiante.','iú ar a gud stiúdent','You → are','','Verb To Be','Sujeto + to be + complemento'),
     gseed('Diego ___ busy today.','is',['are','am','be'],'Diego is busy today.','Diego está ocupado hoy.','Diego is bísi tudéi','Un nombre (él) → is','"to be" es ser Y estar.','Verb To Be','Sujeto + to be + adjetivo'),
-    gseed('The dogs ___ in the garden.','are',['is','am','be'],'The dogs are in the garden.','Los perros están en el jardín.','de dogs ar in de gárden','Plural → are','','Verb To Be','Sujeto + to be + lugar')
+    gseed('The cats ___ in the garden.','are',['is','am','be'],'The cats are in the garden.','Los gatos están en el jardín.','de cats ar in de gárden','Plural → are','','Verb To Be','Sujeto + to be + lugar'),
+    gseed('Leidy and I ___ students at ULA.','are',['is','am','be'],'Leidy and I are students at ULA.','Leidy y yo somos estudiantes en ULA.','Leidy and ái ar stiúdents at iú-el-éi','Dos sujetos → are','Diego y Leidy estudian inglés en el Centro de Idiomas ULA.','Verb To Be','Sujeto + to be + complemento'),
+    gseed('My truck ___ big and strong.','is',['are','am','be'],'My truck is big and strong.','Mi camión es grande y fuerte.','mái trak is big and strong','El/la (una cosa) → is','Diego maneja camión en rutas Soacha–Bogotá–Mosquera.','Verb To Be','Sujeto + to be + adjetivo'),
+    gseed('South Park ___ my favorite show.','is',['are','am','be'],'South Park is my favorite show.','South Park es mi programa favorito.','South Park is mái féivorit shóu','Una cosa → is','','Verb To Be','Sujeto + to be + complemento')
   ]},
   'Subject Pronouns — I, you, he... (A1)':{ kind:'grammar', seeds:[
     gseed('___ am a carpenter. (yo)','I',['He','You','They'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','"Yo" = I (siempre mayúscula)','"I" se escribe SIEMPRE con mayúscula.','Subject Pronouns','Pronombre + verbo'),
@@ -1335,7 +1375,9 @@ const TOPIC_PACKS={
     gseed('I ___ make furniture. (puedo)','can',['cans','am','do'],'I can make furniture.','Yo puedo hacer muebles.','ái can méik férnicher','can + verbo base','Después de "can" el verbo va SIN to y sin -s.','Can','Sujeto + can + verbo base'),
     gseed('She ___ speak English. (puede)','can',['cans','is','does'],'She can speak English.','Ella puede hablar inglés.','shi can spik ínglish','can es igual para todos','"She can", no "she cans".','Can','Sujeto + can + verbo base'),
     gseed('I ___ swim. (no puedo)','cannot',['can not have','cans','do not can'],'I cannot swim.','No puedo nadar.','ái canót suím','negativo → cannot / can’t','"cannot" = "can’t" = no puedo.','Can','Sujeto + cannot + verbo base'),
-    gseed('___ you help me? (¿puedes?)','Can',['Do','Are','Cans'],'Can you help me?','¿Puedes ayudarme?','can iú jelp mi','pregunta → Can al inicio','','Can','Can + sujeto + verbo base?')
+    gseed('___ you help me? (¿puedes?)','Can',['Do','Are','Cans'],'Can you help me?','¿Puedes ayudarme?','can iú jelp mi','pregunta → Can al inicio','','Can','Can + sujeto + verbo base?'),
+    gseed('I ___ drive a truck. (puedo)','can',['cans','am','do'],'I can drive a truck.','Yo puedo manejar un camión.','ái can dráiv a trak','can + verbo base','Diego maneja camión; va por la licencia C1.','Can','Sujeto + can + verbo base'),
+    gseed('Diego ___ fly a drone. (puede)','can',['cans','is','does'],'Diego can fly a drone.','Diego puede volar un dron.','Diego can flái a dróun','can es igual para todos','Diego vuela un dron DJI Mini 3.','Can','Sujeto + can + verbo base')
   ]},
   'There is / There are (A1)':{ kind:'grammar', seeds:[
     gseed('___ a table in the kitchen. (hay, uno)','There is',['There are','It is','There am'],'There is a table in the kitchen.','Hay una mesa en la cocina.','der is a téibol in de kíchen','singular → There is','','There is/are','There is/are + sustantivo + lugar'),
@@ -1355,7 +1397,11 @@ const TOPIC_PACKS={
     gseed('He ___ English at night. (study)','studies',['studys','study','studdies'],'He studies English at night.','Él estudia inglés en la noche.','ji stádis ínglish at náit','consonante+y → ies','study→studies.','Present Simple','Sujeto + verbo (+ies)'),
     gseed('I ___ with wood. (work)','work',['works','working','worked'],'I work with wood.','Yo trabajo con madera.','ái uérk uíd wud','I/You/We/They → verbo base','Con I no se añade -s.','Present Simple','Sujeto + verbo base'),
     gseed('They ___ in Soacha. (live)','live',['lives','living','lifes'],'They live in Soacha.','Ellos viven en Soacha.','déi liv in Sóacha','They → verbo base','','Present Simple','Sujeto + verbo base'),
-    gseed('She ___ TV after dinner. (watch)','watches',['watchs','watch','watching'],'She watches TV after dinner.','Ella ve tele después de la cena.','shi uátches ti-ví áfter díner','watch → watches','Termina en -ch → añade -es.','Present Simple','Sujeto + verbo (+es)')
+    gseed('She ___ TV after dinner. (watch)','watches',['watchs','watch','watching'],'She watches TV after dinner.','Ella ve tele después de la cena.','shi uátches ti-ví áfter díner','watch → watches','Termina en -ch → añade -es.','Present Simple','Sujeto + verbo (+es)'),
+    gseed('I ___ a truck to Bogotá. (drive)','drive',['drives','driving','drived'],'I drive a truck to Bogotá.','Yo manejo un camión a Bogotá.','ái dráiv a trak tu Bogotá','I → verbo base','Rutas de Diego: Soacha, Bogotá y Mosquera.','Present Simple','Sujeto + verbo base'),
+    gseed('Diego ___ a drone on weekends. (fly)','flies',['flys','fly','flis'],'Diego flies a drone on weekends.','Diego vuela un dron los fines de semana.','Diego fláis a dróun on uíkends','cons.+y → ies (fly→flies)','','Present Simple','Sujeto + verbo (+ies)'),
+    gseed('Leidy ___ English with me. (study)','studies',['studys','study','studdies'],'Leidy studies English with me.','Leidy estudia inglés conmigo.','Leidy stádis ínglish uíd mi','cons.+y → ies','Estudian juntos en ULA.','Present Simple','Sujeto + verbo (+ies)'),
+    gseed('We ___ our cats Mila and Jasper. (love)','love',['loves','loving','luv'],'We love our cats Mila and Jasper.','Amamos a nuestros gatos Mila y Jasper.','uí lav áur cats Mila and Jasper','We → verbo base','','Present Simple','Sujeto + verbo base')
   ]},
   'Numbers, Days and Dates — spelling traps: forty (A1)':{ kind:'grammar', seeds:[
     gseed('40 in English is ___','forty',['fourty','fourthy','forti'],'40 = forty','cuarenta','fórti','40 pierde la U de four','TRAMPA: es "forty", NO "fourty".','Numbers','¿Cómo se escribe el número?'),
@@ -2256,7 +2302,7 @@ function loadQuestion(){
   // tema (en inglés) encima de la pregunta; al tocarlo muestra el español
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
-  ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
+  ui.qText.innerHTML=(idx+1)+'. '+(q.emoji?'<span class="text-3xl align-middle mr-1" title="pista visual">'+q.emoji+'</span> ':'')+wordSpanify(q.q);
   // ARRIBA (bajo el enunciado): solo en opción/VF, donde el enunciado ES una frase en inglés (el hueco ___ no revela).
   // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
@@ -2376,7 +2422,7 @@ function renderTopicChips(arr, boxId, dial){
 }
 function pushTopic(arr, boxId, dial, val){ const v=String(val||'').trim(); if(!v) return; if(!arr.some(t=>t.toLowerCase()===v.toLowerCase())) arr.push(v); renderTopicChips(arr,boxId,dial); updateGenSummary(); }
 /* Fichas de CANTIDAD (segmento) sincronizadas con el select oculto #gen-count */
-const GEN_COUNTS=[10,20,30,40,50,60,70];
+const GEN_COUNTS=[10,20,30,40,50,70,100,150,200];
 function buildCountChips(){
   const box=document.getElementById('gen-counts'); if(!box) return; const cur=document.getElementById('gen-count').value; box.innerHTML='';
   GEN_COUNTS.forEach(n=>{
@@ -2503,7 +2549,7 @@ function buildFmtChips(){
 }
 /* Instructivo del QUIZ NORMAL */
 /* Datos REALES del hogar de Diego, para que la IA personalice correcto y NO invente */
-const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Diego tiene 29 años, es carpintero (hace cocinas, clósets y muebles en madera), vive en Soacha, Colombia; su esposa se llama Leidy y tiene 28 años; tienen DOS GATOS llamados Mila y Jasper (son gatos, no perros); Diego apenas está aprendiendo inglés. Si no sabes un dato, no lo afirmes.';
+const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Nombre completo Diego Fernando Loaiza Alape (alias "Dieguito"), 29 años, vive en Soacha, Colombia. Esposa: Leidy (28 años), estudian inglés juntos en el Centro de Idiomas ULA. Tienen DOS GATOS: Mila y Jasper (gatos, no perros). Es CONDUCTOR/logística (saca licencia C1 para camiones; rutas Soacha–Bogotá–Mosquera). Pilotea un dron DJI Mini 3. Tiene ganado (usa la plataforma SINIGAN V6). Le apasiona la tecnología: n8n, IA (Claude, Gemini, ChatGPT) y dos Meta Quest 3S (realidad mixta). Papá: Alonso; tiene seis hermanos. Le encanta South Park, Rick and Morty, Futurama y la película Passengers. Paga con Nequi; moneda SOLO Pesos Colombianos (COP), nunca USD. Usa estos datos para textos, ejemplos y oraciones; si no sabes algo, no lo afirmes.';
 function personalCtx(name){ return /^(diego|leidy)$/i.test(String(name||'').trim())?PERSONAL_CONTEXT:''; }
 function generatePrompt(){
   const name=getName()||'el estudiante';
@@ -2590,8 +2636,8 @@ function renderChoice(q,ctx){
   const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach((opt,i)=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•';
-    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="hidden icon-status text-lg"></span>';
+    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
+    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="hidden icon-status text-lg"></span>';
     btn.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
@@ -2605,8 +2651,8 @@ function renderChoice(q,ctx){
 function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•';
-    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="check-box text-lg">⬜</span>';
+    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
+    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="check-box text-lg">⬜</span>';
     b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });

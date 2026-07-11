@@ -1156,7 +1156,10 @@ const EMOJI_MAP={
  // paises
  colombia:'🇨🇴',mexico:'🇲🇽','the united states':'🇺🇸',brazil:'🇧🇷',england:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',spain:'🇪🇸'
 };
-function emojiFor(en){ if(!en) return ''; const k=String(en).toLowerCase().trim(); return EMOJI_MAP[k]||''; }
+function emojiFor(en){ if(!en) return ''; const k=norm(en);
+  if(typeof extraGlossary!=='undefined' && extraGlossary[k] && extraGlossary[k].emoji) return extraGlossary[k].emoji;
+  if(typeof LEARNED!=='undefined' && LEARNED[k] && LEARNED[k].emoji) return LEARNED[k].emoji;
+  return EMOJI_MAP[String(en).toLowerCase().trim()]||EMOJI_MAP[k]||''; }
 /* Tabla-concepto para un tema de vocabulario (inglés · español · suena) */
 function vocabConcept(list, tema){
   const rows=shuffle(list).slice(0,6).map(x=>{ const e=emojiFor(x.en); return '<tr><td>'+(e||'📌')+'</td><td class="c-key">'+escapeHtml(x.en)+'</td><td>'+escapeHtml(x.es)+'</td><td><i>'+escapeHtml(x.p||'')+'</i></td></tr>'; }).join('');
@@ -1762,7 +1765,8 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
 3. "regla": la regla gramatical en una línea.
 4. "dato": OBLIGATORIO y GENEROSO (2 a 4 frases). Enséñale de verdad: por qué se usa, con qué palabras se combina, el error típico de un hispanohablante, un ejemplo extra de uso en la vida real y, si aplica, de dónde viene o cómo distinguirlo de algo parecido. Que el alumno salga sabiendo más, no solo la respuesta. NUNCA lo dejes vacío ni de una sola línea corta.
 5. "glosario": TODAS las palabras importantes de la pregunta Y de sus respuestas (sustantivos, verbos, adjetivos, conectores, posesivos, pronombres, preposiciones, adverbios), cada una con:
-   {"palabra":"dog","es":"perro","tipo":"sustantivo","pron":"dog"}
+   {"palabra":"dog","es":"perro","tipo":"sustantivo","pron":"dog","emoji":"🐕"}
+   Añade "emoji" (un emoji CLARO y entendible) a las palabras concretas (animales, comida, objetos, lugares, transporte, clima); si una palabra abstracta no tiene emoji natural, omítelo.
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
    Si el enunciado usa palabras en ESPAÑOL, inclúyelas también en el glosario con su traducción al inglés (ej: {"palabra":"educación","es":"education (en inglés)","tipo":"sustantivo","pron":"eduquéishon"}). NINGUNA palabra puede quedar sin traducción.
    IMPORTANTE: la app GUARDA cada palabra del glosario para siempre y la reutiliza en todos los quizzes futuros del alumno — entre más completo el glosario, más aprende la app. Sé exhaustivo y usa traducciones REALES y exactas (nunca inventadas).
@@ -1834,10 +1838,11 @@ Cada objeto es un DIÁLOGO con esta forma EXACTA:
   ] }
 
 REGLAS OBLIGATORIAS (diálogos):
-- CADA línea del diálogo lleva: "quien" (nombre de la persona), "en" (inglés natural), "pron" (cómo suena en español latino, ej "jáu ar iú"), "es" (traducción).
+- CADA línea del diálogo lleva SIEMPRE las 4 cosas: "quien" (nombre), "en" (inglés natural), "pron" (cómo suena en español latino, ej "jáu ar iú"), "es" (traducción al español). NINGUNA línea puede quedar sin "es" ni sin "pron" — si falta, está MAL.
+- DIÁLOGOS DINÁMICOS: de 6 a 12 líneas que CUENTEN algo (un plan, una compra, un problema, una historia), con emociones, preguntas y respuestas de ida y vuelta entre las dos personas (que se turnen). Nada de diálogos planos de 2 líneas.
 - Usa los nombres de los dos jugadores cuando aplique (por ejemplo los que te diga el usuario).
 - CADA diálogo lleva "preguntas" (de 2 a 5) de comprensión sobre lo que se dijo. En "opcion": SOLO una correcta; si hubiera varias válidas usa "multiple". Cada opción con su "razon".
-- "glosario" con TODAS las palabras difíciles (inglés y español, sin omitir); "frases" con las expresiones de 2-3 palabras. La app guarda el glosario para siempre: sé exhaustivo, con traducciones REALES. Si una palabra tiene varios significados, en "es" pon primero el del CONTEXTO del diálogo y menciona los otros en "dato".
+- "glosario" con TODAS las palabras difíciles (inglés y español, sin omitir); cada entrada puede llevar "emoji" (un emoji claro que represente la palabra, ej {"palabra":"truck","es":"camión","tipo":"sustantivo","pron":"trak","emoji":"🚚"}). "frases" con las expresiones de 2-3 palabras. La app guarda el glosario para siempre: sé exhaustivo, con traducciones REALES. Si una palabra tiene varios significados, en "es" pon primero el del CONTEXTO del diálogo y menciona los otros en "dato".
 - Preguntas con "traduccion", "pronunciacion" (español latino), "estructura" (regla, sin dar la respuesta), "dato" (contexto) y "tema" en inglés con nivel tipo libro (ej: "Conversation: Greetings (A1)").
 - Inglés 100% correcto y cotidiano, organizado como un curso (nombra el tiempo verbal y el nivel A1/A2/B1 cuando aplique). No escribas NADA fuera del JSON.
 
@@ -1853,7 +1858,7 @@ function parseOpts(it,i){
 function collectGlossary(target, arr){
   if(!Array.isArray(arr)) return;
   arr.forEach(g=>{ if(!g) return; const w=g.palabra||g.word||g.en||g.termino||g['término']; const es=g.es||g.traduccion||g['traducción']||g.significado||g.translation; if(!w||!es) return;
-    target[norm(w)]={es:String(es), tipo:String(g.tipo||g.type||g.categoria||g['categoría']||''), pron:String(g.pron||g.pronunciacion||g['pronunciación']||g.pronunciation||'')}; });
+    target[norm(w)]={es:String(es), tipo:String(g.tipo||g.type||g.categoria||g['categoría']||''), pron:String(g.pron||g.pronunciacion||g['pronunciación']||g.pronunciation||''), emoji:String(g.emoji||g.icono||g.icon||'')}; });
 }
 function collectPhrases(target, arr){
   if(!Array.isArray(arr)) return;
@@ -2763,10 +2768,14 @@ function renderLectura(q){
       let h='';
       if(l.quien) h+='<div class="text-xs font-bold '+(isB?'text-green-700':'text-blue-700')+' mb-0.5">'+(isB?'🟢 ':'🔵 ')+escapeHtml(l.quien)+'</div>';
       h+='<div class="text-base md:text-lg font-medium text-slate-800 leading-snug">'+wordSpanify(l.en)+'</div>';
-      if(l.pron) h+='<div class="text-sm text-purple-700 italic">🗣️ '+escapeHtml(l.pron)+'</div>';
+      // pronunciación: la que dio la IA o, si falta, la generamos con enlaces (nunca queda sin pronunciación)
+      const lpron = l.pron || phon(l.en);
+      if(lpron){ const ph=phonHTML(l.en); h+='<div class="text-sm text-purple-700 italic">🗣️ '+(ph||escapeHtml(lpron))+'</div>'; }
       row.innerHTML=h;
-      if(l.es){ const tb=document.createElement('button'); tb.className='mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline'; tb.textContent='📖 Ver traducción';
-        const td=document.createElement('div'); td.className='hidden text-sm text-blue-800 mt-0.5'; td.textContent=l.es;
+      // traducción: la que dio la IA o, si falta, aproximada con la biblioteca (nunca queda sin traducción)
+      const st = l.es ? {es:l.es, src:''} : sentenceTrans(l.en, q.sentMap);
+      if(st.es){ const tb=document.createElement('button'); tb.className='mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline'; tb.textContent='📖 Ver traducción';
+        const td=document.createElement('div'); td.className='hidden text-sm text-blue-800 mt-0.5'; td.innerHTML='📖 '+escapeHtml(st.es)+(st.src?' <span class="text-[10px] text-slate-400">'+st.src+'</span>':'');
         tb.onclick=()=>{ td.classList.toggle('hidden'); tb.textContent=td.classList.contains('hidden')?'📖 Ver traducción':'👀 Ocultar'; };
         row.appendChild(tb); row.appendChild(td); }
       box.appendChild(row);

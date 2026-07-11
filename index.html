@@ -1033,8 +1033,8 @@ const EXTRA_FORMATS=[
   {formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:['I','am','a','carpenter'], sentence:'I am a carpenter.', trad:'Yo soy carpintero.', pron:'ái am a cárpenter', form:'Sujeto + to be + complemento', cat:'', extra:'"carpenter" = carpintero.'},
   {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:[{a:'dog',b:'perro'},{a:'wood',b:'madera'},{a:'table',b:'mesa'},{a:'water',b:'agua'}], trad:'dog=perro · wood=madera · table=mesa · water=agua', pron:'', form:'Vocabulario básico.', cat:'', extra:''},
   {formato:'lectura', q:'Lee este texto sobre un carpintero:',
-   text:"My name is Diego and I am a carpenter. I am 39 years old and I live in Soacha with my family. Every day I wake up at six in the morning.\n\nI work with wood in my workshop. I make tables, chairs and kitchen cabinets. My clients are happy because my furniture is beautiful and strong.\n\nAt night I come back home and I study English. My dogs Mila and Jasper are always at home. They are my best friends.",
-   trad:"Me llamo Diego y soy carpintero. Tengo 39 años y vivo en Soacha con mi familia. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis perros Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
+   text:"My name is Diego and I am a carpenter. I am 39 years old and I live in Soacha with my wife Leidy. Every day I wake up at six in the morning.\n\nI work with wood in my workshop. I make tables, chairs and kitchen cabinets. My clients are happy because my furniture is beautiful and strong.\n\nAt night I come back home and I study English. My cats Mila and Jasper are always at home. They are my best friends.",
+   trad:"Me llamo Diego y soy carpintero. Tengo 39 años y vivo en Soacha con mi esposa Leidy. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis gatos Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
    pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".',
    subs:[
      {formato:'opcion', tema:'Reading Comprehension', q:'How old is Diego?',
@@ -1133,25 +1133,46 @@ function composeVocab(list, fmt, tema){
   }
   return null;
 }
+/* VARIAS CORRECTAS (multiple) — SEGURO: marca todas las traducciones correctas (varias buenas, varias malas) */
+function vocabMultiple(list, tema){
+  if(!list||list.length<4) return null;
+  const items=shuffle(list).slice(0,4);
+  const opts=items.map(it=>{ const correct=Math.random()<0.5; const shown=correct?it.es:pick(list).es; const isC=shown===it.es;
+    return {t:it.en+' = '+shown, c:isC?1:0, r:isC?('✅ "'+it.en+'" = '+it.es+'.'):('❌ "'+it.en+'" = '+it.es+', no "'+shown+'".')}; });
+  if(!opts.some(o=>o.c)) opts[0]={t:items[0].en+' = '+items[0].es,c:1,r:'✅ "'+items[0].en+'" = '+items[0].es+'.'};
+  if(!opts.some(o=>!o.c)){ const it=items[1], w=pick(list.filter(x=>x.es!==it.es)); if(w) opts[1]={t:it.en+' = '+w.es,c:0,r:'❌ "'+it.en+'" = '+it.es+', no "'+w.es+'".'}; }
+  return {formato:'multiple', q:'Marca TODAS las traducciones CORRECTAS:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:tema||'Vocabulario', estructura:'Marca todas las traducciones correctas'};
+}
+/* VARIAS CORRECTAS (multiple) para gramática: marca todas las ORACIONES correctas */
+function grammarMultiple(pool){
+  if(!pool||pool.length<3) return null;
+  const seeds=shuffle(pool).slice(0,4);
+  const opts=seeds.map(sd=>{ const canWrong=sd.o&&sd.o.length&&sd.s&&sd.s.indexOf(sd.a)>=0; const correct=!canWrong||Math.random()<0.5;
+    if(correct) return {t:sd.s, c:1, r:'✅ Correcta. '+(sd.t||'')};
+    const ws=sd.s.replace(sd.a, pick(sd.o)); return {t:ws, c:0, r:'❌ Mal: lo correcto es "'+sd.s+'".'}; });
+  if(!opts.some(o=>o.c)) opts[0]={t:seeds[0].s,c:1,r:'✅ Correcta. '+(seeds[0].t||'')};
+  if(!opts.some(o=>!o.c)){ const sd=seeds[1]; if(sd.o&&sd.o.length&&sd.s.indexOf(sd.a)>=0){ opts[1]={t:sd.s.replace(sd.a,pick(sd.o)),c:0,r:'❌ Mal: lo correcto es "'+sd.s+'".'}; } }
+  return {formato:'multiple', q:'Marca TODAS las oraciones CORRECTAS:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Marca todas las oraciones que estén bien'};
+}
 /* Formatos que puede producir cada tipo de pack */
-const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar'];
-const VOCAB_FMTS=['opcion','emparejar','escribir','vf'];
+const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar','multiple'];
+const VOCAB_FMTS=['opcion','emparejar','escribir','vf','multiple'];
 /* Construye un quiz de un tema: pack curado o generador seguro; filtra por tipo; baraja; hasta count */
 function buildTopicQuiz(topicLabel, count, typeSet){
   count=Math.max(1,Math.min(70,parseInt(count,10)||40));
   const pack=TOPIC_PACKS[topicLabel];
   const wantAll=!typeSet || typeSet.has('todos') || typeSet.size===0;
   let compose, pool, availFmts;
-  if(pack && pack.kind==='vocab'){ availFmts=VOCAB_FMTS; compose=(f)=>composeVocab(pack.list,f,pack.tema||topicLabel); }
-  else if(pack){ availFmts=GRAMMAR_FMTS.slice(); pool=pack.seeds; compose=(f)=>composeGrammar(pick(pool),f); }
-  else { const sf=safeTopicPack(topicLabel); availFmts=VOCAB_FMTS; compose=(f)=>composeVocab(sf.list,f,sf.tema); }
+  if(pack && pack.kind==='vocab'){ availFmts=VOCAB_FMTS; const L=pack.list; compose=(f)=> f==='multiple'?vocabMultiple(L,pack.tema||topicLabel):composeVocab(L,f,pack.tema||topicLabel); }
+  else if(pack){ availFmts=GRAMMAR_FMTS.slice(); pool=pack.seeds; compose=(f)=> f==='multiple'?grammarMultiple(pool):composeGrammar(pick(pool),f); }
+  else { const sf=safeTopicPack(topicLabel); availFmts=VOCAB_FMTS; compose=(f)=> f==='multiple'?vocabMultiple(sf.list,sf.tema):composeVocab(sf.list,f,sf.tema); }
   let fmts = wantAll ? availFmts.slice() : availFmts.filter(f=>typeSet.has(f));
   // 'lectura' pedida: si el pack no la trae, no hay lectura para ese tema; se cae a los formatos disponibles
   if(!fmts.length) fmts=availFmts.slice();
-  const out=[], seen=new Set(); let tries=0, maxTries=count*60;
+  const out=[], seen=new Set(); let tries=0, maxTries=count*80;
   while(out.length<count && tries<maxTries){ tries++;
     const f=pick(fmts); const q=compose(f); if(!q) continue;
-    const key=(q.formato||'')+'|'+(q.q||'')+'|'+(q.template||'')+'|'+(q.order?q.order.join(','):'');
+    const key=(q.formato||'')+'|'+(q.q||'')+'|'+(q.template||'')+'|'+(q.order?q.order.join(','):'')+'|'+(q.opts?q.opts.map(o=>o.t).join('~'):'')+'|'+(q.pairs?q.pairs.map(p=>p.a).join(','):'');
     if(seen.has(key)) continue; seen.add(key); out.push(q);
   }
   return shuffle(out);
@@ -1185,7 +1206,8 @@ const TOPIC_PACKS={
     gseed('She ___ from Bogotá.','is',['am','are','be'],'She is from Bogotá.','Ella es de Bogotá.','shi is from Bogotá','He/She/It → is','','Verb To Be','Sujeto + to be + complemento'),
     gseed('We ___ tired.','are',['am','is','be'],'We are tired.','Nosotros estamos cansados.','uí ar táierd','You/We/They → are','','Verb To Be','Sujeto + to be + complemento'),
     gseed('They ___ my friends.','are',['am','is','be'],'They are my friends.','Ellos son mis amigos.','déi ar mái frends','You/We/They → are','','Verb To Be','Sujeto + to be + complemento'),
-    gseed('Mila and Jasper ___ my dogs.','are',['is','am','be'],'Mila and Jasper are my dogs.','Mila y Jasper son mis perros.','Mila and Jasper ar mái dogs','Dos sujetos → are','Dos o más = plural = "are".','Verb To Be','Sujeto + to be + complemento'),
+    gseed('Mila and Jasper ___ my cats.','are',['is','am','be'],'Mila and Jasper are my cats.','Mila y Jasper son mis gatos.','Mila and Jasper ar mái cats','Dos sujetos → are','Dos o más = plural = "are". Mila y Jasper son los gatos de Diego.','Verb To Be','Sujeto + to be + complemento'),
+    gseed('Leidy ___ my wife.','is',['am','are','be'],'Leidy is my wife.','Leidy es mi esposa.','Leidy is mái uáif','Una persona (ella) → is','Leidy es la esposa de Diego.','Verb To Be','Sujeto + to be + complemento'),
     gseed('The table ___ new.','is',['are','am','be'],'The table is new.','La mesa es nueva.','de téibol is niú','El/la (una cosa) → is','','Verb To Be','Sujeto + to be + adjetivo'),
     gseed('You ___ a good student.','are',['am','is','be'],'You are a good student.','Tú eres un buen estudiante.','iú ar a gud stiúdent','You → are','','Verb To Be','Sujeto + to be + complemento'),
     gseed('Diego ___ busy today.','is',['are','am','be'],'Diego is busy today.','Diego está ocupado hoy.','Diego is bísi tudéi','Un nombre (él) → is','"to be" es ser Y estar.','Verb To Be','Sujeto + to be + adjetivo'),
@@ -1196,7 +1218,7 @@ const TOPIC_PACKS={
     gseed('___ is my sister. (ella)','She',['He','It','They'],'She is my sister.','Ella es mi hermana.','shi is mái síster','"Ella" = She','','Subject Pronouns','Pronombre + verbo'),
     gseed('___ is my brother. (él)','He',['She','It','We'],'He is my brother.','Él es mi hermano.','ji is mái bráder','"Él" = He','','Subject Pronouns','Pronombre + verbo'),
     gseed('___ are students. (nosotros)','We',['They','You','He'],'We are students.','Nosotros somos estudiantes.','uí ar stiúdents','"Nosotros" = We','','Subject Pronouns','Pronombre + verbo'),
-    gseed('___ are my dogs. (ellos)','They',['We','You','He'],'They are my dogs.','Ellos son mis perros.','déi ar mái dogs','"Ellos/ellas" = They','','Subject Pronouns','Pronombre + verbo'),
+    gseed('___ are my cats. (ellos)','They',['We','You','He'],'They are my cats.','Ellos son mis gatos.','déi ar mái cats','"Ellos/ellas" = They','Mila y Jasper son los gatos de Diego.','Subject Pronouns','Pronombre + verbo'),
     gseed('___ is a big table. (eso)','It',['He','She','They'],'It is a big table.','Es una mesa grande.','it is a big téibol','Para cosas/animales = It','"It" se usa para cosas y animales, no para personas.','Subject Pronouns','Pronombre + verbo')
   ]},
   'Articles — a/an/the (A1)':{ kind:'grammar', seeds:[
@@ -1227,7 +1249,7 @@ const TOPIC_PACKS={
   'Demonstratives — this/that/these/those (A1)':{ kind:'grammar', seeds:[
     gseed('___ is my hammer. (aquí, uno)','This',['These','That','Those'],'This is my hammer.','Este es mi martillo.','dis is mái jámer','cerca + singular → this','','Demonstratives','Demostrativo + to be + complemento'),
     gseed('___ is your house. (allá, uno)','That',['Those','This','These'],'That is your house.','Esa es tu casa.','dat is iór jáus','lejos + singular → that','','Demonstratives','Demostrativo + to be + complemento'),
-    gseed('___ are my dogs. (aquí, varios)','These',['This','Those','That'],'These are my dogs.','Estos son mis perros.','díis ar mái dogs','cerca + plural → these','','Demonstratives','Demostrativo + to be + complemento'),
+    gseed('___ are my cats. (aquí, varios)','These',['This','Those','That'],'These are my cats.','Estos son mis gatos.','díis ar mái cats','cerca + plural → these','','Demonstratives','Demostrativo + to be + complemento'),
     gseed('___ are your tools. (allá, varios)','Those',['That','This','These'],'Those are your tools.','Esas son tus herramientas.','dóus ar iór tuls','lejos + plural → those','','Demonstratives','Demostrativo + to be + complemento')
   ]},
   'Can / Can\'t — abilities (A1)':{ kind:'grammar', seeds:[
@@ -1307,6 +1329,200 @@ const TOPIC_PACKS={
     {en:'bed',es:'cama',p:'bed',c:'sustantivo'},{en:'door',es:'puerta',p:'dor',c:'sustantivo'},{en:'window',es:'ventana',p:'uíndou',c:'sustantivo'},
     {en:'closet',es:'clóset',p:'clóset',c:'sustantivo'},{en:'shelf',es:'estante',p:'shelf',c:'sustantivo'},{en:'drawer',es:'cajón',p:'dróer',c:'sustantivo'},
     {en:'sofa',es:'sofá',p:'sóufa',c:'sustantivo'},{en:'wall',es:'pared',p:'uól',c:'sustantivo'},{en:'floor',es:'piso',p:'flor',c:'sustantivo'}
+  ]},
+  'Present Simple — negatives and questions with do/does (A1)':{ kind:'grammar', seeds:[
+    gseed('She ___ like coffee. (no)','doesn\'t',['don\'t','isn\'t','not'],'She doesn\'t like coffee.','A ella no le gusta el café.','shi dásent láik cófi','He/She/It → doesn\'t','Con he/she/it la negación es "doesn\'t" y el verbo va SIN -s.','Present Simple neg/quest','Sujeto + doesn\'t + verbo base'),
+    gseed('I ___ work on Sundays. (no)','don\'t',['doesn\'t','am not','not'],'I don\'t work on Sundays.','No trabajo los domingos.','ái dóunt uérk on sándeis','I/You/We/They → don\'t','','Present Simple neg/quest','Sujeto + don\'t + verbo base'),
+    gseed('___ he speak English? (¿?)','Does',['Do','Is','Are'],'Does he speak English?','¿Él habla inglés?','das ji spik ínglish','he/she/it → Does','En preguntas: Does + sujeto + verbo base (sin -s).','Present Simple neg/quest','Does + sujeto + verbo base?'),
+    gseed('___ you live in Soacha? (¿?)','Do',['Does','Are','Is'],'Do you live in Soacha?','¿Vives en Soacha?','du iú liv in Sóacha','you/we/they → Do','','Present Simple neg/quest','Do + sujeto + verbo base?')
+  ]},
+  'Third person -s tricks: goes, watches, studies (A1)':{ kind:'grammar', seeds:[
+    gseed('He ___ to work. (go)','goes',['gos','goies','go'],'He goes to work.','Él va a trabajar.','ji góus tu uérk','go → goes','Verbos en -o añaden -es.','Third person -s','Sujeto + verbo (+es)'),
+    gseed('She ___ TV. (watch)','watches',['watchs','watch','watchies'],'She watches TV.','Ella ve televisión.','shi uátches ti-ví','-ch → +es','','Third person -s','Sujeto + verbo (+es)'),
+    gseed('He ___ English. (study)','studies',['studys','study','studdies'],'He studies English.','Él estudia inglés.','ji stádis ínglish','consonante+y → ies','','Third person -s','Sujeto + verbo (+ies)'),
+    gseed('She ___ the dishes. (wash)','washes',['washs','wash','washies'],'She washes the dishes.','Ella lava los platos.','shi uáshes de díshes','-sh → +es','','Third person -s','Sujeto + verbo (+es)'),
+    gseed('It ___ at night. (fly)','flies',['flys','fly','flyies'],'It flies at night.','Vuela de noche.','it fláis at náit','consonante+y → ies','fly → flies.','Third person -s','Sujeto + verbo (+ies)')
+  ]},
+  'Imperatives — commands (A1)':{ kind:'grammar', seeds:[
+    gseed('___ the door, please. (abre)','Open',['Opens','Opening','To open'],'Open the door, please.','Abre la puerta, por favor.','óupen de dor, plis','orden → verbo base al inicio','El imperativo usa el verbo base, sin sujeto.','Imperatives','Verbo base + complemento'),
+    gseed('___ down, please. (siéntate)','Sit',['Sits','Sitting','You sit'],'Sit down, please.','Siéntate, por favor.','sit dáun, plis','orden → verbo base','','Imperatives','Verbo base + complemento'),
+    gseed('___ run in the workshop. (no corras)','Don\'t',['No','Not','Doesn\'t'],'Don\'t run in the workshop.','No corras en el taller.','dóunt ran in de uérkshop','orden negativa → Don\'t + verbo','','Imperatives','Don\'t + verbo base'),
+    gseed('___ careful with the saw. (ten cuidado)','Be',['Being','Are','Is'],'Be careful with the saw.','Ten cuidado con la sierra.','bi kérful uíd de so','ser/estar imperativo → Be','','Imperatives','Be + adjetivo')
+  ]},
+  'Have got / Has got (A1)':{ kind:'grammar', seeds:[
+    gseed('I ___ two cats. (tengo)','have got',['has got','have','got'],'I have got two cats.','Tengo dos gatos.','ái jav got tu cats','I/You/We/They → have got','"have got" = tener (posesión).','Have got','Sujeto + have/has got + complemento'),
+    gseed('She ___ a new car. (tiene)','has got',['have got','has','got'],'She has got a new car.','Ella tiene un carro nuevo.','shi jas got a niú car','He/She/It → has got','','Have got','Sujeto + have/has got + complemento'),
+    gseed('Diego ___ a workshop. (tiene)','has got',['have got','has','got'],'Diego has got a workshop.','Diego tiene un taller.','Diego jas got a uérkshop','él → has got','','Have got','Sujeto + has got + complemento')
+  ]},
+  'Prepositions of Time — in/on/at (tricky!) (A1)':{ kind:'grammar', seeds:[
+    gseed('I wake up ___ six o\'clock. (a las)','at',['in','on','to'],'I wake up at six o\'clock.','Me despierto a las seis.','ái uéik ap at six oclók','hora exacta → at','at + hora exacta.','Prepositions of Time','at + hora'),
+    gseed('I work ___ Monday. (el)','on',['in','at','to'],'I work on Monday.','Trabajo el lunes.','ái uérk on mándei','día → on','on + día de la semana.','Prepositions of Time','on + día'),
+    gseed('I study ___ the morning. (en)','in',['on','at','to'],'I study in the morning.','Estudio en la mañana.','ái stádi in de mórning','parte del día → in','in the morning/afternoon/evening (pero AT night).','Prepositions of Time','in + parte del día'),
+    gseed('My birthday is ___ July. (en)','in',['on','at','to'],'My birthday is in July.','Mi cumpleaños es en julio.','mái bérzdei is in yulái','mes → in','in + mes o año.','Prepositions of Time','in + mes')
+  ]},
+  'Telling the Time (A1)':{ kind:'grammar', seeds:[
+    gseed('3:00 — It\'s three ___','o\'clock',['hours','clock','times'],'It\'s three o\'clock.','Son las tres en punto.','its zrí oclók','hora en punto → o\'clock','','Telling the Time','It\'s + hora + o\'clock'),
+    gseed('3:15 — It\'s a quarter ___ three','past',['to','after','over'],'It\'s a quarter past three.','Son las tres y cuarto.','its a cuórter past zrí','y cuarto → quarter past','past = pasada la hora.','Telling the Time','quarter past + hora'),
+    gseed('3:30 — It\'s ___ past three','half',['middle','quarter','thirty'],'It\'s half past three.','Son las tres y media.','its jaf past zrí','y media → half past','half = media.','Telling the Time','half past + hora'),
+    gseed('2:45 — It\'s a quarter ___ three','to',['past','before','of'],'It\'s a quarter to three.','Son las tres menos cuarto (2:45).','its a cuórter tu zrí','menos cuarto → quarter to','to = para/antes de la hora siguiente.','Telling the Time','quarter to + hora siguiente')
+  ]},
+  'Basic Connectors — and/but/or (A1)':{ kind:'grammar', seeds:[
+    gseed('I like coffee ___ tea. (y)','and',['but','or','so'],'I like coffee and tea.','Me gusta el café y el té.','ái láik cófi and ti','suma → and','','Connectors','... and ...'),
+    gseed('I am tired ___ happy. (pero)','but',['and','or','so'],'I am tired but happy.','Estoy cansado pero feliz.','ái am táierd bat jápi','contraste → but','','Connectors','... but ...'),
+    gseed('Tea ___ coffee? (o)','or',['and','but','so'],'Tea or coffee?','¿Té o café?','ti or cófi','opción → or','','Connectors','... or ...?')
+  ]},
+  'Question Word Order — Do you...? Is she...? (A1)':{ kind:'grammar', seeds:[
+    gseed('___ you a carpenter? (¿eres?)','Are',['Do','Is','Does'],'Are you a carpenter?','¿Eres carpintero?','ar iú a cárpenter','to be → verbo primero','Con to be la pregunta empieza con am/is/are.','Question Order','To be + sujeto + complemento?'),
+    gseed('___ she like music? (¿le gusta?)','Does',['Is','Do','Are'],'Does she like music?','¿A ella le gusta la música?','das shi láik miúsic','verbo normal (he/she/it) → Does','','Question Order','Does + sujeto + verbo base?'),
+    gseed('___ they at home? (¿están?)','Are',['Do','Is','Does'],'Are they at home?','¿Están en casa?','ar déi at jóum','to be plural → Are','','Question Order','Are + sujeto + lugar?')
+  ]},
+  'Past Simple — regular verbs -ed (A2)':{ kind:'grammar', seeds:[
+    gseed('Yesterday I ___ with wood. (work)','worked',['worked','work','working'],'Yesterday I worked with wood.','Ayer trabajé con madera.','iésterdei ái uérkt uíd wud','regular → +ed','La mayoría del pasado añade -ed.','Past Simple','Sujeto + verbo-ed'),
+    gseed('She ___ the door. (open)','opened',['openned','opend','opened'],'She opened the door.','Ella abrió la puerta.','shi óupend de dor','+ed','','Past Simple','Sujeto + verbo-ed'),
+    gseed('We ___ English last night. (study)','studied',['studyed','studied','studed'],'We studied English last night.','Estudiamos inglés anoche.','uí stádid ínglish last náit','consonante+y → ied','study → studied.','Past Simple','Sujeto + verbo-ied'),
+    gseed('He ___ the bus. (stop)','stopped',['stoped','stopped','stopd'],'He stopped the bus.','Él paró el bus.','ji stopt de bas','una vocal + consonante → doble consonante + ed','stop → stopped (doble p).','Past Simple','Sujeto + verbo-ed')
+  ]},
+  'Past Simple — irregular verbs (A2)':{ kind:'grammar', seeds:[
+    gseed('Yesterday I ___ to work. (go)','went',['goed','gone','goned'],'Yesterday I went to work.','Ayer fui a trabajar.','iésterdei ái uént tu uérk','go → went','Los irregulares NO usan -ed.','Past Simple irregular','Sujeto + verbo irregular'),
+    gseed('She ___ a cake. (make)','made',['maked','make','maded'],'She made a cake.','Ella hizo un pastel.','shi méid a kéik','make → made','','Past Simple irregular','Sujeto + verbo irregular'),
+    gseed('I ___ my keys. (find)','found',['finded','find','founded'],'I found my keys.','Encontré mis llaves.','ái fáund mái kis','find → found','','Past Simple irregular','Sujeto + verbo irregular'),
+    gseed('We ___ dinner. (have)','had',['haved','has','haded'],'We had dinner.','Cenamos.','uí jad díner','have → had','','Past Simple irregular','Sujeto + verbo irregular'),
+    gseed('He ___ a new table. (buy)','bought',['buyed','buy','boughted'],'He bought a new table.','Él compró una mesa nueva.','ji bot a niú téibol','buy → bought','','Past Simple irregular','Sujeto + verbo irregular')
+  ]},
+  'Was / Were (A2)':{ kind:'grammar', seeds:[
+    gseed('I ___ at home yesterday. (estaba)','was',['were','am','is'],'I was at home yesterday.','Ayer estaba en casa.','ái uós at jóum iésterdei','I/He/She/It → was','was = pasado de am/is.','Was/Were','Sujeto + was/were + complemento'),
+    gseed('They ___ tired. (estaban)','were',['was','are','is'],'They were tired.','Ellos estaban cansados.','déi uér táierd','You/We/They → were','were = pasado de are.','Was/Were','Sujeto + was/were + complemento'),
+    gseed('She ___ happy. (estaba)','was',['were','is','are'],'She was happy.','Ella estaba feliz.','shi uós jápi','She → was','','Was/Were','Sujeto + was + complemento'),
+    gseed('We ___ in Soacha. (estábamos)','were',['was','are','am'],'We were in Soacha.','Estábamos en Soacha.','uí uér in Sóacha','We → were','','Was/Were','Sujeto + were + lugar')
+  ]},
+  'Present Continuous — -ing spelling traps (A2)':{ kind:'grammar', seeds:[
+    gseed('I am ___ furniture now. (make)','making',['makeing','makking','make'],'I am making furniture now.','Estoy haciendo muebles ahora.','ái am méiking férnicher náu','verbo con -e → quita e + ing','make → making (sin la e).','Present Continuous','Sujeto + am/is/are + verbo-ing'),
+    gseed('She is ___ TV. (watch)','watching',['watchting','watchin','watch'],'She is watching TV.','Ella está viendo televisión.','shi is uátching ti-ví','+ing normal','','Present Continuous','Sujeto + is + verbo-ing'),
+    gseed('They are ___ now. (run)','running',['runing','runningg','run'],'They are running now.','Ellos están corriendo ahora.','déi ar ráning náu','vocal+consonante → doble + ing','run → running (doble n).','Present Continuous','Sujeto + are + verbo-ing'),
+    gseed('He is ___ English. (study)','studying',['studiing','studing','study'],'He is studying English.','Él está estudiando inglés.','ji is stádiing ínglish','study → studying (la y se queda)','','Present Continuous','Sujeto + is + verbo-ing')
+  ]},
+  'Comparatives and Superlatives (A2)':{ kind:'grammar', seeds:[
+    gseed('This table is ___ than that one. (más grande)','bigger',['more big','biger','biggest'],'This table is bigger than that one.','Esta mesa es más grande que esa.','dis téibol is bíguer dan dat uán','corto → +er + than','Adjetivo corto: +er. bigger (doble g).','Comparatives','... adjetivo-er than ...'),
+    gseed('My work is ___ than his. (más difícil)','more difficult',['difficulter','more difficulter','most difficult'],'My work is more difficult than his.','Mi trabajo es más difícil que el de él.','mái uérk is mor díficult dan jis','largo → more + adjetivo','Adjetivo largo: more + adjetivo.','Comparatives','... more + adjetivo + than ...'),
+    gseed('This is the ___ table in the shop. (más grande)','biggest',['most big','bigger','biggmore'],'This is the biggest table in the shop.','Esta es la mesa más grande de la tienda.','dis is de bíguest téibol in de shop','superlativo corto → the +est','the biggest = la más grande.','Superlatives','the + adjetivo-est'),
+    gseed('English is ___ than Spanish for me. (más fácil... peor: usa good)','better',['gooder','more good','best'],'English is better than Spanish for me.','El inglés es mejor que el español para mí.','ínglish is béter dan spánish for mi','irregular: good → better','good → better → best (irregular).','Comparatives','better than')
+  ]},
+  'Future — going to (A2)':{ kind:'grammar', seeds:[
+    gseed('I ___ going to build a closet. (voy a)','am',['is','are','be'],'I am going to build a closet.','Voy a construir un clóset.','ái am góing tu bild a clóset','I → am going to','be going to = plan futuro.','Future going to','Sujeto + am/is/are going to + verbo'),
+    gseed('She ___ going to travel. (va a)','is',['am','are','be'],'She is going to travel.','Ella va a viajar.','shi is góing tu trável','She → is going to','','Future going to','Sujeto + is going to + verbo'),
+    gseed('They ___ going to help. (van a)','are',['is','am','be'],'They are going to help.','Ellos van a ayudar.','déi ar góing tu jelp','They → are going to','','Future going to','Sujeto + are going to + verbo')
+  ]},
+  'Countable and Uncountable — some/any (A2)':{ kind:'grammar', seeds:[
+    gseed('I have ___ water. (afirmativo)','some',['any','a','many'],'I have some water.','Tengo algo de agua.','ái jav sam uáter','afirmativo → some','some en frases afirmativas.','Some/Any','... some + sustantivo'),
+    gseed('I don\'t have ___ money. (negativo)','any',['some','a','much'],'I don\'t have any money.','No tengo nada de dinero.','ái dóunt jav éni máni','negativo → any','any en negativas y preguntas.','Some/Any','... any + sustantivo'),
+    gseed('Is there ___ bread? (pregunta)','any',['some','a','many'],'Is there any bread?','¿Hay algo de pan?','is der éni bred','pregunta → any','','Some/Any','... any + sustantivo?')
+  ]},
+  'Object Pronouns — me/him/her/us/them (A2)':{ kind:'grammar', seeds:[
+    gseed('Leidy loves ___. (a mí)','me',['I','my','mine'],'Leidy loves me.','Leidy me ama.','Leidy lavs mi','yo (objeto) → me','I es sujeto, me es objeto.','Object Pronouns','Sujeto + verbo + objeto'),
+    gseed('I help ___. (a él)','him',['he','his','them'],'I help him.','Yo lo ayudo (a él).','ái jelp jim','él (objeto) → him','','Object Pronouns','Sujeto + verbo + objeto'),
+    gseed('She calls ___. (a nosotros)','us',['we','our','them'],'She calls us.','Ella nos llama.','shi cols as','nosotros (objeto) → us','','Object Pronouns','Sujeto + verbo + objeto'),
+    gseed('We see ___. (a ellos)','them',['they','their','him'],'We see them.','Nosotros los vemos.','uí si dem','ellos (objeto) → them','','Object Pronouns','Sujeto + verbo + objeto')
+  ]},
+  'Daily Routines (A1)':{ kind:'vocab', tema:'Daily Routines', list:[
+    {en:'wake up',es:'despertarse',p:'uéik ap',c:'verbo'},{en:'get up',es:'levantarse',p:'guet ap',c:'verbo'},
+    {en:'have breakfast',es:'desayunar',p:'jav brékfast',c:'verbo'},{en:'take a shower',es:'ducharse',p:'téik a sháuer',c:'verbo'},
+    {en:'go to work',es:'ir a trabajar',p:'góu tu uérk',c:'verbo'},{en:'have lunch',es:'almorzar',p:'jav lanch',c:'verbo'},
+    {en:'come back home',es:'volver a casa',p:'kam bak jóum',c:'verbo'},{en:'have dinner',es:'cenar',p:'jav díner',c:'verbo'},
+    {en:'study',es:'estudiar',p:'stádi',c:'verbo'},{en:'go to bed',es:'acostarse',p:'góu tu bed',c:'verbo'},
+    {en:'brush your teeth',es:'cepillarse los dientes',p:'brash iór tiz',c:'verbo'},{en:'sleep',es:'dormir',p:'slip',c:'verbo'}
+  ]},
+  'Countries and Nationalities (A1)':{ kind:'vocab', tema:'Nationalities', list:[
+    {en:'Colombia',es:'Colombia',p:'colómbia',c:'país'},{en:'Colombian',es:'colombiano',p:'colómbian',c:'nacionalidad'},
+    {en:'Mexico',es:'México',p:'méksicou',c:'país'},{en:'Mexican',es:'mexicano',p:'méksican',c:'nacionalidad'},
+    {en:'The United States',es:'Estados Unidos',p:'de iunáited stéits',c:'país'},{en:'American',es:'estadounidense',p:'américan',c:'nacionalidad'},
+    {en:'Brazil',es:'Brasil',p:'brazíl',c:'país'},{en:'Brazilian',es:'brasileño',p:'brazílian',c:'nacionalidad'},
+    {en:'England',es:'Inglaterra',p:'íngland',c:'país'},{en:'English',es:'inglés',p:'ínglish',c:'nacionalidad'},
+    {en:'Spain',es:'España',p:'spéin',c:'país'},{en:'Spanish',es:'español',p:'spánish',c:'nacionalidad'}
+  ]},
+  'Weather (A1)':{ kind:'vocab', tema:'Weather', list:[
+    {en:'sunny',es:'soleado',p:'sáni',c:'adjetivo'},{en:'rainy',es:'lluvioso',p:'réini',c:'adjetivo'},
+    {en:'cloudy',es:'nublado',p:'cláudi',c:'adjetivo'},{en:'windy',es:'ventoso',p:'uíndi',c:'adjetivo'},
+    {en:'cold',es:'frío',p:'cóuld',c:'adjetivo'},{en:'hot',es:'caluroso',p:'jot',c:'adjetivo'},
+    {en:'warm',es:'templado',p:'uórm',c:'adjetivo'},{en:'rain',es:'lluvia',p:'réin',c:'sustantivo'},
+    {en:'sun',es:'sol',p:'san',c:'sustantivo'},{en:'wind',es:'viento',p:'uínd',c:'sustantivo'},
+    {en:'snow',es:'nieve',p:'snóu',c:'sustantivo'},{en:'storm',es:'tormenta',p:'storm',c:'sustantivo'}
+  ]},
+  'Places in Town (A1)':{ kind:'vocab', tema:'Places in Town', list:[
+    {en:'school',es:'escuela',p:'skul',c:'sustantivo'},{en:'hospital',es:'hospital',p:'jóspital',c:'sustantivo'},
+    {en:'park',es:'parque',p:'park',c:'sustantivo'},{en:'store',es:'tienda',p:'stor',c:'sustantivo'},
+    {en:'market',es:'mercado',p:'márket',c:'sustantivo'},{en:'bank',es:'banco',p:'bank',c:'sustantivo'},
+    {en:'church',es:'iglesia',p:'cherch',c:'sustantivo'},{en:'restaurant',es:'restaurante',p:'réstorant',c:'sustantivo'},
+    {en:'street',es:'calle',p:'strit',c:'sustantivo'},{en:'square',es:'plaza',p:'skuér',c:'sustantivo'},
+    {en:'pharmacy',es:'farmacia',p:'fármasi',c:'sustantivo'},{en:'bakery',es:'panadería',p:'béikeri',c:'sustantivo'}
+  ]},
+  'Feelings and Emotions (A1)':{ kind:'vocab', tema:'Feelings', list:[
+    {en:'happy',es:'feliz',p:'jápi',c:'adjetivo'},{en:'sad',es:'triste',p:'sad',c:'adjetivo'},
+    {en:'tired',es:'cansado',p:'táierd',c:'adjetivo'},{en:'angry',es:'enojado',p:'ángri',c:'adjetivo'},
+    {en:'scared',es:'asustado',p:'skerd',c:'adjetivo'},{en:'excited',es:'emocionado',p:'iksáited',c:'adjetivo'},
+    {en:'bored',es:'aburrido',p:'bord',c:'adjetivo'},{en:'nervous',es:'nervioso',p:'nérvous',c:'adjetivo'},
+    {en:'hungry',es:'con hambre',p:'jángri',c:'adjetivo'},{en:'thirsty',es:'con sed',p:'zérsti',c:'adjetivo'},
+    {en:'sick',es:'enfermo',p:'sik',c:'adjetivo'},{en:'proud',es:'orgulloso',p:'práud',c:'adjetivo'}
+  ]},
+  'Transport Vocabulary (A1)':{ kind:'vocab', tema:'Transport', list:[
+    {en:'car',es:'carro',p:'car',c:'sustantivo'},{en:'bus',es:'bus',p:'bas',c:'sustantivo'},
+    {en:'taxi',es:'taxi',p:'táksi',c:'sustantivo'},{en:'bike',es:'bicicleta',p:'báik',c:'sustantivo'},
+    {en:'motorcycle',es:'moto',p:'mótorsaicol',c:'sustantivo'},{en:'train',es:'tren',p:'tréin',c:'sustantivo'},
+    {en:'plane',es:'avión',p:'pléin',c:'sustantivo'},{en:'truck',es:'camión',p:'trak',c:'sustantivo'},
+    {en:'boat',es:'bote',p:'bóut',c:'sustantivo'},{en:'subway',es:'metro',p:'sábuei',c:'sustantivo'}
+  ]},
+  'Months and Seasons (A1)':{ kind:'vocab', tema:'Months & Seasons', list:[
+    {en:'January',es:'enero',p:'yánuari',c:'mes'},{en:'February',es:'febrero',p:'fébruari',c:'mes'},
+    {en:'March',es:'marzo',p:'march',c:'mes'},{en:'April',es:'abril',p:'éipril',c:'mes'},
+    {en:'May',es:'mayo',p:'méi',c:'mes'},{en:'June',es:'junio',p:'yun',c:'mes'},
+    {en:'July',es:'julio',p:'yulái',c:'mes'},{en:'August',es:'agosto',p:'ógost',c:'mes'},
+    {en:'summer',es:'verano',p:'sámer',c:'estación'},{en:'winter',es:'invierno',p:'uínter',c:'estación'},
+    {en:'spring',es:'primavera',p:'spring',c:'estación'},{en:'autumn',es:'otoño',p:'ótom',c:'estación'}
+  ]},
+  'Hobbies and Free Time (A1)':{ kind:'vocab', tema:'Hobbies', list:[
+    {en:'read',es:'leer',p:'rid',c:'verbo'},{en:'cook',es:'cocinar',p:'cuk',c:'verbo'},
+    {en:'dance',es:'bailar',p:'dans',c:'verbo'},{en:'sing',es:'cantar',p:'sing',c:'verbo'},
+    {en:'paint',es:'pintar',p:'péint',c:'verbo'},{en:'travel',es:'viajar',p:'trável',c:'verbo'},
+    {en:'play football',es:'jugar fútbol',p:'pléi fútbol',c:'verbo'},{en:'listen to music',es:'escuchar música',p:'lísen tu miúsic',c:'verbo'},
+    {en:'watch movies',es:'ver películas',p:'uátch múvis',c:'verbo'},{en:'walk',es:'caminar',p:'uók',c:'verbo'},
+    {en:'swim',es:'nadar',p:'suím',c:'verbo'},{en:'run',es:'correr',p:'ran',c:'verbo'}
+  ]},
+  'School and Classroom Objects (A1)':{ kind:'vocab', tema:'School', list:[
+    {en:'book',es:'libro',p:'buk',c:'sustantivo'},{en:'pen',es:'lapicero',p:'pen',c:'sustantivo'},
+    {en:'pencil',es:'lápiz',p:'péncil',c:'sustantivo'},{en:'notebook',es:'cuaderno',p:'nóutbuk',c:'sustantivo'},
+    {en:'eraser',es:'borrador',p:'iréiser',c:'sustantivo'},{en:'ruler',es:'regla',p:'rúler',c:'sustantivo'},
+    {en:'desk',es:'pupitre',p:'desk',c:'sustantivo'},{en:'board',es:'tablero',p:'bord',c:'sustantivo'},
+    {en:'teacher',es:'profesor(a)',p:'tícher',c:'sustantivo'},{en:'student',es:'estudiante',p:'stiúdent',c:'sustantivo'},
+    {en:'backpack',es:'mochila',p:'bákpak',c:'sustantivo'},{en:'dictionary',es:'diccionario',p:'díkshoneri',c:'sustantivo'}
+  ]},
+  'Adjectives — descriptions (A1)':{ kind:'vocab', tema:'Adjectives', list:[
+    {en:'big',es:'grande',p:'big',c:'adjetivo'},{en:'small',es:'pequeño',p:'smol',c:'adjetivo'},
+    {en:'tall',es:'alto',p:'tol',c:'adjetivo'},{en:'short',es:'bajo/corto',p:'short',c:'adjetivo'},
+    {en:'new',es:'nuevo',p:'niú',c:'adjetivo'},{en:'old',es:'viejo',p:'óuld',c:'adjetivo'},
+    {en:'good',es:'bueno',p:'gud',c:'adjetivo'},{en:'bad',es:'malo',p:'bad',c:'adjetivo'},
+    {en:'beautiful',es:'hermoso',p:'biútiful',c:'adjetivo'},{en:'strong',es:'fuerte',p:'strong',c:'adjetivo'},
+    {en:'expensive',es:'caro',p:'ikspénsiv',c:'adjetivo'},{en:'cheap',es:'barato',p:'chip',c:'adjetivo'},
+    {en:'easy',es:'fácil',p:'ísi',c:'adjetivo'},{en:'difficult',es:'difícil',p:'díficult',c:'adjetivo'}
+  ]},
+  'Common Verbs — have/go/do/make (A1)':{ kind:'vocab', tema:'Common Verbs', list:[
+    {en:'have',es:'tener',p:'jav',c:'verbo'},{en:'go',es:'ir',p:'góu',c:'verbo'},
+    {en:'do',es:'hacer',p:'du',c:'verbo'},{en:'make',es:'hacer/fabricar',p:'méik',c:'verbo'},
+    {en:'work',es:'trabajar',p:'uérk',c:'verbo'},{en:'live',es:'vivir',p:'liv',c:'verbo'},
+    {en:'eat',es:'comer',p:'it',c:'verbo'},{en:'drink',es:'beber',p:'drink',c:'verbo'},
+    {en:'want',es:'querer',p:'uánt',c:'verbo'},{en:'need',es:'necesitar',p:'nid',c:'verbo'},
+    {en:'like',es:'gustar',p:'láik',c:'verbo'},{en:'build',es:'construir',p:'bild',c:'verbo'}
+  ]},
+  'Question Words — Wh questions (A2)':{ kind:'vocab', tema:'Wh Questions', list:[
+    {en:'what',es:'qué',p:'uát',c:'pregunta Wh'},{en:'who',es:'quién',p:'ju',c:'pregunta Wh'},
+    {en:'where',es:'dónde',p:'uér',c:'pregunta Wh'},{en:'when',es:'cuándo',p:'uén',c:'pregunta Wh'},
+    {en:'why',es:'por qué',p:'uái',c:'pregunta Wh'},{en:'how',es:'cómo',p:'jáu',c:'pregunta Wh'},
+    {en:'which',es:'cuál',p:'uích',c:'pregunta Wh'},{en:'how much',es:'cuánto (precio)',p:'jáu mach',c:'pregunta Wh'},
+    {en:'how many',es:'cuántos',p:'jáu méni',c:'pregunta Wh'},{en:'how old',es:'qué edad',p:'jáu óuld',c:'pregunta Wh'}
+  ]},
+  'Adverbs of Frequency — always/never (A2)':{ kind:'vocab', tema:'Adverbs of Frequency', list:[
+    {en:'always',es:'siempre',p:'ólueis',c:'adverbio'},{en:'usually',es:'usualmente',p:'iúshuali',c:'adverbio'},
+    {en:'often',es:'a menudo',p:'ófen',c:'adverbio'},{en:'sometimes',es:'a veces',p:'sámtaims',c:'adverbio'},
+    {en:'rarely',es:'rara vez',p:'rérli',c:'adverbio'},{en:'never',es:'nunca',p:'néver',c:'adverbio'},
+    {en:'every day',es:'todos los días',p:'évri déi',c:'adverbio'},{en:'once a week',es:'una vez por semana',p:'uáns a uík',c:'adverbio'}
   ]}
 };
 /* ---- DIÁLOGOS PREDETERMINADOS (situaciones curadas). El resto sigue por instructivo ---- */
@@ -2139,6 +2355,9 @@ function buildFmtChips(){
   });
 }
 /* Instructivo del QUIZ NORMAL */
+/* Datos REALES del hogar de Diego, para que la IA personalice correcto y NO invente */
+const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Diego tiene 39 años, es carpintero (hace cocinas, clósets y muebles en madera), vive en Soacha, Colombia; su esposa se llama Leidy; tiene DOS GATOS llamados Mila y Jasper (son gatos, no perros); apenas está aprendiendo inglés. Si no sabes un dato, no lo afirmes.';
+function personalCtx(name){ return /^(diego|leidy)$/i.test(String(name||'').trim())?PERSONAL_CONTEXT:''; }
 function generatePrompt(){
   const name=getName()||'el estudiante';
   const count=document.getElementById('gen-count').value;
@@ -2152,7 +2371,7 @@ function generatePrompt(){
     const fl=GEN_FMTS.filter(p=>selFmts.has(p[0])).map(p=>p[0]);
     fmtTxt='usando SOLO '+(fl.length===1?('el formato "'+fl[0]+'" (TODAS las preguntas deben ser de ese formato)'):('los formatos '+fl.join(', ')+' (reparte las preguntas SOLO entre esos formatos)'))+'; NO uses ningún otro formato';
   }
-  const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.';
+  const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.'+personalCtx(name);
   const finalLine='Ahora crea '+count+' preguntas de: '+topicTxt+' para el estudiante '+name+', '+fmtTxt+'.'+multiTema+autoriza;
   const full=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'')+finalLine;
   copyToClipboard(full,'gen-status'); return full;
@@ -2165,7 +2384,7 @@ function generatePromptD(){
   if(!selTopicsD.length){ alert('✏️ Elige al menos una situación, o escribe la tuya y toca ➕.'); document.getElementById('gen-topic-d').focus(); return null; }
   const topicTxt=selTopicsD.join(' + ');
   const multiTema=selTopicsD.length>1?' Reparte los diálogos entre TODAS las situaciones elegidas.':'';
-  const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; personaliza los diálogos con su vida, trabajo y gustos.';
+  const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; personaliza los diálogos con su vida, trabajo y gustos.'+personalCtx(name);
   const finalLine='Ahora crea '+count+' diálogos de: '+topicTxt+', para que jueguen de a dos. Usa el nombre "'+name+'" para una persona y otro nombre para la otra en las conversaciones. Cada diálogo con sus preguntas de comprensión.'+multiTema+autoriza;
   const full=AI_PROMPT_DIALOGO.replace(/Ahora crea diálogos de:[\s\S]*$/,'')+finalLine;
   copyToClipboard(full,'gen-status-d'); return full;

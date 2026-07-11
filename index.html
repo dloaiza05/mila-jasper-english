@@ -12,7 +12,8 @@
   #progress-bar { background: linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899); }
   .pop { animation: pop .3s ease-out; }
   @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1)} }
-  .lig { color:#db2777; font-weight:800; padding:0 1px; }
+  .ligA { color:#0d9488; font-weight:800; } /* enlace nativo: 1ª parte (can) */
+  .ligB { color:#db2777; font-weight:800; } /* enlace nativo: parte pegada (ái) → canái */
   .wtap { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:pointer; border-bottom:1px dotted #a5b4fc; }
   .wtap:active { background:#e0e7ff; border-radius:4px; }
   #word-popup { max-width:280px; }
@@ -75,7 +76,7 @@
             </select>
           </div>
           <div class="md:col-span-2">
-            <p class="text-sm font-bold text-slate-700 mb-2">📚 Tema — elige del curso (A1 → B2) o escribe el tuyo</p>
+            <p class="text-sm font-bold text-slate-700 mb-2">📚 Temas — elige del curso (A1 → B2) o escribe el tuyo. ¡Puedes elegir VARIOS a la vez!</p>
             <select id="gen-course" onchange="onCourseSel()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none mb-2">
               <option value="">— Elige un tema del curso —</option>
               <optgroup label="🟢 A1 · Principiante (aquí se empieza)">
@@ -106,6 +107,18 @@
                 <option>Weather (A1)</option>
                 <option>Daily Routines (A1)</option>
                 <option>Common Verbs — have/go/do/make (A1)</option>
+                <option>Alphabet and Spelling — How do you spell...? (A1)</option>
+                <option>Countries and Nationalities (A1)</option>
+                <option>House, Rooms and Furniture (A1)</option>
+                <option>Animals and Pets (A1)</option>
+                <option>Hobbies and Free Time (A1)</option>
+                <option>School and Classroom Objects (A1)</option>
+                <option>Ordinal Numbers — first, second, third (A1)</option>
+                <option>Basic Connectors — and/but/or (A1)</option>
+                <option>Question Word Order — Do you...? Is she...? (A1)</option>
+                <option>Feelings and Emotions (A1)</option>
+                <option>Transport Vocabulary (A1)</option>
+                <option>Months and Seasons (A1)</option>
               </optgroup>
               <optgroup label="🟡 A2 · Básico">
                 <option>Past Simple — regular verbs -ed (A2)</option>
@@ -133,6 +146,18 @@
                 <option>Shopping and Money Vocabulary (A2)</option>
                 <option>Travel and Directions (A2)</option>
                 <option>Health and Body Vocabulary (A2)</option>
+                <option>Past Time Expressions — yesterday, ago, last (A2)</option>
+                <option>Comparisons with as...as (A2)</option>
+                <option>Adverbs of Manner — quickly, well, hard (A2)</option>
+                <option>Connectors — because/so/when/before/after (A2)</option>
+                <option>Zero Conditional — general truths (A2)</option>
+                <option>Whose...? and Possessive 's (A2)</option>
+                <option>Tools and Materials — carpentry vocabulary (A2)</option>
+                <option>Describing your House and Furniture (A2)</option>
+                <option>At the Restaurant Vocabulary (A2)</option>
+                <option>Sports and Exercise (A2)</option>
+                <option>Technology and Phones Vocabulary (A2)</option>
+                <option>There was / There were (A2)</option>
               </optgroup>
               <optgroup label="🟠 B1 · Intermedio">
                 <option>Present Perfect — have/has + participle (B1)</option>
@@ -155,6 +180,18 @@
                 <option>Say vs Tell (classic trap!) (B1)</option>
                 <option>Uncountable traps: news, advice, information (B1)</option>
                 <option>Work and Business Vocabulary (B1)</option>
+                <option>Adjectives -ed vs -ing — bored vs boring (classic trap!) (B1)</option>
+                <option>Reflexive Pronouns — myself, yourself (B1)</option>
+                <option>Indefinite Pronouns — somebody/anybody/nobody (B1)</option>
+                <option>Verb Patterns — want to do vs enjoy doing (B1)</option>
+                <option>Prepositions after Adjectives — afraid of, good at (B1)</option>
+                <option>Word Formation — un-, im-, -ful, -less (B1)</option>
+                <option>Articles Advanced — the vs no article (B1)</option>
+                <option>So vs Such (B1)</option>
+                <option>Future Continuous — will be doing (B1)</option>
+                <option>Travel and Airport Vocabulary (B1)</option>
+                <option>Environment and Nature Vocabulary (B1)</option>
+                <option>Money and Banking Vocabulary (B1)</option>
               </optgroup>
               <optgroup label="🔴 B2 · Intermedio alto">
                 <option>Present Perfect Continuous (B2)</option>
@@ -172,10 +209,30 @@
                 <option>False Friends — actually, embarrassed, exit... (B2)</option>
                 <option>Advanced Collocations (B2)</option>
                 <option>Phrasal Verbs — advanced (B2)</option>
+                <option>Future Perfect — will have done (B2)</option>
+                <option>Gerund vs Infinitive — meaning changes: remember/stop/try (B2)</option>
+                <option>Non-defining Relative Clauses (B2)</option>
+                <option>Cleft Sentences — It was Diego who... (B2)</option>
+                <option>Passive with Reporting Verbs — It is said that... (B2)</option>
+                <option>Discourse Markers — anyway, by the way, actually (B2)</option>
+                <option>Common Idioms — piece of cake, break a leg (B2)</option>
+                <option>Collocations with take/have/get — advanced (B2)</option>
+                <option>Connectors of Purpose and Contrast — so that, in spite of (B2)</option>
+                <option>Formal vs Informal English (B2)</option>
+                <option>Prefixes and Suffixes — advanced word building (B2)</option>
+                <option>Ellipsis — So do I / Neither do I (B2)</option>
               </optgroup>
             </select>
-            <input id="gen-topic" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="✏️ O escribe tu propio tema aquí (ej: vocabulario de carpintería)"/>
+            <div class="flex gap-2">
+              <input id="gen-topic" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTopic();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="✏️ O escribe tu propio tema y toca ➕ (ej: vocabulario de carpintería)"/>
+              <button type="button" onclick="addCustomTopic()" title="Agregar este tema a la lista" class="bg-violet-100 hover:bg-violet-200 text-violet-700 font-extrabold rounded-xl px-4 text-lg">➕</button>
+            </div>
+            <div id="gen-chips" class="flex flex-wrap gap-1.5 mt-2"></div>
           </div>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-slate-700 mb-2">🧩 Tipos de pregunta — toca los que quieras practicar (uno, varios o deja 🌟 Todos)</p>
+          <div id="gen-fmts" class="flex flex-wrap gap-1.5"></div>
         </div>
         <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz</button>
         <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en tu IA y trae el código al paso 2.</p>
@@ -308,7 +365,7 @@
               </select>
             </div>
             <div class="md:col-span-2">
-              <p class="text-sm font-bold text-slate-700 mb-2">📚 Situación — elige del curso (A1 → B2) o escribe la tuya</p>
+              <p class="text-sm font-bold text-slate-700 mb-2">📚 Situaciones — elige del curso (A1 → B2) o escribe la tuya. ¡Puedes elegir VARIAS a la vez!</p>
               <select id="gen-course-d" onchange="onCourseSelD()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-fuchsia-400 outline-none mb-2">
                 <option value="">— Elige una situación del curso —</option>
                 <optgroup label="🟢 A1 · Conversaciones básicas">
@@ -320,6 +377,9 @@
                   <option>Telling the Time and Dates (A1)</option>
                   <option>At the Store — basic shopping (A1)</option>
                   <option>Daily Routines conversation (A1)</option>
+                  <option>At the Market — fruits and prices (A1)</option>
+                  <option>Introducing a Friend (A1)</option>
+                  <option>Talking about Pets (A1)</option>
                 </optgroup>
                 <optgroup label="🟡 A2 · Situaciones cotidianas">
                   <option>Ordering Food at a Restaurant (A2)</option>
@@ -332,6 +392,11 @@
                   <option>At Work — talking about your job (A2)</option>
                   <option>Taking a Taxi or Bus (A2)</option>
                   <option>At the Hotel — check in (A2)</option>
+                  <option>At the Hardware Store — buying tools (A2)</option>
+                  <option>Renting an Apartment (A2)</option>
+                  <option>At the Bank (A2)</option>
+                  <option>Talking about Movies and Music (A2)</option>
+                  <option>Making an Appointment by Phone (A2)</option>
                 </optgroup>
                 <optgroup label="🟠 B1 · Conversaciones con sustancia">
                   <option>Job Interview (B1)</option>
@@ -341,15 +406,29 @@
                   <option>Telling a Story about the Past (B1)</option>
                   <option>Making Suggestions and Plans (B1)</option>
                   <option>Talking about Experiences — present perfect (B1)</option>
+                  <option>Talking to a Client about a Furniture Project (B1)</option>
+                  <option>Planning a Trip Together (B1)</option>
+                  <option>At the Airport — problems and solutions (B1)</option>
+                  <option>Giving Advice to a Friend (B1)</option>
+                  <option>Talking about Health and Habits (B1)</option>
                 </optgroup>
                 <optgroup label="🔴 B2 · Nivel alto">
                   <option>Debating a Topic (B2)</option>
                   <option>Persuading a Customer (B2)</option>
                   <option>Handling a Misunderstanding (B2)</option>
                   <option>Small Talk like a Native (B2)</option>
+                  <option>Negotiating a Contract (B2)</option>
+                  <option>Job Performance Review (B2)</option>
+                  <option>Discussing News and Current Events (B2)</option>
+                  <option>Resolving a Conflict at Work (B2)</option>
+                  <option>Explaining a Technical Problem (B2)</option>
                 </optgroup>
               </select>
-              <input id="gen-topic-d" type="text" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-fuchsia-400 outline-none" placeholder="✏️ O escribe tu propia situación (ej: vendiendo una cocina de madera)"/>
+              <div class="flex gap-2">
+                <input id="gen-topic-d" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTopicD();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-fuchsia-400 outline-none" placeholder="✏️ O escribe tu propia situación y toca ➕ (ej: vendiendo una cocina de madera)"/>
+                <button type="button" onclick="addCustomTopicD()" title="Agregar esta situación a la lista" class="bg-fuchsia-100 hover:bg-fuchsia-200 text-fuchsia-700 font-extrabold rounded-xl px-4 text-lg">➕</button>
+              </div>
+              <div id="gen-chips-d" class="flex flex-wrap gap-1.5 mt-2"></div>
             </div>
           </div>
           <button onclick="generatePromptD()" class="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo de diálogos</button>
@@ -506,9 +585,9 @@ function phon(text){
   if(!engWords || hits/engWords < 0.5) return ''; // mayormente no-inglés → no mostrar
   return out.join('');
 }
-/* Igual que phon() pero en HTML y con ENLACES de pronunciación:
+/* Igual que phon() pero en HTML y con ENLACES de pronunciación al estilo nativo:
    cuando una palabra termina en consonante y la siguiente empieza en vocal,
-   se pegan con ‿ en color (linking): "can I" -> "can‿ái". */
+   se PEGAN sin espacio y cada parte va de un color: "can I" -> canái (can verde-azulado + ái rosa). */
 function phonHTML(text){
   const toks=String(text).split(/(\s+)/); let hits=0, eng=0; const parts=[];
   toks.forEach(tok=>{
@@ -522,11 +601,23 @@ function phonHTML(text){
   if(!eng || hits/eng<0.5) return '';
   const vocalIni=s=>/^[aeiouáéíóú]/i.test(String(s).replace(/^[^A-Za-zÀ-ÿ]+/,''));
   const consFin=s=>/[bcdfghjklmnpqrstvwxyz]$/i.test(String(s).replace(/[^A-Za-zÀ-ÿ]+$/,''));
-  let html='', last='';
-  parts.forEach(p=>{
-    if(p.sp!==undefined){ html+=p.sp; return; }
-    if(last && consFin(last) && vocalIni(p.txt)){ html=html.replace(/\s+$/,''); html+='<span class="lig">‿</span>'; }
-    html+=escapeHtml(p.txt); last=p.txt;
+  const words=[]; let spAcc='';
+  parts.forEach(p=>{ if(p.sp!==undefined){ spAcc+=p.sp; } else { words.push({t:p.txt, sp:spAcc}); spAcc=''; } });
+  let html='';
+  words.forEach((w,i)=>{
+    const linked = i>0 && consFin(words[i-1].t) && vocalIni(w.t);
+    const nextLinked = i+1<words.length && consFin(w.t) && vocalIni(words[i+1].t);
+    if(linked){
+      // se pega a la anterior SIN espacio, alternando color para que la unión se lea fluida (canái)
+      w.cls = words[i-1].cls==='ligA' ? 'ligB' : 'ligA';
+      html+='<span class="'+w.cls+'">'+escapeHtml(w.t)+'</span>';
+    } else if(nextLinked){
+      w.cls='ligA';
+      html+=(i?w.sp:'')+'<span class="ligA">'+escapeHtml(w.t)+'</span>';
+    } else {
+      w.cls='';
+      html+=(i?w.sp:'')+escapeHtml(w.t);
+    }
   });
   return html;
 }
@@ -1575,17 +1666,59 @@ function switchTab(t){
   else { pd.classList.add('hidden'); pn.classList.remove('hidden'); tn.className=on+'bg-violet-600 text-white'; td.className=off; }
   renderStudents();
 }
-/* Al elegir un tema del curso, se escribe en la casilla (editable) */
-function onCourseSel(){ const s=document.getElementById('gen-course'); const t=document.getElementById('gen-topic'); if(s && s.value){ t.value=s.value; } }
-function onCourseSelD(){ const s=document.getElementById('gen-course-d'); const t=document.getElementById('gen-topic-d'); if(s && s.value){ t.value=s.value; } }
-/* Instructivo del QUIZ NORMAL (los 8 formatos, sin lectura ni diálogo) */
+/* Temas elegidos (pueden ser VARIOS a la vez): fichas con ✕ para quitar */
+const selTopics=[], selTopicsD=[];
+function renderTopicChips(arr, boxId, dial){
+  const box=document.getElementById(boxId); if(!box) return; box.innerHTML='';
+  arr.forEach((t,i)=>{
+    const ch=document.createElement('span');
+    ch.className='inline-flex items-center gap-1.5 text-xs font-bold rounded-full px-2.5 py-1 border '+(dial?'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200':'bg-violet-100 text-violet-800 border-violet-200');
+    const tx=document.createElement('span'); tx.textContent='📚 '+t; ch.appendChild(tx);
+    const x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.title='Quitar este tema';
+    x.className='font-extrabold hover:text-red-600 '+(dial?'text-fuchsia-500':'text-violet-500');
+    x.onclick=()=>{ arr.splice(i,1); renderTopicChips(arr,boxId,dial); };
+    ch.appendChild(x); box.appendChild(ch);
+  });
+}
+function pushTopic(arr, boxId, dial, val){ const v=String(val||'').trim(); if(!v) return; if(!arr.some(t=>t.toLowerCase()===v.toLowerCase())) arr.push(v); renderTopicChips(arr,boxId,dial); }
+/* Al elegir un tema del curso, se agrega como ficha (se pueden acumular varios) */
+function onCourseSel(){ const s=document.getElementById('gen-course'); if(s && s.value){ pushTopic(selTopics,'gen-chips',false,s.value); s.value=''; } }
+function onCourseSelD(){ const s=document.getElementById('gen-course-d'); if(s && s.value){ pushTopic(selTopicsD,'gen-chips-d',true,s.value); s.value=''; } }
+function addCustomTopic(){ const t=document.getElementById('gen-topic'); pushTopic(selTopics,'gen-chips',false,t.value); t.value=''; }
+function addCustomTopicD(){ const t=document.getElementById('gen-topic-d'); pushTopic(selTopicsD,'gen-chips-d',true,t.value); t.value=''; }
+/* Tipos de pregunta a practicar: uno, varios o todos */
+const GEN_FMTS=[['todos','🌟 Todos'],['opcion','🔘 Opción múltiple'],['multiple','☑️ Varias correctas'],['vf','⚖️ True / False'],['escribir','⌨️ Escribir'],['completar','✏️ Completar'],['huecos','🧩 Huecos con fichas'],['ordenar','🔀 Ordenar'],['emparejar','🔗 Emparejar'],['lectura','📚 Lectura con preguntas']];
+const selFmts=new Set(['todos']);
+function buildFmtChips(){
+  const box=document.getElementById('gen-fmts'); if(!box) return; box.innerHTML='';
+  GEN_FMTS.forEach(pair=>{
+    const k=pair[0], on=selFmts.has(k);
+    const b=document.createElement('button'); b.type='button'; b.textContent=pair[1];
+    b.className='text-xs font-bold rounded-full px-3 py-1.5 border-2 transition '+(on?'bg-violet-600 text-white border-violet-600 shadow':'bg-white text-slate-600 border-slate-200 hover:border-violet-300');
+    b.onclick=()=>{
+      if(k==='todos'){ selFmts.clear(); selFmts.add('todos'); }
+      else { selFmts.delete('todos'); if(selFmts.has(k)) selFmts.delete(k); else selFmts.add(k); if(!selFmts.size) selFmts.add('todos'); }
+      buildFmtChips();
+    };
+    box.appendChild(b);
+  });
+}
+/* Instructivo del QUIZ NORMAL */
 function generatePrompt(){
   const name=getName()||'el estudiante';
   const count=document.getElementById('gen-count').value;
-  const topic=(document.getElementById('gen-topic').value||'').trim();
-  if(!topic){ alert('✏️ Escribe el tema (ej: verbo to be).'); document.getElementById('gen-topic').focus(); return null; }
+  const tIn=document.getElementById('gen-topic'); if(tIn && tIn.value.trim()){ pushTopic(selTopics,'gen-chips',false,tIn.value); tIn.value=''; }
+  if(!selTopics.length){ alert('✏️ Elige al menos un tema del curso, o escribe el tuyo y toca ➕.'); document.getElementById('gen-topic').focus(); return null; }
+  const topicTxt=selTopics.join(' + ');
+  const multiTema=selTopics.length>1?' Reparte las preguntas entre TODOS los temas elegidos, mezclados (no en bloques).':'';
+  let fmtTxt;
+  if(selFmts.has('todos')){ fmtTxt='usando SOLO los formatos opcion, multiple, vf, escribir, completar, huecos, ordenar y emparejar (NO uses lectura ni dialogo aquí)'; }
+  else{
+    const fl=GEN_FMTS.filter(p=>selFmts.has(p[0])).map(p=>p[0]);
+    fmtTxt='usando SOLO '+(fl.length===1?('el formato "'+fl[0]+'" (TODAS las preguntas deben ser de ese formato)'):('los formatos '+fl.join(', ')+' (reparte las preguntas SOLO entre esos formatos)'))+'; NO uses ningún otro formato';
+  }
   const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; te autorizo a personalizar los textos, preguntas, respuestas y ejemplos con sus datos, sus gustos, su trabajo, su familia y su vida.';
-  const finalLine='Ahora crea '+count+' preguntas de: '+topic+' para el estudiante '+name+', usando SOLO los formatos opcion, multiple, vf, escribir, completar, huecos, ordenar y emparejar (NO uses lectura ni dialogo aquí).'+autoriza;
+  const finalLine='Ahora crea '+count+' preguntas de: '+topicTxt+' para el estudiante '+name+', '+fmtTxt+'.'+multiTema+autoriza;
   const full=AI_PROMPT.replace(/Ahora crea 40 preguntas de:[\s\S]*$/,'')+finalLine;
   copyToClipboard(full,'gen-status'); return full;
 }
@@ -1593,10 +1726,12 @@ function generatePrompt(){
 function generatePromptD(){
   const name=getName()||'Jugador 1';
   const count=document.getElementById('gen-count-d').value;
-  const topic=(document.getElementById('gen-topic-d').value||'').trim();
-  if(!topic){ alert('✏️ Escribe el tema de los diálogos (ej: nacionalidades / saludos).'); document.getElementById('gen-topic-d').focus(); return null; }
+  const tIn=document.getElementById('gen-topic-d'); if(tIn && tIn.value.trim()){ pushTopic(selTopicsD,'gen-chips-d',true,tIn.value); tIn.value=''; }
+  if(!selTopicsD.length){ alert('✏️ Elige al menos una situación, o escribe la tuya y toca ➕.'); document.getElementById('gen-topic-d').focus(); return null; }
+  const topicTxt=selTopicsD.join(' + ');
+  const multiTema=selTopicsD.length>1?' Reparte los diálogos entre TODAS las situaciones elegidas.':'';
   const autoriza=' OBLIGATORIO: usa toda la información que tengas sobre '+name+'; personaliza los diálogos con su vida, trabajo y gustos.';
-  const finalLine='Ahora crea '+count+' diálogos de: '+topic+', para que jueguen de a dos. Usa el nombre "'+name+'" para una persona y otro nombre para la otra en las conversaciones. Cada diálogo con sus preguntas de comprensión.'+autoriza;
+  const finalLine='Ahora crea '+count+' diálogos de: '+topicTxt+', para que jueguen de a dos. Usa el nombre "'+name+'" para una persona y otro nombre para la otra en las conversaciones. Cada diálogo con sus preguntas de comprensión.'+multiTema+autoriza;
   const full=AI_PROMPT_DIALOGO.replace(/Ahora crea diálogos de:[\s\S]*$/,'')+finalLine;
   copyToClipboard(full,'gen-status-d'); return full;
 }
@@ -1793,21 +1928,26 @@ function renderLectura(q){
     const tip=document.createElement('p'); tip.className='text-xs text-slate-400 mt-2 text-center'; tip.textContent='💡 Mantén presionada cualquier palabra para ver su traducción. Cada línea tiene su pronunciación y su traducción oculta.';
     textCard.appendChild(tip);
   } else {
-    // cada ORACIÓN lleva su botón ＝ para ver la traducción del tramo completo
-    let si=0; const sentList=[];
-    const inner=paras.map(p=>{
+    // cada PÁRRAFO lleva su "Ver traducción" debajo (frase por frase; primero la de la IA)
+    const paraSents=[];
+    const inner=paras.map((p,pi)=>{
       const sents=p.split(/(?<=[.!?])\s+/).filter(Boolean);
-      return '<p>'+sents.map(s=>{ sentList.push(s); return '<span class="sent-wrap">'+wordSpanify(s)+' <button class="s-eq align-middle text-[11px] font-bold bg-blue-100 text-blue-700 rounded px-1.5 hover:bg-blue-200" data-si="'+(si++)+'" title="Ver traducción de esta frase">＝</button></span><span class="s-tr hidden block text-sm text-blue-900 bg-blue-50 border-l-4 border-blue-300 rounded-r px-2 py-1 my-1"></span> '; }).join('')+'</p>';
+      paraSents.push(sents);
+      return '<div><p>'+sents.map(s=>wordSpanify(s)).join(' ')+'</p>'+
+        '<button class="p-eq text-xs font-bold text-blue-600 hover:text-blue-800 underline mt-1" data-pi="'+pi+'">📖 Ver traducción</button>'+
+        '<div class="p-tr hidden text-sm text-blue-900 bg-blue-50 border-l-4 border-blue-300 rounded-r px-2 py-1 mt-1 space-y-0.5"></div></div>';
     }).join('');
     textCard.innerHTML='<div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 md:p-6 space-y-3 text-base md:text-lg leading-relaxed text-slate-800 shadow-inner">'+inner+'</div>'+
-      '<p class="text-xs text-slate-400 mt-2 text-center">💡 Toca una palabra para su significado · toca ＝ para la traducción de la frase completa.</p>';
-    textCard.querySelectorAll('.s-eq').forEach(btn=>{
+      '<p class="text-xs text-slate-400 mt-2 text-center">💡 Toca una palabra para su significado · toca "Ver traducción" debajo de cada párrafo.</p>';
+    textCard.querySelectorAll('.p-eq').forEach(btn=>{
       btn.onclick=(ev)=>{ ev.stopPropagation();
-        const tr=btn.closest('.sent-wrap').nextElementSibling;
-        if(!tr.classList.contains('hidden')){ tr.classList.add('hidden'); return; }
-        const st=sentenceTrans(sentList[parseInt(btn.dataset.si,10)], q.sentMap);
-        tr.innerHTML='📜 '+escapeHtml(st.es)+(st.pron?' <span class="text-purple-700 italic">('+escapeHtml(st.pron)+')</span>':'')+' <span class="text-[10px] text-slate-400">'+st.src+'</span>';
-        tr.classList.remove('hidden');
+        const box=btn.nextElementSibling;
+        if(!box.classList.contains('hidden')){ box.classList.add('hidden'); btn.textContent='📖 Ver traducción'; return; }
+        box.innerHTML=paraSents[parseInt(btn.dataset.pi,10)].map(s=>{
+          const st=sentenceTrans(s, q.sentMap);
+          return '<div>📜 '+escapeHtml(st.es)+(st.pron?' <span class="text-purple-700 italic">('+escapeHtml(st.pron)+')</span>':'')+' <span class="text-[10px] text-slate-400">'+st.src+'</span></div>';
+        }).join('');
+        box.classList.remove('hidden'); btn.textContent='👀 Ocultar traducción';
       };
     });
   }
@@ -1886,7 +2026,7 @@ document.getElementById('import-file').addEventListener('change', async e=>{ con
 
 // Arranque: estudiante activo, avance pendiente, guardados y ranking
 selectStudent(getName()||getStudents()[0]);
-renderResume(); renderSaved(); renderRanking();
+renderResume(); renderSaved(); renderRanking(); buildFmtChips();
 // Si abriste un enlace de invitación (?sala=ID), entras como invitado (modo en vivo)
 (function(){ try{ const sala=new URLSearchParams(location.search).get('sala'); if(sala){ guestJoin(sala); } }catch(e){} })();
 // Si abriste un enlace compartido (#d=...), cargas el MISMO diálogo (pantalla duplicada)

@@ -245,10 +245,15 @@
       </div>
     </div>
 
-    <!-- ===== 2) PEGAR CÓDIGO ===== -->
+    <!-- ===== 2) JUGAR: quiz listo (derecha) o pegar código (izquierda) ===== -->
     <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-emerald-200">
+      <h3 class="font-extrabold text-emerald-700 text-lg mb-1">🎮 2) Juega ya</h3>
+      <p class="text-xs text-slate-500 mb-3">A la <b>derecha</b> eliges un quiz listo por tema. A la <b>izquierda</b> pegas el código que te dio una IA (paso 1).</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- IZQUIERDA: pegar código de IA -->
+      <div class="md:border-r md:pr-4 border-slate-100">
       <div class="flex items-center justify-between mb-1">
-        <h3 class="font-extrabold text-emerald-700 text-lg">📥 2) Pega el código que te dio la IA</h3>
+        <h4 class="font-extrabold text-emerald-700">📥 Pega el código de la IA</h4>
         <button id="eye-btn" onclick="toggleInstructivo()" title="Ver ejemplo del formato del código" class="text-xl hover:scale-110 transition-transform">👁️</button>
       </div>
       <p class="text-xs text-slate-500 mb-3">Empieza con <b>{</b> y termina con <b>}</b>. ¿Dudas del formato? Toca el ojo 👁.</p>
@@ -340,11 +345,29 @@
 }</pre>
       </div>
 
-      <textarea id="import-input" class="w-full min-h-[200px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-emerald-400 outline-none scroll-soft" placeholder='Pega aquí tu código...'></textarea>
+      <textarea id="import-input" class="w-full min-h-[160px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-emerald-400 outline-none scroll-soft" placeholder='Pega aquí tu código...'></textarea>
       <input id="import-file" type="file" accept=".json,.txt" class="block w-full mt-2 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-emerald-100 file:text-emerald-700 file:font-bold"/>
       <div class="text-right mt-3">
-        <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">⚡ Generar quiz</button>
+        <button onclick="startCustomImport()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-2.5 px-6 rounded-full text-sm shadow-lg transition-transform hover:scale-105">⚡ Generar quiz</button>
       </div>
+      </div><!-- /izquierda -->
+      <!-- DERECHA: quiz listo por tema -->
+      <div class="bg-teal-50/50 rounded-xl p-3 border border-teal-100">
+        <h4 class="font-extrabold text-teal-700 mb-1">🎯 Elige un quiz listo</h4>
+        <p class="text-xs text-slate-500 mb-2">Sin pegar nada: escoge tema, tipo y cantidad, y a jugar. Las preguntas se barajan cada vez.</p>
+        <p class="text-xs font-bold text-slate-700 mb-1">📚 Tema</p>
+        <select id="ready-course" onchange="onReadyCourse()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-teal-400 outline-none mb-2"></select>
+        <div class="flex gap-2">
+          <input id="ready-topic" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();playReady();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-teal-400 outline-none" placeholder="✏️ O escribe tu propio tema"/>
+        </div>
+        <p class="text-xs font-bold text-slate-700 mb-1 mt-3">🧩 Tipo de pregunta</p>
+        <div id="ready-fmts" class="flex flex-wrap gap-1.5"></div>
+        <p class="text-xs font-bold text-slate-700 mb-1 mt-3">🔢 Cantidad</p>
+        <div id="ready-counts" class="flex flex-wrap gap-1.5"></div>
+        <div id="ready-summary" class="text-xs bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-amber-800 font-medium mt-3"></div>
+        <button onclick="playReady()" class="w-full mt-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">▶️ Jugar quiz listo</button>
+      </div><!-- /derecha -->
+      </div><!-- /grid -->
     </div>
 
     <div class="bg-white rounded-2xl shadow p-4 border border-blue-100 text-center">
@@ -442,12 +465,28 @@
         </div>
       </div>
       <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
-        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">📥 2) Pega el código y crea la sala</h3>
-        <p class="text-xs text-slate-500 mb-3">Al generar aparece el <b>diálogo + un QR</b>. La otra persona escanea el QR y ven la misma pantalla. Necesita internet.</p>
-        <textarea id="import-input-d" class="w-full min-h-[180px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-fuchsia-400 outline-none scroll-soft" placeholder='Pega aquí el código de diálogos...'></textarea>
-        <div class="text-right mt-3">
-          <button onclick="shareDialogue('import-input-d')" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">👥 Generar diálogo y compartir (QR)</button>
+        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">🎮 2) Juega el diálogo</h3>
+        <p class="text-xs text-slate-500 mb-3">Derecha: elige un diálogo listo. Izquierda: pega el código de la IA y compártelo por QR.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- IZQUIERDA -->
+        <div class="md:border-r md:pr-4 border-slate-100">
+          <h4 class="font-extrabold text-fuchsia-700 mb-1">📥 Pega el código y comparte</h4>
+          <p class="text-xs text-slate-500 mb-2">Al generar aparece el <b>diálogo + un QR</b>. La otra persona lo escanea y ven la misma pantalla.</p>
+          <textarea id="import-input-d" class="w-full min-h-[150px] border-2 border-slate-200 rounded-xl p-3 text-sm font-mono focus:border-fuchsia-400 outline-none scroll-soft" placeholder='Pega aquí el código de diálogos...'></textarea>
+          <div class="text-right mt-3">
+            <button onclick="shareDialogue('import-input-d')" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-2.5 px-6 rounded-full text-sm shadow-lg transition-transform hover:scale-105">👥 Generar y compartir (QR)</button>
+          </div>
         </div>
+        <!-- DERECHA -->
+        <div class="bg-fuchsia-50/50 rounded-xl p-3 border border-fuchsia-100">
+          <h4 class="font-extrabold text-fuchsia-700 mb-1">🎯 Elige un diálogo listo</h4>
+          <p class="text-xs text-slate-500 mb-2">Conversaciones listas para leer y practicar de a dos.</p>
+          <p class="text-xs font-bold text-slate-700 mb-1">📚 Situación</p>
+          <select id="ready-course-d" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-fuchsia-400 outline-none mb-2"></select>
+          <div id="ready-summary-d" class="text-xs bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-amber-800 font-medium mt-2"></div>
+          <button onclick="playReadyD()" class="w-full mt-3 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">▶️ Jugar diálogo listo</button>
+        </div>
+        </div><!-- /grid -->
       </div>
     </div><!-- /panel-dialogo -->
 
@@ -1026,6 +1065,268 @@ const EXTRA_FORMATS=[
 const DEFAULT_EST={completar:'Sujeto + verbo + complemento', huecos:'Sujeto + verbo + complemento', ordenar:'Sujeto + verbo + complemento', emparejar:'Une cada palabra con su significado', vf:'Decide si la oración está bien o mal', escribir:'Escribe la palabra o forma correcta', multiple:'Marca todas las que cumplan la condición'};
 const DEFAULT_TEMA={multiple:'Word Types', vf:'True or False', escribir:'Writing', completar:'Fill in the Blanks', huecos:'Fill in the Blanks', ordenar:'Sentence Order', emparejar:'Vocabulary', lectura:'Reading'};
 EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estructura=DEFAULT_EST[q.formato]; if(!q.tema && DEFAULT_TEMA[q.formato]) q.tema=DEFAULT_TEMA[q.formato]; });
+
+/* ============================================================
+   QUIZ PREDETERMINADOS POR TEMA (listos para jugar)
+   - Packs curados: seeds compactas -> varios formatos (opcion/vf/escribir/ordenar/completar/huecos)
+   - Packs de vocabulario: lista de palabras -> opcion/emparejar/escribir/vf
+   - safeTopicFactory: para todo tema sin pack, usa el GLOSARIO (siempre correcto)
+   Cada entrada baraja y varía (pick/shuffle), así el orden cambia cada vez.
+============================================================ */
+/* De una "seed" gramatical {q,a,o,s,t,p,f,dato,tema,est} arma UNA pregunta del formato pedido (o null) */
+function composeGrammar(seed, fmt){
+  const base={ sentence:seed.s||'', trad:seed.t||'', pron:seed.p||'', form:seed.f||'', cat:seed.cat||'', extra:seed.dato||'', tema:seed.tema||'', estructura:seed.est||'' };
+  if(fmt==='opcion'){
+    if(!seed.o||!seed.o.length) return null;
+    return Object.assign({formato:'opcion', q:seed.q, opts:makeOptions(seed.a, [seed.a].concat(seed.o), '¡Correcto! '+(seed.dato||seed.f||''), seed.f||('La forma correcta es "'+seed.a+'".'))}, base);
+  }
+  if(fmt==='escribir'){
+    return Object.assign({formato:'escribir', q:'Escribe la palabra correcta — '+seed.q, answer:seed.a, respuestas:[seed.a]}, base, {estructura:seed.est||'Escribe la forma correcta'});
+  }
+  if(fmt==='completar'){
+    if(!seed.s || seed.s.indexOf(seed.a)<0) return null;
+    return Object.assign({formato:'completar', q:'Completa la oración:', template:seed.s.replace(seed.a,'___'), answers:[seed.a]}, base, {estructura:seed.est||'Completa el espacio'});
+  }
+  if(fmt==='huecos'){
+    if(!seed.s || seed.s.indexOf(seed.a)<0 || !seed.o||!seed.o.length) return null;
+    const bank=shuffle([seed.a].concat(seed.o.slice(0,3)));
+    return Object.assign({formato:'huecos', q:'Completa tocando la palabra correcta:', template:seed.s.replace(seed.a,'___'), answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Toca la ficha correcta'});
+  }
+  if(fmt==='ordenar'){
+    const words=String(seed.s||'').replace(/[.?!]$/,'').split(/\s+/).filter(Boolean);
+    if(words.length<3||words.length>8) return null;
+    return Object.assign({formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:words}, base, {estructura:seed.est||'Sujeto + verbo + complemento'});
+  }
+  if(fmt==='vf'){
+    // 50% frase correcta (True) / 50% frase con un error usando un distractor (False)
+    if(Math.random()<0.5 || !seed.o||!seed.o.length){
+      return Object.assign({formato:'vf', q:'"'+seed.s+'" is correct.', answer:true, r:'✅ Verdadero. '+(seed.dato||seed.f||'')}, base, {estructura:'Decide si la oración está bien o mal'});
+    } else {
+      const wrong=pick(seed.o); const wrongSent=seed.s.indexOf(seed.a)>=0?seed.s.replace(seed.a,wrong):seed.s;
+      return Object.assign({formato:'vf', q:'"'+wrongSent+'" is correct.', answer:false, r:'❌ Falso. Lo correcto es "'+seed.s+'". '+(seed.f||'')}, base, {estructura:'Decide si la oración está bien o mal'});
+    }
+  }
+  return null;
+}
+/* De una lista de vocabulario [{en,es,p,c,n}] arma UNA pregunta del formato pedido */
+function composeVocab(list, fmt, tema){
+  const item=pick(list); const cat=item.c?' ('+item.c+')':'';
+  if(fmt==='opcion'){
+    const enToEs=Math.random()<0.5;
+    if(enToEs){ const d=vocabDistract(list,item,'es');
+      return {formato:'opcion', q:'¿Qué significa "'+item.en+'"'+cat+'?', opts:shuffle([{t:item.es,c:1,r:'¡Correcto! "'+item.en+'" = '+item.es+'.'}].concat(d.map(x=>({t:x,c:0,r:'"'+item.en+'" significa "'+item.es+'".'})))), sentence:'', trad:item.en+' = '+item.es, pron:item.p?item.en+' → '+item.p:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'¿Qué significa la palabra?'};
+    } else { const d=vocabDistract(list,item,'en');
+      return {formato:'opcion', q:'¿Cómo se dice "'+item.es+'"'+cat+' en inglés?', opts:shuffle([{t:item.en,c:1,r:'¡Correcto! "'+item.es+'" = '+item.en+'.'}].concat(d.map(x=>({t:x,c:0,r:'"'+item.es+'" se dice "'+item.en+'".'})))), sentence:'', trad:item.es+' = '+item.en, pron:item.p?item.en+' → '+item.p:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'¿Cómo se dice en inglés?'};
+    }
+  }
+  if(fmt==='escribir'){
+    return {formato:'escribir', q:'Escribe en inglés: "'+item.es+'"'+cat, answer:item.en, respuestas:[item.en], sentence:item.en+' = '+item.es, trad:item.es+' = '+item.en, pron:item.p?item.en+' → '+item.p:'', form:'', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'Escribe la palabra en inglés'};
+  }
+  if(fmt==='vf'){
+    const other=pick(list); const same=Math.random()<0.5||other===item;
+    const shown=same?item.es:other.es;
+    return {formato:'vf', q:'"'+item.en+'" significa "'+shown+'".', answer:same, r:same?('✅ Verdadero: "'+item.en+'" = '+item.es+'.'):('❌ Falso: "'+item.en+'" = '+item.es+', no "'+shown+'".'), sentence:item.en+' = '+item.es, trad:item.en+' = '+item.es, pron:item.p?item.en+' → '+item.p:'', form:'', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'Decide si la traducción está bien o mal'};
+  }
+  if(fmt==='emparejar'){
+    const four=shuffle(list).slice(0,4); if(four.length<3) return null;
+    return {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:four.map(x=>({a:x.en,b:x.es})), trad:four.map(x=>x.en+'='+x.es).join(' · '), pron:'', form:'Vocabulario del tema.', cat:'', extra:'', tema:tema||'Vocabulario', estructura:'Une cada palabra con su significado'};
+  }
+  return null;
+}
+/* Formatos que puede producir cada tipo de pack */
+const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar'];
+const VOCAB_FMTS=['opcion','emparejar','escribir','vf'];
+/* Construye un quiz de un tema: pack curado o generador seguro; filtra por tipo; baraja; hasta count */
+function buildTopicQuiz(topicLabel, count, typeSet){
+  count=Math.max(1,Math.min(70,parseInt(count,10)||40));
+  const pack=TOPIC_PACKS[topicLabel];
+  const wantAll=!typeSet || typeSet.has('todos') || typeSet.size===0;
+  let compose, pool, availFmts;
+  if(pack && pack.kind==='vocab'){ availFmts=VOCAB_FMTS; compose=(f)=>composeVocab(pack.list,f,pack.tema||topicLabel); }
+  else if(pack){ availFmts=GRAMMAR_FMTS.slice(); pool=pack.seeds; compose=(f)=>composeGrammar(pick(pool),f); }
+  else { const sf=safeTopicPack(topicLabel); availFmts=VOCAB_FMTS; compose=(f)=>composeVocab(sf.list,f,sf.tema); }
+  let fmts = wantAll ? availFmts.slice() : availFmts.filter(f=>typeSet.has(f));
+  // 'lectura' pedida: si el pack no la trae, no hay lectura para ese tema; se cae a los formatos disponibles
+  if(!fmts.length) fmts=availFmts.slice();
+  const out=[], seen=new Set(); let tries=0, maxTries=count*60;
+  while(out.length<count && tries<maxTries){ tries++;
+    const f=pick(fmts); const q=compose(f); if(!q) continue;
+    const key=(q.formato||'')+'|'+(q.q||'')+'|'+(q.template||'')+'|'+(q.order?q.order.join(','):'');
+    if(seen.has(key)) continue; seen.add(key); out.push(q);
+  }
+  return shuffle(out);
+}
+/* Generador SEGURO para temas sin pack: arma una lista de vocabulario del GLOSARIO
+   (filtrada por el tipo de palabra si el tema lo sugiere) -> preguntas siempre correctas */
+const TOPIC_TIPO_HINT=[
+  [/preposition|prepos/i,'preposición'],[/pronoun|pronombre/i,'pronombre'],[/possessive|posesiv/i,'posesivo'],
+  [/adjective|adjetiv|descri|feelings|colors|clothes|weather/i,'adjetivo'],[/verb|tense|present|past|future|perfect|conditional|gerund|modal|phrasal/i,'verbo'],
+  [/connector|linker|conjunc/i,'conector'],[/number|números/i,'número'],[/wh\b|question word/i,'pregunta Wh'],
+  [/article|artícul/i,'artículo'],[/adverb|adverbio/i,'adverbio']
+];
+function glossaryList(filterTipo){
+  const arr=[];
+  Object.keys(GLOSSARY).forEach(k=>{ const g=GLOSSARY[k]; if(!g||!g.es) return; if(filterTipo && (g.tipo||'').indexOf(filterTipo)<0) return; arr.push({en:k, es:g.es, p:g.pron||'', c:g.tipo||''}); });
+  return arr;
+}
+function safeTopicPack(topicLabel){
+  let tipo=''; for(const [rx,t] of TOPIC_TIPO_HINT){ if(rx.test(topicLabel)){ tipo=t; break; } }
+  let list=glossaryList(tipo);
+  if(list.length<8) list=glossaryList(''); // si el filtro deja pocas, usa todo el glosario
+  return { kind:'vocab', tema:topicLabel.replace(/\s*\([AB][12]\).*$/,'').trim(), list:shuffle(list) };
+}
+/* Helpers para armar seeds gramaticales de forma compacta */
+function gseed(q,a,o,s,t,p,f,dato,tema,est){ return {q,a,o,s,t,p,f,dato:dato||'',tema:tema||'',est:est||''}; }
+/* ---- PACKS CURADOS (a fondo, con contexto de Diego). El resto de temas usa safeTopicPack ---- */
+const TOPIC_PACKS={
+  'Verb To Be — am/is/are (A1)':{ kind:'grammar', seeds:[
+    gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
+    gseed('He ___ my brother.','is',['am','are','be'],'He is my brother.','Él es mi hermano.','ji is mái bráder','He/She/It → is','','Verb To Be','Sujeto + to be + complemento'),
+    gseed('She ___ from Bogotá.','is',['am','are','be'],'She is from Bogotá.','Ella es de Bogotá.','shi is from Bogotá','He/She/It → is','','Verb To Be','Sujeto + to be + complemento'),
+    gseed('We ___ tired.','are',['am','is','be'],'We are tired.','Nosotros estamos cansados.','uí ar táierd','You/We/They → are','','Verb To Be','Sujeto + to be + complemento'),
+    gseed('They ___ my friends.','are',['am','is','be'],'They are my friends.','Ellos son mis amigos.','déi ar mái frends','You/We/They → are','','Verb To Be','Sujeto + to be + complemento'),
+    gseed('Mila and Jasper ___ my dogs.','are',['is','am','be'],'Mila and Jasper are my dogs.','Mila y Jasper son mis perros.','Mila and Jasper ar mái dogs','Dos sujetos → are','Dos o más = plural = "are".','Verb To Be','Sujeto + to be + complemento'),
+    gseed('The table ___ new.','is',['are','am','be'],'The table is new.','La mesa es nueva.','de téibol is niú','El/la (una cosa) → is','','Verb To Be','Sujeto + to be + adjetivo'),
+    gseed('You ___ a good student.','are',['am','is','be'],'You are a good student.','Tú eres un buen estudiante.','iú ar a gud stiúdent','You → are','','Verb To Be','Sujeto + to be + complemento'),
+    gseed('Diego ___ busy today.','is',['are','am','be'],'Diego is busy today.','Diego está ocupado hoy.','Diego is bísi tudéi','Un nombre (él) → is','"to be" es ser Y estar.','Verb To Be','Sujeto + to be + adjetivo'),
+    gseed('The dogs ___ in the garden.','are',['is','am','be'],'The dogs are in the garden.','Los perros están en el jardín.','de dogs ar in de gárden','Plural → are','','Verb To Be','Sujeto + to be + lugar')
+  ]},
+  'Subject Pronouns — I, you, he... (A1)':{ kind:'grammar', seeds:[
+    gseed('___ am a carpenter. (yo)','I',['He','You','They'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','"Yo" = I (siempre mayúscula)','"I" se escribe SIEMPRE con mayúscula.','Subject Pronouns','Pronombre + verbo'),
+    gseed('___ is my sister. (ella)','She',['He','It','They'],'She is my sister.','Ella es mi hermana.','shi is mái síster','"Ella" = She','','Subject Pronouns','Pronombre + verbo'),
+    gseed('___ is my brother. (él)','He',['She','It','We'],'He is my brother.','Él es mi hermano.','ji is mái bráder','"Él" = He','','Subject Pronouns','Pronombre + verbo'),
+    gseed('___ are students. (nosotros)','We',['They','You','He'],'We are students.','Nosotros somos estudiantes.','uí ar stiúdents','"Nosotros" = We','','Subject Pronouns','Pronombre + verbo'),
+    gseed('___ are my dogs. (ellos)','They',['We','You','He'],'They are my dogs.','Ellos son mis perros.','déi ar mái dogs','"Ellos/ellas" = They','','Subject Pronouns','Pronombre + verbo'),
+    gseed('___ is a big table. (eso)','It',['He','She','They'],'It is a big table.','Es una mesa grande.','it is a big téibol','Para cosas/animales = It','"It" se usa para cosas y animales, no para personas.','Subject Pronouns','Pronombre + verbo')
+  ]},
+  'Articles — a/an/the (A1)':{ kind:'grammar', seeds:[
+    gseed('She is ___ engineer.','an',['a','the'],'She is an engineer.','Ella es ingeniera.','shi is an enyiníar','an + sonido de vocal','"an" antes de sonido de vocal (a,e,i,o,u).','Articles','Sujeto + to be + a/an + sustantivo'),
+    gseed('He is ___ carpenter.','a',['an','the'],'He is a carpenter.','Él es carpintero.','ji is a cárpenter','a + sonido de consonante','"carpenter" empieza en consonante → a.','Articles','Sujeto + to be + a/an + sustantivo'),
+    gseed('I have ___ apple.','an',['a','the'],'I have an apple.','Tengo una manzana.','ái jav an ápol','an + vocal (apple)','','Articles','Sujeto + verbo + a/an + sustantivo'),
+    gseed('This is ___ hammer.','a',['an','the'],'This is a hammer.','Esto es un martillo.','dis is a jámer','a + consonante (hammer)','La "h" de hammer suena → consonante → a.','Articles','Demostrativo + to be + a/an + sustantivo'),
+    gseed('I have ___ egg for breakfast.','an',['a','the'],'I have an egg for breakfast.','Como un huevo en el desayuno.','ái jav an eg for brékfast','an + vocal (egg)','','Articles','Sujeto + verbo + a/an + sustantivo'),
+    gseed('It is ___ old house.','an',['a','the'],'It is an old house.','Es una casa vieja.','it is an óuld jáus','an + vocal (old)','Mira la palabra SIGUIENTE: "old" empieza en vocal → an.','Articles','to be + a/an + adjetivo + sustantivo')
+  ]},
+  'Plurals — regular and irregular (A1)':{ kind:'grammar', seeds:[
+    gseed('one dog, two ___','dogs',['doges','dog','doggs'],'two dogs','dos perros','tu dogs','Regular: + s','','Plurals','singular → plural'),
+    gseed('one box, two ___','boxes',['boxs','box','boxies'],'two boxes','dos cajas','tu bóxes','Termina en x → + es','Después de s, x, ch, sh se añade -es.','Plurals','singular → plural'),
+    gseed('one baby, two ___','babies',['babys','babyes','baby'],'two babies','dos bebés','tu béibis','Consonante + y → ies','"baby" → cambia y por ies.','Plurals','singular → plural'),
+    gseed('one man, two ___','men',['mans','mens','man'],'two men','dos hombres','tu men','Irregular: man → men','No usa -s, cambia por dentro.','Plurals','singular → plural'),
+    gseed('one child, two ___','children',['childs','childrens','child'],'two children','dos niños','tu chíldren','Irregular: child → children','','Plurals','singular → plural'),
+    gseed('one foot, two ___','feet',['foots','feets','foot'],'two feet','dos pies','tu fit','Irregular: foot → feet','','Plurals','singular → plural'),
+    gseed('one knife, two ___','knives',['knifes','knife','knifs'],'two knives','dos cuchillos','tu náivs','f → ves','Muchas palabras con f cambian a ves.','Plurals','singular → plural'),
+    gseed('one watch, two ___','watches',['watchs','watch','watchies'],'two watches','dos relojes','tu uátches','Termina en ch → + es','','Plurals','singular → plural')
+  ]},
+  'Possessive Adjectives — my/your/his (A1)':{ kind:'grammar', seeds:[
+    gseed('This is ___ hammer. (de mí)','my',['your','his','her'],'This is my hammer.','Este es mi martillo.','dis is mái jámer','yo → my','','Possessives','Demostrativo + to be + posesivo + sustantivo'),
+    gseed('That is ___ house. (de ella)','her',['his','my','their'],'That is her house.','Esa es su casa (de ella).','dat is jer jáus','ella → her','"her" = su (de ella).','Possessives','Demostrativo + to be + posesivo + sustantivo'),
+    gseed('This is ___ dog. (de él)','his',['her','my','your'],'This is his dog.','Este es su perro (de él).','dis is jis dog','él → his','"his" = su (de él).','Possessives','Demostrativo + to be + posesivo + sustantivo'),
+    gseed('These are ___ tools. (de nosotros)','our',['their','your','my'],'These are our tools.','Estas son nuestras herramientas.','díis ar áur tuls','nosotros → our','','Possessives','Demostrativo + to be + posesivo + sustantivo'),
+    gseed('That is ___ car. (de ellos)','their',['there','our','his'],'That is their car.','Ese es su carro (de ellos).','dat is der car','ellos → their','No confundir "their" (su) con "there" (allá).','Possessives','Demostrativo + to be + posesivo + sustantivo')
+  ]},
+  'Demonstratives — this/that/these/those (A1)':{ kind:'grammar', seeds:[
+    gseed('___ is my hammer. (aquí, uno)','This',['These','That','Those'],'This is my hammer.','Este es mi martillo.','dis is mái jámer','cerca + singular → this','','Demonstratives','Demostrativo + to be + complemento'),
+    gseed('___ is your house. (allá, uno)','That',['Those','This','These'],'That is your house.','Esa es tu casa.','dat is iór jáus','lejos + singular → that','','Demonstratives','Demostrativo + to be + complemento'),
+    gseed('___ are my dogs. (aquí, varios)','These',['This','Those','That'],'These are my dogs.','Estos son mis perros.','díis ar mái dogs','cerca + plural → these','','Demonstratives','Demostrativo + to be + complemento'),
+    gseed('___ are your tools. (allá, varios)','Those',['That','This','These'],'Those are your tools.','Esas son tus herramientas.','dóus ar iór tuls','lejos + plural → those','','Demonstratives','Demostrativo + to be + complemento')
+  ]},
+  'Can / Can\'t — abilities (A1)':{ kind:'grammar', seeds:[
+    gseed('I ___ make furniture. (puedo)','can',['cans','am','do'],'I can make furniture.','Yo puedo hacer muebles.','ái can méik férnicher','can + verbo base','Después de "can" el verbo va SIN to y sin -s.','Can','Sujeto + can + verbo base'),
+    gseed('She ___ speak English. (puede)','can',['cans','is','does'],'She can speak English.','Ella puede hablar inglés.','shi can spik ínglish','can es igual para todos','"She can", no "she cans".','Can','Sujeto + can + verbo base'),
+    gseed('I ___ swim. (no puedo)','cannot',['can not have','cans','do not can'],'I cannot swim.','No puedo nadar.','ái canót suím','negativo → cannot / can’t','"cannot" = "can’t" = no puedo.','Can','Sujeto + cannot + verbo base'),
+    gseed('___ you help me? (¿puedes?)','Can',['Do','Are','Cans'],'Can you help me?','¿Puedes ayudarme?','can iú jelp mi','pregunta → Can al inicio','','Can','Can + sujeto + verbo base?')
+  ]},
+  'There is / There are (A1)':{ kind:'grammar', seeds:[
+    gseed('___ a table in the kitchen. (hay, uno)','There is',['There are','It is','There am'],'There is a table in the kitchen.','Hay una mesa en la cocina.','der is a téibol in de kíchen','singular → There is','','There is/are','There is/are + sustantivo + lugar'),
+    gseed('___ two dogs in the garden. (hay, varios)','There are',['There is','They are','There am'],'There are two dogs in the garden.','Hay dos perros en el jardín.','der ar tu dogs in de gárden','plural → There are','','There is/are','There is/are + sustantivo + lugar'),
+    gseed('___ some water in the glass. (hay)','There is',['There are','It is','There be'],'There is some water in the glass.','Hay algo de agua en el vaso.','der is sam uáter in de glas','incontable → There is','"water" es incontable → is.','There is/are','There is/are + sustantivo + lugar'),
+    gseed('___ many houses in Soacha. (hay)','There are',['There is','It are','There be'],'There are many houses in Soacha.','Hay muchas casas en Soacha.','der ar méni jáuses in Sóacha','plural → There are','','There is/are','There is/are + sustantivo + lugar')
+  ]},
+  'Prepositions of Place — in/on/at/under (A1)':{ kind:'grammar', seeds:[
+    gseed('The hammer is ___ the table. (sobre)','on',['in','under','at'],'The hammer is on the table.','El martillo está sobre la mesa.','de jámer is on de téibol','sobre una superficie → on','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
+    gseed('The tools are ___ the box. (dentro)','in',['on','under','at'],'The tools are in the box.','Las herramientas están dentro de la caja.','de tuls ar in de box','dentro → in','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
+    gseed('The dog is ___ the table. (debajo)','under',['on','in','at'],'The dog is under the table.','El perro está debajo de la mesa.','de dog is ánder de téibol','debajo → under','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
+    gseed('Diego is ___ home. (en)','at',['in','on','under'],'Diego is at home.','Diego está en casa.','Diego is at jóum','"at home" es fijo','"at home" siempre juntos, sin the.','Prepositions of Place','Sujeto + to be + at + lugar')
+  ]},
+  'Present Simple — affirmative (A1)':{ kind:'grammar', seeds:[
+    gseed('Diego ___ furniture every day. (build)','builds',['build','buildes','building'],'Diego builds furniture every day.','Diego construye muebles todos los días.','Diego bilds férnicher évri déi','He/She/It + verbo + s','','Present Simple','Sujeto + verbo (+s con he/she/it)'),
+    gseed('She ___ to work every day. (go)','goes',['go','gos','going'],'She goes to work every day.','Ella va a trabajar todos los días.','shi góus tu uérk évri déi','go → goes (con he/she/it)','Verbos en -o añaden -es: go→goes.','Present Simple','Sujeto + verbo (+es)'),
+    gseed('He ___ English at night. (study)','studies',['studys','study','studdies'],'He studies English at night.','Él estudia inglés en la noche.','ji stádis ínglish at náit','consonante+y → ies','study→studies.','Present Simple','Sujeto + verbo (+ies)'),
+    gseed('I ___ with wood. (work)','work',['works','working','worked'],'I work with wood.','Yo trabajo con madera.','ái uérk uíd wud','I/You/We/They → verbo base','Con I no se añade -s.','Present Simple','Sujeto + verbo base'),
+    gseed('They ___ in Soacha. (live)','live',['lives','living','lifes'],'They live in Soacha.','Ellos viven en Soacha.','déi liv in Sóacha','They → verbo base','','Present Simple','Sujeto + verbo base'),
+    gseed('She ___ TV after dinner. (watch)','watches',['watchs','watch','watching'],'She watches TV after dinner.','Ella ve tele después de la cena.','shi uátches ti-ví áfter díner','watch → watches','Termina en -ch → añade -es.','Present Simple','Sujeto + verbo (+es)')
+  ]},
+  'Numbers, Days and Dates — spelling traps: forty (A1)':{ kind:'grammar', seeds:[
+    gseed('40 in English is ___','forty',['fourty','fourthy','forti'],'40 = forty','cuarenta','fórti','40 pierde la U de four','TRAMPA: es "forty", NO "fourty".','Numbers','¿Cómo se escribe el número?'),
+    gseed('14 in English is ___','fourteen',['fortteen','fourty','forteen'],'14 = fourteen','catorce','fórtin','14 SÍ lleva la U (four+teen)','No confundir 14 (fourteen) con 40 (forty).','Numbers','¿Cómo se escribe el número?'),
+    gseed('13 in English is ___','thirteen',['thirtteen','threeteen','thurteen'],'13 = thirteen','trece','zértin','13 = thirteen','','Numbers','¿Cómo se escribe el número?'),
+    gseed('30 in English is ___','thirty',['thirthy','thurty','thirdy'],'30 = thirty','treinta','zérti','30 = thirty','No confundir 13 (thirteen) con 30 (thirty).','Numbers','¿Cómo se escribe el número?'),
+    gseed('12 in English is ___','twelve',['twelf','twelth','twenteen'],'12 = twelve','doce','tuélv','12 = twelve','','Numbers','¿Cómo se escribe el número?'),
+    gseed('The first day of the week (Monday) — Wednesday means ___','miércoles',null,'Wednesday = miércoles','miércoles','uénsdei','Wednesday tiene una d muda','TRAMPA de escritura: Wed-nes-day.','Days','¿Qué día es?')
+  ]},
+  'Family and People Vocabulary (A1)':{ kind:'vocab', tema:'Family', list:[
+    {en:'mother',es:'madre',p:'máder',c:'sustantivo'},{en:'father',es:'padre',p:'fáder',c:'sustantivo'},
+    {en:'brother',es:'hermano',p:'bráder',c:'sustantivo'},{en:'sister',es:'hermana',p:'síster',c:'sustantivo'},
+    {en:'son',es:'hijo',p:'san',c:'sustantivo'},{en:'daughter',es:'hija',p:'dóter',c:'sustantivo'},
+    {en:'wife',es:'esposa',p:'uáif',c:'sustantivo'},{en:'husband',es:'esposo',p:'jásband',c:'sustantivo'},
+    {en:'grandmother',es:'abuela',p:'gránmader',c:'sustantivo'},{en:'grandfather',es:'abuelo',p:'gránfader',c:'sustantivo'},
+    {en:'uncle',es:'tío',p:'áncol',c:'sustantivo'},{en:'aunt',es:'tía',p:'ant',c:'sustantivo'},
+    {en:'cousin',es:'primo/a',p:'cásin',c:'sustantivo'},{en:'child',es:'niño/a',p:'cháild',c:'sustantivo'},{en:'baby',es:'bebé',p:'béibi',c:'sustantivo'}
+  ]},
+  'Jobs and Occupations (A1)':{ kind:'vocab', tema:'Jobs', list:[
+    {en:'carpenter',es:'carpintero',p:'cárpenter',c:'sustantivo'},{en:'teacher',es:'profesor(a)',p:'tícher',c:'sustantivo'},
+    {en:'doctor',es:'doctor(a)',p:'dóctor',c:'sustantivo'},{en:'engineer',es:'ingeniero(a)',p:'enyiníar',c:'sustantivo'},
+    {en:'driver',es:'conductor',p:'dráiver',c:'sustantivo'},{en:'nurse',es:'enfermero(a)',p:'ners',c:'sustantivo'},
+    {en:'cook',es:'cocinero(a)',p:'cuk',c:'sustantivo'},{en:'farmer',es:'granjero',p:'fármer',c:'sustantivo'},
+    {en:'police officer',es:'policía',p:'polís ófiser',c:'sustantivo'},{en:'waiter',es:'mesero',p:'uéiter',c:'sustantivo'},
+    {en:'student',es:'estudiante',p:'stiúdent',c:'sustantivo'},{en:'seller',es:'vendedor',p:'séler',c:'sustantivo'}
+  ]},
+  'Colors and Clothes (A1)':{ kind:'vocab', tema:'Colors & Clothes', list:[
+    {en:'red',es:'rojo',p:'red',c:'adjetivo'},{en:'blue',es:'azul',p:'blu',c:'adjetivo'},{en:'green',es:'verde',p:'grin',c:'adjetivo'},
+    {en:'yellow',es:'amarillo',p:'iélou',c:'adjetivo'},{en:'black',es:'negro',p:'blak',c:'adjetivo'},{en:'white',es:'blanco',p:'uáit',c:'adjetivo'},
+    {en:'brown',es:'marrón',p:'bráun',c:'adjetivo'},{en:'shirt',es:'camisa',p:'shert',c:'sustantivo'},{en:'pants',es:'pantalón',p:'pants',c:'sustantivo'},
+    {en:'shoes',es:'zapatos',p:'shus',c:'sustantivo'},{en:'jacket',es:'chaqueta',p:'yáket',c:'sustantivo'},{en:'hat',es:'sombrero',p:'jat',c:'sustantivo'},
+    {en:'dress',es:'vestido',p:'dres',c:'sustantivo'},{en:'socks',es:'medias',p:'soks',c:'sustantivo'}
+  ]},
+  'Food and Drinks (A1)':{ kind:'vocab', tema:'Food', list:[
+    {en:'bread',es:'pan',p:'bred',c:'sustantivo'},{en:'milk',es:'leche',p:'milk',c:'sustantivo'},{en:'coffee',es:'café',p:'cófi',c:'sustantivo'},
+    {en:'water',es:'agua',p:'uáter',c:'sustantivo'},{en:'apple',es:'manzana',p:'ápol',c:'sustantivo'},{en:'chicken',es:'pollo',p:'chíken',c:'sustantivo'},
+    {en:'rice',es:'arroz',p:'ráis',c:'sustantivo'},{en:'egg',es:'huevo',p:'eg',c:'sustantivo'},{en:'meat',es:'carne',p:'mit',c:'sustantivo'},
+    {en:'fish',es:'pescado',p:'fish',c:'sustantivo'},{en:'cheese',es:'queso',p:'chis',c:'sustantivo'},{en:'sugar',es:'azúcar',p:'shúgar',c:'sustantivo'},
+    {en:'soup',es:'sopa',p:'sup',c:'sustantivo'},{en:'juice',es:'jugo',p:'yus',c:'sustantivo'}
+  ]},
+  'Animals and Pets (A1)':{ kind:'vocab', tema:'Animals', list:[
+    {en:'dog',es:'perro',p:'dog',c:'sustantivo'},{en:'cat',es:'gato',p:'cat',c:'sustantivo'},{en:'bird',es:'pájaro',p:'berd',c:'sustantivo'},
+    {en:'horse',es:'caballo',p:'jors',c:'sustantivo'},{en:'cow',es:'vaca',p:'cáu',c:'sustantivo'},{en:'chicken',es:'gallina',p:'chíken',c:'sustantivo'},
+    {en:'fish',es:'pez',p:'fish',c:'sustantivo'},{en:'rabbit',es:'conejo',p:'rábit',c:'sustantivo'},{en:'mouse',es:'ratón',p:'máus',c:'sustantivo'},
+    {en:'pig',es:'cerdo',p:'pig',c:'sustantivo'},{en:'duck',es:'pato',p:'dak',c:'sustantivo'},{en:'sheep',es:'oveja',p:'ship',c:'sustantivo'}
+  ]},
+  'House, Rooms and Furniture (A1)':{ kind:'vocab', tema:'House', list:[
+    {en:'house',es:'casa',p:'jáus',c:'sustantivo'},{en:'kitchen',es:'cocina',p:'kíchen',c:'sustantivo'},{en:'bedroom',es:'dormitorio',p:'bédrum',c:'sustantivo'},
+    {en:'bathroom',es:'baño',p:'bázrum',c:'sustantivo'},{en:'table',es:'mesa',p:'téibol',c:'sustantivo'},{en:'chair',es:'silla',p:'cher',c:'sustantivo'},
+    {en:'bed',es:'cama',p:'bed',c:'sustantivo'},{en:'door',es:'puerta',p:'dor',c:'sustantivo'},{en:'window',es:'ventana',p:'uíndou',c:'sustantivo'},
+    {en:'closet',es:'clóset',p:'clóset',c:'sustantivo'},{en:'shelf',es:'estante',p:'shelf',c:'sustantivo'},{en:'drawer',es:'cajón',p:'dróer',c:'sustantivo'},
+    {en:'sofa',es:'sofá',p:'sóufa',c:'sustantivo'},{en:'wall',es:'pared',p:'uól',c:'sustantivo'},{en:'floor',es:'piso',p:'flor',c:'sustantivo'}
+  ]}
+};
+/* ---- DIÁLOGOS PREDETERMINADOS (situaciones curadas). El resto sigue por instructivo ---- */
+const DIALOG_PACKS={
+  'Greetings and Introductions (A1)':{ tema:'Greetings', build:(name)=>dialogQuiz('Greetings and Introductions', [
+    {quien:name||'Diego', en:'Hello! My name is '+(name||'Diego')+'.', es:'¡Hola! Me llamo '+(name||'Diego')+'.', pron:'jelóu, mái néim is '+(name||'Diego')},
+    {quien:'Leidy', en:'Hi! Nice to meet you. I am Leidy.', es:'¡Hola! Mucho gusto. Soy Leidy.', pron:'jái, náis tu mit iú. ái am Leidy'},
+    {quien:name||'Diego', en:'Nice to meet you too. How are you?', es:'Mucho gusto también. ¿Cómo estás?', pron:'náis tu mit iú tú. jáu ar iú'},
+    {quien:'Leidy', en:'I am fine, thank you. And you?', es:'Estoy bien, gracias. ¿Y tú?', pron:'ái am fáin, zénk iú. and iú'},
+    {quien:name||'Diego', en:'I am very well. Where are you from?', es:'Estoy muy bien. ¿De dónde eres?', pron:'ái am véri uél. uér ar iú from'},
+    {quien:'Leidy', en:'I am from Colombia. See you later!', es:'Soy de Colombia. ¡Nos vemos!', pron:'ái am from Colómbia. si iú léiter'}
+  ], [
+    {formato:'opcion', tema:'Greetings', q:'What is the name of the second person?', opts:shuffle([{t:'Leidy',c:1,r:'✅ Ella dice "I am Leidy".'},{t:'Mila',c:0,r:'❌ No dijo Mila.'},{t:'Diego',c:0,r:'❌ Diego es la primera persona.'}]), sentence:'Her name is Leidy.', trad:'Ella se llama Leidy.', pron:'jer néim is Leidy', estructura:'Comprensión del diálogo', extra:'"name" = nombre.'},
+    {formato:'vf', tema:'Greetings', q:'"Nice to meet you" means "mucho gusto".', answer:true, r:'✅ Verdadero: es el saludo al conocer a alguien.', sentence:'Nice to meet you.', trad:'Mucho gusto.', pron:'náis tu mit iú', estructura:'Verdadero o falso', extra:''},
+    {formato:'escribir', tema:'Greetings', q:'¿Cómo se dice "gracias" en inglés? (dos palabras)', answer:'thank you', respuestas:['thank you','thanks'], sentence:'Thank you.', trad:'Gracias.', pron:'zénk iú', estructura:'Escribe la expresión', extra:''}
+  ])}
+};
+/* Arma un objeto de quiz de diálogo (una "lectura" con dialogue + subs) */
+function dialogQuiz(tema, lines, subs){ return [{ formato:'dialogo', q:'Lee y practica esta conversación:', dialogue:lines, subs:subs, tema:tema }]; }
+
 
 /* ============================================================ IMPORTAR CÓDIGO DE UNA IA ============================================================ */
 const AI_PROMPT = `Actúa como profesor experto de inglés para un hispanohablante principiante.
@@ -1759,6 +2060,65 @@ function updateGenSummary(){
 /* Al elegir un tema del curso, se agrega como ficha (se pueden acumular varios) */
 function onCourseSel(){ const s=document.getElementById('gen-course'); if(s && s.value){ pushTopic(selTopics,'gen-chips',false,s.value); s.value=''; } }
 function onCourseSelD(){ const s=document.getElementById('gen-course-d'); if(s && s.value){ pushTopic(selTopicsD,'gen-chips-d',true,s.value); s.value=''; } }
+
+/* ============================================================
+   PICKER DE QUIZ LISTO (juega sin pegar código)
+============================================================ */
+const readyFmts=new Set(['todos']); let readyCount=40;
+function initReadyPicker(){
+  // clona la lista de temas del generador (135) al picker, con marca ⭐ si es curado a fondo
+  const src=document.getElementById('gen-course'), dst=document.getElementById('ready-course');
+  if(src && dst){ dst.innerHTML=src.innerHTML; dst.querySelectorAll('option').forEach(o=>{ const v=o.value; o.setAttribute('value',v); if(v && TOPIC_PACKS[v]) o.textContent='⭐ '+o.textContent; }); const first=dst.querySelector('option'); if(first) first.textContent='— Elige un tema y juega —'; }
+  const srcD=document.getElementById('gen-course-d'), dstD=document.getElementById('ready-course-d');
+  if(srcD && dstD){ dstD.innerHTML=srcD.innerHTML; dstD.querySelectorAll('option').forEach(o=>{ const v=o.value; o.setAttribute('value',v); if(v && DIALOG_PACKS[v]) o.textContent='⭐ '+o.textContent; }); const f=dstD.querySelector('option'); if(f) f.textContent='— Elige una situación lista —'; }
+  buildReadyFmtChips(); buildReadyCountChips(); updateReadySummary();
+}
+function buildReadyFmtChips(){
+  const box=document.getElementById('ready-fmts'); if(!box) return; box.innerHTML='';
+  GEN_FMTS.forEach(pair=>{ const k=pair[0], on=readyFmts.has(k);
+    const b=document.createElement('button'); b.type='button'; b.textContent=pair[1];
+    b.className='text-xs font-bold rounded-full px-3 py-1.5 border-2 transition '+(on?'bg-teal-600 text-white border-teal-600 shadow':'bg-white text-slate-600 border-slate-200 hover:border-teal-300');
+    b.onclick=()=>{ if(k==='todos'){ readyFmts.clear(); readyFmts.add('todos'); } else { readyFmts.delete('todos'); if(readyFmts.has(k)) readyFmts.delete(k); else readyFmts.add(k); if(!readyFmts.size) readyFmts.add('todos'); } buildReadyFmtChips(); updateReadySummary(); };
+    box.appendChild(b);
+  });
+}
+function buildReadyCountChips(){
+  const box=document.getElementById('ready-counts'); if(!box) return; box.innerHTML='';
+  GEN_COUNTS.forEach(n=>{ const on=n===readyCount;
+    const b=document.createElement('button'); b.type='button'; b.textContent=n;
+    b.className='text-sm font-bold rounded-full px-4 py-1.5 border-2 transition '+(on?'bg-teal-600 text-white border-teal-600 shadow':'bg-white text-slate-600 border-slate-200 hover:border-teal-300');
+    b.onclick=()=>{ readyCount=n; buildReadyCountChips(); updateReadySummary(); };
+    box.appendChild(b);
+  });
+}
+function readyTopic(){ const t=(document.getElementById('ready-topic').value||'').trim(); if(t) return t; const s=document.getElementById('ready-course'); return s&&s.value?String(s.value).replace(/^⭐\s*/,''):''; }
+function onReadyCourse(){ const s=document.getElementById('ready-course'); if(s&&s.value){ document.getElementById('ready-topic').value=''; } updateReadySummary(); }
+function updateReadySummary(){
+  const el=document.getElementById('ready-summary'); if(!el) return;
+  const topic=readyTopic();
+  let tipos; if(readyFmts.has('todos')) tipos='Variados'; else tipos=GEN_FMTS.filter(p=>readyFmts.has(p[0])).map(p=>p[1].replace(/^[^ ]+ /,'')).join(', ');
+  if(!topic){ el.innerHTML='🎯 Elige un tema (o escribe el tuyo) para jugar ya.'; return; }
+  const curado=!!TOPIC_PACKS[topic];
+  el.innerHTML='▶️ <b>'+readyCount+'</b> preguntas · Tipo: <b>'+tipos+'</b> · '+(curado?'⭐ quiz de profesor (a fondo, con trampitas)':'✅ generado del diccionario (vocabulario del tema)');
+}
+function playReady(){
+  const topic=readyTopic();
+  if(!topic){ alert('🎯 Elige un tema del curso o escribe el tuyo.'); return; }
+  const q=buildTopicQuiz(topic, readyCount, readyFmts);
+  if(!q || !q.length){ alert('No pude armar preguntas de ese tema con ese tipo. Prueba con "Variados" o con otro tipo.'); return; }
+  quiz=q; customQuestions=quiz; extraGlossary={}; extraPhrases={};
+  const tipos=readyFmts.has('todos')?'':' · '+GEN_FMTS.filter(p=>readyFmts.has(p[0])).map(p=>p[0]).join('/');
+  launchQuiz(topic.replace(/^⭐ /,'')+' ('+q.length+' preguntas'+tipos+')');
+}
+function playReadyD(){
+  const s=document.getElementById('ready-course-d'); const sit=s&&s.value?String(s.value).replace(/^⭐\s*/,''):'';
+  if(!sit){ alert('🎯 Elige una situación.'); return; }
+  const pack=DIALOG_PACKS[sit];
+  if(!pack){ alert('Esa situación todavía no tiene diálogo listo. Úsala con el instructivo (paso 1) por ahora, o elige una con ⭐.'); return; }
+  const q=pack.build(getName());
+  quiz=q; customQuestions=quiz; extraGlossary={}; extraPhrases={};
+  launchQuiz(sit.replace(/^⭐ /,''));
+}
 function addCustomTopic(){ const t=document.getElementById('gen-topic'); pushTopic(selTopics,'gen-chips',false,t.value); t.value=''; }
 function addCustomTopicD(){ const t=document.getElementById('gen-topic-d'); pushTopic(selTopicsD,'gen-chips-d',true,t.value); t.value=''; }
 /* Tipos de pregunta a practicar: uno, varios o todos */
@@ -2102,7 +2462,7 @@ document.getElementById('import-file').addEventListener('change', async e=>{ con
 
 // Arranque: estudiante activo, avance pendiente, guardados y ranking
 selectStudent(getName()||getStudents()[0]);
-renderResume(); renderSaved(); renderRanking(); buildFmtChips(); buildCountChips(); updateGenSummary();
+renderResume(); renderSaved(); renderRanking(); buildFmtChips(); buildCountChips(); updateGenSummary(); initReadyPicker();
 // Si abriste un enlace de invitación (?sala=ID), entras como invitado (modo en vivo)
 (function(){ try{ const sala=new URLSearchParams(location.search).get('sala'); if(sala){ guestJoin(sala); } }catch(e){} })();
 // Si abriste un enlace compartido (#d=...), cargas el MISMO diálogo (pantalla duplicada)

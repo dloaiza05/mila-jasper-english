@@ -62,22 +62,19 @@
     <!-- ===== PANEL: QUIZ NORMAL (como estaba) ===== -->
     <div id="panel-normal">
     <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
-      <h3 class="font-extrabold text-violet-700 text-lg mb-4">🧙 1) Arma el instructivo del quiz</h3>
-      <div class="space-y-4">
-        <div>
-          <p class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién va a estudiar?</p>
+      <h3 class="font-extrabold text-violet-700 text-lg mb-1">🧙 1) Arma el instructivo del quiz</h3>
+      <p class="text-xs text-slate-500 mb-4">Elige quién estudia, uno o varios temas, los tipos de pregunta y cuántas. Luego copia el instructivo y pégalo en tu IA.</p>
+      <div class="space-y-3">
+        <!-- Paso A: quién -->
+        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+          <p class="text-sm font-extrabold text-slate-700 mb-2">👤 ¿Quién va a estudiar?</p>
           <div id="students-row" class="flex flex-wrap gap-2"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <p class="text-sm font-bold text-slate-700 mb-2">🔢 Cantidad de preguntas</p>
-            <select id="gen-count" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none">
-              <option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option>
-            </select>
-          </div>
-          <div class="md:col-span-2">
-            <p class="text-sm font-bold text-slate-700 mb-2">📚 Temas — elige del curso (A1 → B2) o escribe el tuyo. ¡Puedes elegir VARIOS a la vez!</p>
-            <select id="gen-course" onchange="onCourseSel()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none mb-2">
+        <!-- Paso B: temas -->
+        <div class="bg-violet-50/50 rounded-xl p-3 border border-violet-100">
+          <p class="text-sm font-extrabold text-slate-700 mb-1">📚 ¿Qué temas?</p>
+          <p class="text-xs text-slate-500 mb-2">Elige del curso (A1 → B2) o escribe el tuyo. Puedes juntar <b>varios a la vez</b>.</p>
+          <select id="gen-course" onchange="onCourseSel()" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:border-violet-400 outline-none mb-2">
               <option value="">— Elige un tema del curso —</option>
               <optgroup label="🟢 A1 · Principiante (aquí se empieza)">
                 <option>Verb To Be — am/is/are (A1)</option>
@@ -223,18 +220,27 @@
                 <option>Ellipsis — So do I / Neither do I (B2)</option>
               </optgroup>
             </select>
-            <div class="flex gap-2">
-              <input id="gen-topic" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTopic();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="✏️ O escribe tu propio tema y toca ➕ (ej: vocabulario de carpintería)"/>
-              <button type="button" onclick="addCustomTopic()" title="Agregar este tema a la lista" class="bg-violet-100 hover:bg-violet-200 text-violet-700 font-extrabold rounded-xl px-4 text-lg">➕</button>
-            </div>
-            <div id="gen-chips" class="flex flex-wrap gap-1.5 mt-2"></div>
+          <div class="flex gap-2">
+            <input id="gen-topic" type="text" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTopic();}" class="flex-1 border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:border-violet-400 outline-none" placeholder="✏️ Escribe tu propio tema y toca ➕ (ej: vocabulario de carpintería)"/>
+            <button type="button" onclick="addCustomTopic()" title="Agregar este tema a la lista" class="bg-violet-600 hover:bg-violet-700 text-white font-extrabold rounded-xl px-4 text-lg shrink-0">➕</button>
           </div>
+          <div id="gen-chips" class="flex flex-wrap gap-1.5 mt-2"></div>
         </div>
-        <div>
-          <p class="text-sm font-bold text-slate-700 mb-2">🧩 Tipos de pregunta — toca los que quieras practicar (uno, varios o deja 🌟 Todos)</p>
+        <!-- Paso C: tipos de pregunta -->
+        <div class="bg-violet-50/50 rounded-xl p-3 border border-violet-100">
+          <p class="text-sm font-extrabold text-slate-700 mb-1">🧩 ¿Qué tipos de pregunta?</p>
+          <p class="text-xs text-slate-500 mb-2">Toca uno o varios. Con <b>🌟 Todos</b> mezcla los 8 tipos.</p>
           <div id="gen-fmts" class="flex flex-wrap gap-1.5"></div>
         </div>
-        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz</button>
+        <!-- Paso D: cantidad -->
+        <div class="bg-violet-50/50 rounded-xl p-3 border border-violet-100">
+          <p class="text-sm font-extrabold text-slate-700 mb-2">🔢 ¿Cuántas preguntas?</p>
+          <div id="gen-counts" class="flex flex-wrap gap-1.5"></div>
+          <select id="gen-count" class="hidden"><option>10</option><option>20</option><option>30</option><option selected>40</option><option>50</option><option>70</option></select>
+        </div>
+        <!-- Resumen en vivo -->
+        <div id="gen-summary" class="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-amber-800 font-medium"></div>
+        <button onclick="generatePrompt()" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-extrabold py-3.5 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">📋 Copiar instructivo del quiz</button>
         <p id="gen-status" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en tu IA y trae el código al paso 2.</p>
       </div>
     </div>
@@ -477,8 +483,11 @@
         <span id="format-badge" class="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span>
       </div>
       <h3 id="question-text" class="text-lg md:text-2xl font-bold mb-1 text-slate-800 leading-snug"></h3>
-      <p id="q-trad" class="hidden mb-0.5 text-sm text-blue-700 font-medium border-l-4 border-blue-300 pl-2">📖 </p>
-      <p id="q-pron" class="hidden mb-2 text-sm text-purple-700 italic">🗣️ </p>
+      <p id="q-pron" class="hidden mb-1 text-sm text-purple-700 italic">🗣️ </p>
+      <div id="q-trad-wrap" class="hidden mb-2">
+        <button id="q-trad-btn" type="button" onclick="toggleQTrad()" class="text-xs font-bold text-blue-600 hover:text-blue-800 underline">📖 Ver traducción</button>
+        <div id="q-trad" class="hidden mt-1 text-sm text-blue-800 bg-blue-50 border-l-4 border-blue-300 rounded-r px-2 py-1 font-medium"></div>
+      </div>
       <!-- Estructura de cómo responder, siempre visible -->
       <p id="structure-line" class="hidden mb-4 text-xs md:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5"></p>
 
@@ -508,6 +517,7 @@
           <div id="learn-trad-wrap"><span class="font-bold text-slate-700">📖 Significa:</span> <span id="learn-trad" class="text-blue-700"></span></div>
           <div id="learn-pron-wrap"><span class="font-bold text-slate-700">🗣️ Se pronuncia:</span> <span id="learn-pron" class="text-purple-700 italic"></span></div>
           <div id="learn-cat-wrap"><span class="font-bold text-slate-700">🏷️ Tipo:</span> <span id="learn-cat" class="text-indigo-700"></span></div>
+          <div id="learn-vocab-wrap"><span class="font-bold text-slate-700">📚 Palabras:</span> <span id="learn-vocab" class="text-teal-700"></span></div>
           <div id="learn-extra-wrap"><span class="font-bold text-slate-700">💡 Dato:</span> <span id="learn-extra" class="text-emerald-700"></span></div>
         </div>
       </div>
@@ -569,14 +579,54 @@ function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function norm(s){ return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[‘’`´]/g,"'").trim().replace(/[.,;:!?¡¿"']/g,'').replace(/\s+/g,' ').trim(); }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 /* envuelve cada palabra en un span tocable (long-press = traducción) */
-function wordSpanify(text){ return String(text).split(/(\s+)/).map(tok=>{ if(/[A-Za-zÀ-ÿ]/.test(tok)) return '<span class="wtap">'+escapeHtml(tok)+'</span>'; return escapeHtml(tok); }).join(''); }
+function wordSpanify(text){ return String(text).split(/(\s+)/).map(tok=>{ if(/[A-Za-zÀ-ÿ0-9]/.test(tok)) return '<span class="wtap">'+escapeHtml(tok)+'</span>'; return escapeHtml(tok); }).join(''); }
+/* ---- NÚMEROS, LETRAS y SÍMBOLOS: cómo se dicen y suenan en inglés ---- */
+const NUM_EN_ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const NUM_EN_TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const NUM_ES_ONES=['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve'];
+const NUM_ES_TENS=['','','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+const NUM_ES_HUND=['','cien','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+const NUM_PRON_MAP={zero:'síro',one:'uán',two:'tú',three:'zrí',four:'for',five:'fáiv',six:'six',seven:'séven',eight:'éit',nine:'náin',ten:'ten',eleven:'iléven',twelve:'tuélv',thirteen:'zértin',fourteen:'fórtin',fifteen:'fíftin',sixteen:'síkstin',seventeen:'séventin',eighteen:'éitin',nineteen:'náintin',twenty:'tuénti',thirty:'zérti',forty:'fórti',fifty:'fífti',sixty:'síksti',seventy:'séventi',eighty:'éiti',ninety:'náinti',hundred:'jándred',thousand:'záusand',and:'and',minus:'máinus',point:'póint'};
+const LETTER_PRON={a:'ei',b:'bi',c:'si',d:'di',e:'i',f:'ef',g:'yi',h:'éich',i:'ái',j:'yéi',k:'kéi',l:'el',m:'em',n:'en',o:'ou',p:'pi',q:'kiú',r:'ar',s:'es',t:'ti',u:'iú',v:'vi',w:'dábliu',x:'ex',y:'uái',z:'zi'};
+const SYMBOL_INFO={'?':{en:'question mark',es:'signo de interrogación',pron:'cuéschon mark'},'!':{en:'exclamation mark',es:'signo de admiración',pron:'exclaméishon mark'},'.':{en:'dot / period',es:'punto',pron:'píriod'},',':{en:'comma',es:'coma',pron:'cóma'},'&':{en:'and (ampersand)',es:'y',pron:'and'},'%':{en:'percent',es:'por ciento',pron:'per sént'},'$':{en:'dollars',es:'dólares',pron:'dólars'},'@':{en:'at',es:'arroba',pron:'at'},'#':{en:'number / hashtag',es:'numeral',pron:'jáshtag'},'+':{en:'plus',es:'más',pron:'plas'},'=':{en:'equals',es:'igual',pron:'ícuals'},'/':{en:'slash',es:'barra',pron:'slash'},':':{en:'colon',es:'dos puntos',pron:'cólon'},'"':{en:'quotes',es:'comillas',pron:'cuóts'}};
+function numToWords(n){ n=parseInt(n,10); if(isNaN(n)) return null;
+  if(n<0){ const p=numToWords(-n); return {en:'minus '+p.en, es:'menos '+p.es}; }
+  if(n<20) return {en:NUM_EN_ONES[n], es:NUM_ES_ONES[n]};
+  if(n<100){ const t=Math.floor(n/10),o=n%10; return {en:NUM_EN_TENS[t]+(o?'-'+NUM_EN_ONES[o]:''), es:(t===2&&o?('veinti'+NUM_ES_ONES[o]):NUM_ES_TENS[t]+(o?' y '+NUM_ES_ONES[o]:''))}; }
+  if(n<1000){ const h=Math.floor(n/100),r=n%100; const rp=r?numToWords(r):null; return {en:NUM_EN_ONES[h]+' hundred'+(rp?' '+rp.en:''), es:((h===1&&!r)?'cien':NUM_ES_HUND[h])+(rp?' '+rp.es:'')}; }
+  if(n<=999999){ const th=Math.floor(n/1000),r=n%1000; const tp=numToWords(th),rp=r?numToWords(r):null; return {en:tp.en+' thousand'+(rp?' '+rp.en:''), es:(th===1?'mil':tp.es+' mil')+(rp?' '+rp.es:'')}; }
+  return {en:String(n), es:String(n)}; }
+function numPron(enWords){ return String(enWords).replace(/-/g,' ').split(/\s+/).map(w=>NUM_PRON_MAP[w]||w).join(' '); }
+/* Info de un token NO alfabético (número, hora, letra sola, símbolo). Devuelve {en,es,pron,tipo} o null */
+function tokenInfo(tok){
+  const t=String(tok).trim(); if(!t) return null;
+  // hora 3:30, 10:15
+  const hm=t.match(/^(\d{1,2}):(\d{2})$/);
+  if(hm){ const h=numToWords(hm[1]), m=parseInt(hm[2],10); const mw=m===0?{en:"o'clock",es:'en punto'}:numToWords(m);
+    return {en:h.en+' '+mw.en, es:'las '+h.es+(m?' y '+mw.es:' en punto'), pron:numPron(h.en)+' '+(m===0?'oclók':numPron(mw.en)), tipo:'hora'}; }
+  // número entero (permite separador de miles con , o .)
+  const clean=t.replace(/[.,](?=\d{3}(\D|$))/g,'');
+  if(/^-?\d+$/.test(clean)){ const nw=numToWords(clean); if(nw) return {en:nw.en, es:nw.es, pron:numPron(nw.en), tipo:'número'}; }
+  // decimal 3.5
+  const dec=t.match(/^(\d+)\.(\d+)$/);
+  if(dec){ const a=numToWords(dec[1]); const digs=dec[2].split('').map(d=>numToWords(d)); return {en:a.en+' point '+digs.map(d=>d.en).join(' '), es:a.es+' punto '+digs.map(d=>d.es).join(' '), pron:numPron(a.en)+' póint '+digs.map(d=>numPron(d.en)).join(' '), tipo:'decimal'}; }
+  // letra sola
+  if(/^[A-Za-z]$/.test(t)){ return {en:'the letter '+t.toUpperCase(), es:'la letra '+t.toUpperCase(), pron:LETTER_PRON[t.toLowerCase()]||t, tipo:'letra'}; }
+  // símbolo
+  if(SYMBOL_INFO[t]) return Object.assign({tipo:'símbolo'}, SYMBOL_INFO[t]);
+  return null;
+}
 /* Convierte una frase en inglés a "cómo suena" en español latino, palabra por palabra (glosario).
    Devuelve '' si no reconoce suficientes palabras en inglés (para no ensuciar textos en español). */
 function phon(text){
   const toks=String(text).split(/(\s+)/); let hits=0, engWords=0; const out=[];
   toks.forEach(tok=>{
     const w=tok.replace(/[^A-Za-z']/g,'');
-    if(!w){ out.push(tok); return; }
+    if(!w){ // no tiene letras: ¿es número/símbolo con pronunciación?
+      const ti=tokenInfo(tok.trim());
+      if(ti&&ti.pron){ engWords++; hits++; out.push(ti.pron); } else out.push(tok);
+      return;
+    }
     engWords++;
     const kk=norm(w);
     const g=(typeof extraGlossary!=='undefined'&&extraGlossary[kk])||(typeof LEARNED!=='undefined'&&LEARNED[kk])||GLOSSARY[kk];
@@ -593,7 +643,7 @@ function phonHTML(text){
   toks.forEach(tok=>{
     if(/^\s+$/.test(tok)){ parts.push({sp:tok}); return; }
     const w=tok.replace(/[^A-Za-z']/g,'');
-    if(!w){ parts.push({txt:tok}); return; }
+    if(!w){ const ti=tokenInfo(tok.trim()); if(ti&&ti.pron){ eng++; hits++; parts.push({txt:ti.pron}); } else parts.push({txt:tok}); return; }
     eng++;
     const kk=norm(w); const g=extraGlossary[kk]||LEARNED[kk]||GLOSSARY[kk];
     if(g&&g.pron){ hits++; parts.push({txt:tok.replace(w,g.pron)}); } else parts.push({txt:tok});
@@ -834,7 +884,7 @@ function learnDict(glossary, phrases){
   if(n){ try{ localStorage.setItem('mj_dict', JSON.stringify(LEARNED)); localStorage.setItem('mj_dict_fr', JSON.stringify(LEARNED_FR)); }catch(e){} }
   return n;
 }
-function lookupWord(w){ const k=norm(w); if(!k) return null; return extraGlossary[k]||LEARNED[k]||GLOSSARY[k]||null; }
+function lookupWord(w){ const k=norm(w); if(k){ const g=extraGlossary[k]||LEARNED[k]||GLOSSARY[k]; if(g) return g; } const ti=tokenInfo(String(w).trim()); return ti||null; }
 /* Exporta lo aprendido para que Claude lo consolide en la biblioteca del código (GitHub) */
 function exportLearned(){
   const n=Object.keys(LEARNED).length, f=Object.keys(LEARNED_FR).length;
@@ -1044,7 +1094,7 @@ A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
 1. "traduccion": la traducción REAL y completa de la frase u oración al español (no la regla, no un resumen).
 2. "pronunciacion": cómo suena TODA la frase en español latino, ej "de dog is bísi". Nunca símbolos fonéticos.
 3. "regla": la regla gramatical en una línea.
-4. "dato": contexto, curiosidad o mini-historia (por qué se usa, de dónde viene, error común).
+4. "dato": OBLIGATORIO y GENEROSO (2 a 4 frases). Enséñale de verdad: por qué se usa, con qué palabras se combina, el error típico de un hispanohablante, un ejemplo extra de uso en la vida real y, si aplica, de dónde viene o cómo distinguirlo de algo parecido. Que el alumno salga sabiendo más, no solo la respuesta. NUNCA lo dejes vacío ni de una sola línea corta.
 5. "glosario": TODAS las palabras importantes de la pregunta Y de sus respuestas (sustantivos, verbos, adjetivos, conectores, posesivos, pronombres, preposiciones, adverbios), cada una con:
    {"palabra":"dog","es":"perro","tipo":"sustantivo","pron":"dog"}
    No pongas solo 1 o 2: incluye todas las que un principiante no conozca.
@@ -1461,14 +1511,16 @@ function renderRanking(){
    BURBUJA DE PALABRA (long-press / toque)
 ============================================================ */
 function showWordPopup(el){
-  const word=String(el.textContent).replace(/^[^A-Za-zÀ-ÿ'’]+|[^A-Za-zÀ-ÿ'’]+$/g,'');
+  const raw=String(el.textContent).trim();
+  // números, horas, decimales y símbolos se conservan; palabras se limpian de puntuación en los bordes
+  const word = /[A-Za-zÀ-ÿ0-9]/.test(raw) ? raw.replace(/^[^A-Za-zÀ-ÿ0-9'’]+|[^A-Za-zÀ-ÿ0-9'’]+$/g,'') : raw;
   const g=lookupWord(word);
   const sp=g?null:lookupSpanish(word); // si no es palabra en inglés, intenta español -> inglés
   const p=document.getElementById('word-popup');
   document.getElementById('wp-word').textContent=word;
   // mensaje útil según el caso
   let esMsg;
-  if(g) esMsg='📖 '+g.es;
+  if(g) esMsg='📖 '+g.es+(g.en&&/^(número|letra|símbolo|hora|decimal)$/.test(g.tipo||'')?(' — en inglés: '+g.en):'');
   else if(sp) esMsg='🇬🇧 En inglés se dice: '+sp.en;
   else if(/^[A-ZÀ-Ý]/.test(word) && word.length>1) esMsg='🔤 Parece un nombre propio (persona, lugar o marca). Los nombres propios no se traducen.';
   else if(/^[a-zA-Z']+$/.test(word)) esMsg='❓ No está en el diccionario: puede estar mal escrita o ser poco común. Revisa la ortografía.';
@@ -1477,8 +1529,9 @@ function showWordPopup(el){
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
   document.getElementById('wp-pron').textContent = (g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
   // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
-  const kSrc=norm(word); let srcMsg='';
-  if(g){ if(extraGlossary[kSrc]) srcMsg='🤖 traducción generada por la IA (contexto de este quiz)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes (generada por IA)'; else srcMsg='📚 biblioteca del código'; }
+  const kSrc=norm(word); const realG=extraGlossary[kSrc]||LEARNED[kSrc]||GLOSSARY[kSrc]; let srcMsg='';
+  if(realG){ if(extraGlossary[kSrc]) srcMsg='🤖 traducción generada por la IA (contexto de este quiz)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes (generada por IA)'; else srcMsg='📚 biblioteca del código'; }
+  else if(g&&g.tipo) srcMsg='🔢 lector de números y símbolos';
   document.getElementById('wp-src').textContent=srcMsg;
   const ph=findPhrase(el); const phEl=document.getElementById('wp-phrase');
   if(ph){
@@ -1585,9 +1638,9 @@ function loadQuestion(){
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
   // arriba: traducción general de la frase · abajo: pronunciación con enlaces (can‿ái)
-  const qt=document.getElementById('q-trad');
+  const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
   const showTrad = q.trad && fmt!=='lectura' && fmt!=='dialogo' && phon(q.q); // solo si la pregunta es en inglés
-  if(showTrad){ qt.textContent='📖 = '+q.trad; qt.classList.remove('hidden'); } else qt.classList.add('hidden');
+  if(showTrad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
   const qp=document.getElementById('q-pron'); const qphon=(fmt==='lectura'||fmt==='dialogo')?'':phonHTML(q.q);
   if(qphon){ qp.innerHTML='🗣️ '+qphon; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
   // estructura GENÉRICA (no revela la respuesta)
@@ -1609,6 +1662,7 @@ function loadQuestion(){
   dispatchRender(q, ctx);
 }
 function toggleHint(){ if(ui.hint.classList.contains('hidden')){ ui.hint.classList.remove('hidden'); ui.hintBtn.innerHTML='👀 Pista abierta'; } else { ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista'; } }
+function toggleQTrad(){ const d=document.getElementById('q-trad'), b=document.getElementById('q-trad-btn'); if(d.classList.contains('hidden')){ d.classList.remove('hidden'); b.textContent='👀 Ocultar traducción'; } else { d.classList.add('hidden'); b.textContent='📖 Ver traducción'; } }
 
 /* Pista automática: traduce las palabras de la pregunta usando el glosario */
 function buildAutoHint(q){
@@ -1676,11 +1730,32 @@ function renderTopicChips(arr, boxId, dial){
     const tx=document.createElement('span'); tx.textContent='📚 '+t; ch.appendChild(tx);
     const x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.title='Quitar este tema';
     x.className='font-extrabold hover:text-red-600 '+(dial?'text-fuchsia-500':'text-violet-500');
-    x.onclick=()=>{ arr.splice(i,1); renderTopicChips(arr,boxId,dial); };
+    x.onclick=()=>{ arr.splice(i,1); renderTopicChips(arr,boxId,dial); updateGenSummary(); };
     ch.appendChild(x); box.appendChild(ch);
   });
 }
-function pushTopic(arr, boxId, dial, val){ const v=String(val||'').trim(); if(!v) return; if(!arr.some(t=>t.toLowerCase()===v.toLowerCase())) arr.push(v); renderTopicChips(arr,boxId,dial); }
+function pushTopic(arr, boxId, dial, val){ const v=String(val||'').trim(); if(!v) return; if(!arr.some(t=>t.toLowerCase()===v.toLowerCase())) arr.push(v); renderTopicChips(arr,boxId,dial); updateGenSummary(); }
+/* Fichas de CANTIDAD (segmento) sincronizadas con el select oculto #gen-count */
+const GEN_COUNTS=[10,20,30,40,50,70];
+function buildCountChips(){
+  const box=document.getElementById('gen-counts'); if(!box) return; const cur=document.getElementById('gen-count').value; box.innerHTML='';
+  GEN_COUNTS.forEach(n=>{
+    const on=String(n)===String(cur); const b=document.createElement('button'); b.type='button'; b.textContent=n;
+    b.className='text-sm font-bold rounded-full px-4 py-1.5 border-2 transition '+(on?'bg-violet-600 text-white border-violet-600 shadow':'bg-white text-slate-600 border-slate-200 hover:border-violet-300');
+    b.onclick=()=>{ document.getElementById('gen-count').value=String(n); buildCountChips(); updateGenSummary(); };
+    box.appendChild(b);
+  });
+}
+/* Resumen en vivo de lo que se va a generar */
+function updateGenSummary(){
+  const el=document.getElementById('gen-summary'); if(!el) return;
+  const count=document.getElementById('gen-count').value;
+  const temas = selTopics.length ? selTopics.join(', ') : '(elige al menos uno)';
+  let tipos;
+  if(selFmts.has('todos')) tipos='Todos los tipos';
+  else tipos=GEN_FMTS.filter(p=>selFmts.has(p[0])).map(p=>p[1].replace(/^[^ ]+ /,'')).join(', ');
+  el.innerHTML='🧾 Vas a generar <b>'+count+'</b> preguntas · Tipos: <b>'+tipos+'</b> · Temas: <b>'+escapeHtml(temas)+'</b>';
+}
 /* Al elegir un tema del curso, se agrega como ficha (se pueden acumular varios) */
 function onCourseSel(){ const s=document.getElementById('gen-course'); if(s && s.value){ pushTopic(selTopics,'gen-chips',false,s.value); s.value=''; } }
 function onCourseSelD(){ const s=document.getElementById('gen-course-d'); if(s && s.value){ pushTopic(selTopicsD,'gen-chips-d',true,s.value); s.value=''; } }
@@ -1698,7 +1773,7 @@ function buildFmtChips(){
     b.onclick=()=>{
       if(k==='todos'){ selFmts.clear(); selFmts.add('todos'); }
       else { selFmts.delete('todos'); if(selFmts.has(k)) selFmts.delete(k); else selFmts.add(k); if(!selFmts.size) selFmts.add('todos'); }
-      buildFmtChips();
+      buildFmtChips(); updateGenSummary();
     };
     box.appendChild(b);
   });
@@ -1995,7 +2070,8 @@ function finalize(ok, explanation, q){
   else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
   ui.learnSent.innerHTML=q.sentence?wordSpanify(q.sentence):''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
-  show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-extra-wrap'),!!q.extra);
+  const learnVocab=buildAutoHint(q); document.getElementById('learn-vocab').textContent=learnVocab;
+  show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-vocab-wrap'),!!learnVocab); show(document.getElementById('learn-extra-wrap'),!!q.extra);
   saveProgress(idx+1);
   ui.feedback.classList.remove('hidden'); ui.nextBtn.textContent=idx<quiz.length-1?'Siguiente ➡️':'Ver resultados 🏆'; ui.nextBtn.classList.remove('hidden');
   if(multi.active) markMineAnswered(ui.nextBtn); // en dúo: espera al otro antes de avanzar
@@ -2026,7 +2102,7 @@ document.getElementById('import-file').addEventListener('change', async e=>{ con
 
 // Arranque: estudiante activo, avance pendiente, guardados y ranking
 selectStudent(getName()||getStudents()[0]);
-renderResume(); renderSaved(); renderRanking(); buildFmtChips();
+renderResume(); renderSaved(); renderRanking(); buildFmtChips(); buildCountChips(); updateGenSummary();
 // Si abriste un enlace de invitación (?sala=ID), entras como invitado (modo en vivo)
 (function(){ try{ const sala=new URLSearchParams(location.search).get('sala'); if(sala){ guestJoin(sala); } }catch(e){} })();
 // Si abriste un enlace compartido (#d=...), cargas el MISMO diálogo (pantalla duplicada)

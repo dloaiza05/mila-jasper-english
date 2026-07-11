@@ -1087,27 +1087,27 @@ EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estruct
 ============================================================ */
 /* De una "seed" gramatical {q,a,o,s,t,p,f,dato,tema,est} arma UNA pregunta del formato pedido (o null) */
 function composeGrammar(seed, fmt){
-  const base={ sentence:seed.s||'', trad:seed.t||'', pron:seed.p||'', form:seed.f||'', cat:seed.cat||'', extra:seed.dato||'', tema:seed.tema||'', estructura:seed.est||'' };
+  const base={ kind:'grammar', sentence:seed.s||'', trad:seed.t||'', pron:seed.p||'', form:seed.f||'', cat:seed.cat||'', extra:seed.dato||'', tema:seed.tema||'', estructura:seed.est||'', concepto:conceptFor(seed) };
   if(fmt==='opcion'){
     if(!seed.o||!seed.o.length) return null;
     return Object.assign({formato:'opcion', q:seed.q, opts:makeOptions(seed.a, [seed.a].concat(seed.o), '¡Correcto! '+(seed.dato||seed.f||''), seed.f||('La forma correcta es "'+seed.a+'".'))}, base);
   }
   if(fmt==='escribir'){
-    return Object.assign({formato:'escribir', q:'Escribe la palabra correcta — '+seed.q, answer:seed.a, respuestas:[seed.a]}, base, {estructura:seed.est||'Escribe la forma correcta'});
+    return Object.assign({formato:'escribir', q:'Write the correct word: '+seed.q, answer:seed.a, respuestas:[seed.a]}, base, {estructura:seed.est||'Write the correct form'});
   }
   if(fmt==='completar'){
     if(!seed.s || seed.s.indexOf(seed.a)<0) return null;
-    return Object.assign({formato:'completar', q:'Completa la oración:', template:seed.s.replace(seed.a,'___'), answers:[seed.a]}, base, {estructura:seed.est||'Completa el espacio'});
+    return Object.assign({formato:'completar', q:'Complete the sentence:', template:seed.s.replace(seed.a,'___'), answers:[seed.a]}, base, {estructura:seed.est||'Complete the blank'});
   }
   if(fmt==='huecos'){
     if(!seed.s || seed.s.indexOf(seed.a)<0 || !seed.o||!seed.o.length) return null;
     const bank=shuffle([seed.a].concat(seed.o.slice(0,3)));
-    return Object.assign({formato:'huecos', q:'Completa tocando la palabra correcta:', template:seed.s.replace(seed.a,'___'), answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Toca la ficha correcta'});
+    return Object.assign({formato:'huecos', q:'Complete by tapping the correct word:', template:seed.s.replace(seed.a,'___'), answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Tap the correct chip'});
   }
   if(fmt==='ordenar'){
     const words=String(seed.s||'').replace(/[.?!]$/,'').split(/\s+/).filter(Boolean);
     if(words.length<3||words.length>8) return null;
-    return Object.assign({formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:words}, base, {estructura:seed.est||'Sujeto + verbo + complemento'});
+    return Object.assign({formato:'ordenar', q:'Put the words in the correct order:', order:words}, base, {estructura:seed.est||'Subject + verb + complement'});
   }
   if(fmt==='vf'){
     // 50% frase correcta (True) / 50% frase con un error usando un distractor (False)
@@ -1120,28 +1120,30 @@ function composeGrammar(seed, fmt){
   }
   return null;
 }
-/* De una lista de vocabulario [{en,es,p,c,n}] arma UNA pregunta del formato pedido */
+/* Tabla-concepto para un tema de vocabulario (inglés · español · suena) */
+function vocabConcept(list, tema){
+  const rows=shuffle(list).slice(0,6).map(x=>'<tr><td class="c-key">'+escapeHtml(x.en)+'</td><td>'+escapeHtml(x.es)+'</td><td><i>'+escapeHtml(x.p||'')+'</i></td></tr>').join('');
+  return '<span class="c-title">📊 '+escapeHtml(tema||'Vocabulary')+'</span><table><tr><th>English</th><th>Español</th><th>Suena</th></tr>'+rows+'</table>';
+}
+/* De una lista de vocabulario [{en,es,p,c,n}] arma UNA pregunta del formato pedido.
+   Superficie EN INGLÉS: opciones/respuestas en inglés con pronunciación; el español va en "Ver traducción". */
 function composeVocab(list, fmt, tema){
-  const item=pick(list); const cat=item.c?' ('+item.c+')':'';
+  const item=pick(list); const T=tema||'Vocabulary'; const cpt=vocabConcept(list,T);
   if(fmt==='opcion'){
-    const enToEs=Math.random()<0.5;
-    if(enToEs){ const d=vocabDistract(list,item,'es');
-      return {formato:'opcion', q:'¿Qué significa "'+item.en+'"'+cat+'?', opts:shuffle([{t:item.es,c:1,r:'¡Correcto! "'+item.en+'" = '+item.es+'.'}].concat(d.map(x=>({t:x,c:0,r:'"'+item.en+'" significa "'+item.es+'".'})))), sentence:'', trad:item.en+' = '+item.es, pron:item.p?item.en+' → '+item.p:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'¿Qué significa la palabra?'};
-    } else { const d=vocabDistract(list,item,'en');
-      return {formato:'opcion', q:'¿Cómo se dice "'+item.es+'"'+cat+' en inglés?', opts:shuffle([{t:item.en,c:1,r:'¡Correcto! "'+item.es+'" = '+item.en+'.'}].concat(d.map(x=>({t:x,c:0,r:'"'+item.es+'" se dice "'+item.en+'".'})))), sentence:'', trad:item.es+' = '+item.en, pron:item.p?item.en+' → '+item.p:'', form:'Repite en voz alta.', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'¿Cómo se dice en inglés?'};
-    }
+    // PRODUCIR: elige la palabra EN INGLÉS (opciones en inglés + pronunciación); la pista es el significado
+    const d=vocabDistract(list,item,'en'); const pronOf=w=>{ const it=list.find(x=>x.en===w); return it?it.p:''; };
+    return {formato:'opcion', kind:'vocab', q:'Choose the English word for «'+item.es+'»:', opts:shuffle([{t:item.en,c:1,pron:item.p||'',r:'✅ «'+item.es+'» = '+item.en+'.'}].concat(d.map(x=>({t:x,c:0,pron:pronOf(x),r:'«'+item.es+'» = '+item.en+', no "'+x+'".'})))), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Choose the correct English word', concepto:cpt};
   }
   if(fmt==='escribir'){
-    return {formato:'escribir', q:'Escribe en inglés: "'+item.es+'"'+cat, answer:item.en, respuestas:[item.en], sentence:item.en+' = '+item.es, trad:item.es+' = '+item.en, pron:item.p?item.en+' → '+item.p:'', form:'', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'Escribe la palabra en inglés'};
+    return {formato:'escribir', kind:'vocab', q:'Write in English: «'+item.es+'»', answer:item.en, respuestas:[item.en], sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Write the English word', concepto:cpt};
   }
   if(fmt==='vf'){
-    const other=pick(list); const same=Math.random()<0.5||other===item;
-    const shown=same?item.es:other.es;
-    return {formato:'vf', q:'"'+item.en+'" significa "'+shown+'".', answer:same, r:same?('✅ Verdadero: "'+item.en+'" = '+item.es+'.'):('❌ Falso: "'+item.en+'" = '+item.es+', no "'+shown+'".'), sentence:item.en+' = '+item.es, trad:item.en+' = '+item.es, pron:item.p?item.en+' → '+item.p:'', form:'', cat:item.c||'', extra:item.n||'', tema:tema||'Vocabulario', estructura:'Decide si la traducción está bien o mal'};
+    const other=pick(list); const same=Math.random()<0.5||other===item; const shown=same?item.es:other.es;
+    return {formato:'vf', kind:'vocab', q:'"'+item.en+'" means "'+shown+'".', answer:same, r:same?('✅ True: "'+item.en+'" = '+item.es+'.'):('❌ False: "'+item.en+'" = '+item.es+', not "'+shown+'".'), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'True or False', concepto:cpt};
   }
   if(fmt==='emparejar'){
     const four=shuffle(list).slice(0,4); if(four.length<3) return null;
-    return {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:four.map(x=>({a:x.en,b:x.es})), trad:four.map(x=>x.en+'='+x.es).join(' · '), pron:'', form:'Vocabulario del tema.', cat:'', extra:'', tema:tema||'Vocabulario', estructura:'Une cada palabra con su significado'};
+    return {formato:'emparejar', kind:'vocab', q:'Match each English word with its meaning:', pairs:four.map(x=>({a:x.en,b:x.es})), trad:four.map(x=>x.en+' = '+x.es).join(' · '), pron:'', form:'', cat:'', extra:'', tema:T, estructura:'Match the word with its meaning', concepto:cpt};
   }
   return null;
 }
@@ -1153,7 +1155,7 @@ function vocabMultiple(list, tema){
     return {t:it.en+' = '+shown, c:isC?1:0, r:isC?('✅ "'+it.en+'" = '+it.es+'.'):('❌ "'+it.en+'" = '+it.es+', no "'+shown+'".')}; });
   if(!opts.some(o=>o.c)) opts[0]={t:items[0].en+' = '+items[0].es,c:1,r:'✅ "'+items[0].en+'" = '+items[0].es+'.'};
   if(!opts.some(o=>!o.c)){ const it=items[1], w=pick(list.filter(x=>x.es!==it.es)); if(w) opts[1]={t:it.en+' = '+w.es,c:0,r:'❌ "'+it.en+'" = '+it.es+', no "'+w.es+'".'}; }
-  return {formato:'multiple', q:'Marca TODAS las traducciones CORRECTAS:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:tema||'Vocabulario', estructura:'Marca todas las traducciones correctas'};
+  return {formato:'multiple', kind:'vocab', q:'Mark ALL the correct translations:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:tema||'Vocabulary', estructura:'Mark all the correct translations', concepto:vocabConcept(list,tema||'Vocabulary')};
 }
 /* VARIAS CORRECTAS (multiple) para gramática: marca todas las ORACIONES correctas */
 function grammarMultiple(pool){
@@ -1164,14 +1166,14 @@ function grammarMultiple(pool){
     const ws=sd.s.replace(sd.a, pick(sd.o)); return {t:ws, c:0, r:'❌ Mal: lo correcto es "'+sd.s+'".'}; });
   if(!opts.some(o=>o.c)) opts[0]={t:seeds[0].s,c:1,r:'✅ Correcta. '+(seeds[0].t||'')};
   if(!opts.some(o=>!o.c)){ const sd=seeds[1]; if(sd.o&&sd.o.length&&sd.s.indexOf(sd.a)>=0){ opts[1]={t:sd.s.replace(sd.a,pick(sd.o)),c:0,r:'❌ Mal: lo correcto es "'+sd.s+'".'}; } }
-  return {formato:'multiple', q:'Marca TODAS las oraciones CORRECTAS:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Marca todas las oraciones que estén bien'};
+  return {formato:'multiple', kind:'grammar', q:'Mark ALL the correct sentences:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Mark all the correct sentences', concepto:conceptFor(seeds[0])};
 }
 /* EMPAREJAR para gramática: une la frase en inglés con su traducción (siempre correcto) */
 function grammarMatch(pool){
   const uniq=[]; const seenT=new Set();
   shuffle(pool).forEach(s=>{ if(s.s&&s.t&&!seenT.has(s.t)){ seenT.add(s.t); uniq.push(s); } });
   const seeds=uniq.slice(0,4); if(seeds.length<3) return null;
-  return {formato:'emparejar', q:'Une cada frase en inglés con su traducción:', pairs:seeds.map(s=>({a:s.s,b:s.t})), trad:seeds.map(s=>s.s+' = '+s.t).join(' · '), pron:'', form:'', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Une la frase con su significado', concepto:conceptFor(seeds[0])};
+  return {formato:'emparejar', kind:'grammar', q:'Match each sentence with its translation:', pairs:seeds.map(s=>({a:s.s,b:s.t})), trad:seeds.map(s=>s.s+' = '+s.t).join(' · '), pron:'', form:'', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Match the sentence with its meaning', concepto:conceptFor(seeds[0])};
 }
 /* Formatos que puede producir cada tipo de pack */
 const GRAMMAR_FMTS=['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar'];
@@ -2255,15 +2257,19 @@ function loadQuestion(){
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+wordSpanify(q.q);
-  // frase en inglés de referencia: la pregunta si es inglés; si el enunciado es instrucción en español (completar/huecos/ordenar), la oración objetivo
-  const engPhrase = phon(q.q) ? q.q : (q.sentence||'');
-  // arriba: traducción (oculta tras "Ver traducción") · abajo: pronunciación con enlaces (can‿ái)
+  // ARRIBA (bajo el enunciado): solo en opción/VF, donde el enunciado ES una frase en inglés (el hueco ___ no revela).
+  // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
-  const showTrad = q.trad && fmt!=='lectura' && fmt!=='dialogo';
-  if(showTrad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
-  const qp=document.getElementById('q-pron'); let qphon=(fmt==='lectura'||fmt==='dialogo')?'':phonHTML(engPhrase);
-  if(!qphon && q.pron) qphon=escapeHtml(q.pron); // respaldo: pronunciación autorada (vocabulario, etc.)
-  if(qphon){ qp.innerHTML='🗣️ '+qphon; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
+  const qp=document.getElementById('q-pron');
+  const isGen = (q.kind==='grammar'||q.kind==='vocab'); // pregunta de nuestro motor de temas
+  // arriba: pronunciación + "Ver traducción". En el motor: SOLO opción/VF de gramática (el hueco ___ no revela). Importados/demo: comportamiento clásico.
+  const showTop = isGen ? ((fmt==='opcion'||fmt==='vf') && q.kind==='grammar') : (fmt!=='lectura'&&fmt!=='dialogo');
+  if(showTop){
+    const engPhrase = phon(q.q)? q.q : (q.sentence||'');
+    let ph=phonHTML(engPhrase); if(!ph && q.pron) ph=escapeHtml(q.pron);
+    if(ph){ qp.innerHTML='🗣️ '+ph; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
+    if(q.trad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
+  } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
   if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
@@ -2281,6 +2287,19 @@ function loadQuestion(){
   if(fmt==='lectura'||fmt==='dialogo'){ renderLectura(q); return; }
   const ctx={ area:ui.area, answered:false, done:(ok,exp,qq)=>finalize(ok,exp,qq) };
   dispatchRender(q, ctx);
+  // ABAJO (junto a la respuesta): pronunciación de la oración + "Ver traducción" — completar/huecos/ordenar/escribir de GRAMÁTICA
+  if(q.kind==='grammar' && ['completar','huecos','ordenar','escribir'].includes(fmt) && q.sentence){ ui.area.appendChild(sentenceRefBlock(q)); }
+}
+/* Bloque de referencia bajo la respuesta: 🗣️ pronunciación de la oración + 📖 Ver traducción (oculta) */
+function sentenceRefBlock(q){
+  const wrap=document.createElement('div'); wrap.className='mt-4 pt-2 border-t border-slate-100';
+  const ph=phonHTML(q.sentence)||escapeHtml(q.pron||'');
+  if(ph){ const pr=document.createElement('div'); pr.className='text-sm text-purple-700 italic'; pr.innerHTML='🗣️ '+ph; wrap.appendChild(pr); }
+  if(q.trad){ const btn=document.createElement('button'); btn.className='mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline'; btn.textContent='📖 Ver traducción';
+    const div=document.createElement('div'); div.className='hidden text-sm text-blue-800 mt-0.5'; div.textContent='📖 '+q.trad;
+    btn.onclick=()=>{ div.classList.toggle('hidden'); btn.textContent=div.classList.contains('hidden')?'📖 Ver traducción':'👀 Ocultar'; };
+    wrap.appendChild(btn); wrap.appendChild(div); }
+  return wrap;
 }
 function toggleHint(){ if(ui.hint.classList.contains('hidden')){ ui.hint.classList.remove('hidden'); ui.hintBtn.innerHTML='👀 Pista abierta'; } else { ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista'; } }
 function toggleQTrad(){ const d=document.getElementById('q-trad'), b=document.getElementById('q-trad-btn'); if(d.classList.contains('hidden')){ d.classList.remove('hidden'); b.textContent='👀 Ocultar traducción'; } else { d.classList.add('hidden'); b.textContent='📖 Ver traducción'; } }
@@ -2569,10 +2588,10 @@ function finalizeSub(ok, exp, sq, fb){
 /* opción múltiple (1 correcta) */
 function renderChoice(q,ctx){
   const box=document.createElement('div'); box.className='space-y-2';
-  q.opts.forEach(opt=>{
+  q.opts.forEach((opt,i)=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phonHTML(opt.t);
-    btn.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span><span class="hidden icon-status text-lg"></span>';
+    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•';
+    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="hidden icon-status text-lg"></span>';
     btn.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
@@ -2586,8 +2605,8 @@ function renderChoice(q,ctx){
 function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
   q.opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phonHTML(opt.t);
-    b.innerHTML='<span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span><span class="check-box text-lg">⬜</span>';
+    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•';
+    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="opt-t block">'+wordSpanify(opt.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="check-box text-lg">⬜</span>';
     b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });

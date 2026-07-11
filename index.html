@@ -1033,16 +1033,16 @@ const EXTRA_FORMATS=[
   {formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:['I','am','a','carpenter'], sentence:'I am a carpenter.', trad:'Yo soy carpintero.', pron:'ái am a cárpenter', form:'Sujeto + to be + complemento', cat:'', extra:'"carpenter" = carpintero.'},
   {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:[{a:'dog',b:'perro'},{a:'wood',b:'madera'},{a:'table',b:'mesa'},{a:'water',b:'agua'}], trad:'dog=perro · wood=madera · table=mesa · water=agua', pron:'', form:'Vocabulario básico.', cat:'', extra:''},
   {formato:'lectura', q:'Lee este texto sobre un carpintero:',
-   text:"My name is Diego and I am a carpenter. I am 39 years old and I live in Soacha with my wife Leidy. Every day I wake up at six in the morning.\n\nI work with wood in my workshop. I make tables, chairs and kitchen cabinets. My clients are happy because my furniture is beautiful and strong.\n\nAt night I come back home and I study English. My cats Mila and Jasper are always at home. They are my best friends.",
-   trad:"Me llamo Diego y soy carpintero. Tengo 39 años y vivo en Soacha con mi esposa Leidy. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis gatos Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
+   text:"My name is Diego and I am a carpenter. I am 29 years old and I live in Soacha with my wife Leidy. Every day I wake up at six in the morning.\n\nI work with wood in my workshop. I make tables, chairs and kitchen cabinets. My clients are happy because my furniture is beautiful and strong.\n\nAt night I come back home and I study English. My cats Mila and Jasper are always at home. They are my best friends.",
+   trad:"Me llamo Diego y soy carpintero. Tengo 29 años y vivo en Soacha con mi esposa Leidy. Todos los días me despierto a las seis de la mañana.\n\nTrabajo con madera en mi taller. Hago mesas, sillas y gabinetes de cocina. Mis clientes están felices porque mis muebles son hermosos y fuertes.\n\nEn la noche regreso a casa y estudio inglés. Mis gatos Mila y Jasper siempre están en casa. Ellos son mis mejores amigos.",
    pron:'', form:'Toca cualquier palabra del texto para ver qué significa.', cat:'lectura', extra:'Prueba tocar "years" o "old": la app te muestra la frase conectada "years old".',
    subs:[
      {formato:'opcion', tema:'Reading Comprehension', q:'How old is Diego?',
-      opts:shuffle([{t:'He is 39 years old.',c:1,r:'¡Correcto! El texto dice "I am 39 years old".'},
-        {t:'He is 29 years old.',c:0,r:'Vuelve al texto: dice 39, no 29.'},
-        {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 39, no 49.'},
-        {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 39, no 19.'}]),
-      sentence:'Diego is 39 years old.', trad:'Diego tiene 39 años.', pron:'Diego is zérti-náin íars óuld', estructura:'Sujeto + verbo to be + edad', extra:'"years old" = años de edad.'},
+      opts:shuffle([{t:'He is 29 years old.',c:1,r:'¡Correcto! El texto dice "I am 29 years old".'},
+        {t:'He is 39 years old.',c:0,r:'Vuelve al texto: dice 29, no 39.'},
+        {t:'He is 49 years old.',c:0,r:'Vuelve al texto: dice 29, no 49.'},
+        {t:'He is 19 years old.',c:0,r:'Vuelve al texto: dice 29, no 19.'}]),
+      sentence:'Diego is 29 years old.', trad:'Diego tiene 29 años.', pron:'Diego is tuénti-náin íars óuld', estructura:'Sujeto + verbo to be + edad', extra:'"years old" = años de edad.'},
      {formato:'escribir', tema:'Reading Comprehension', q:'¿En qué material trabaja Diego? (una palabra en inglés)',
       answer:'wood', respuestas:['wood'], sentence:'Diego works with wood.', trad:'Diego trabaja con madera.', pron:'Diego uérks uíd wud', estructura:'Escribe el sustantivo del texto', extra:'"wood" = madera.'},
      {formato:'vf', tema:'Reading Comprehension', q:'"Diego wakes up at six in the morning" es correcto según el texto.',
@@ -2356,7 +2356,7 @@ function buildFmtChips(){
 }
 /* Instructivo del QUIZ NORMAL */
 /* Datos REALES del hogar de Diego, para que la IA personalice correcto y NO invente */
-const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Diego tiene 39 años, es carpintero (hace cocinas, clósets y muebles en madera), vive en Soacha, Colombia; su esposa se llama Leidy; tiene DOS GATOS llamados Mila y Jasper (son gatos, no perros); apenas está aprendiendo inglés. Si no sabes un dato, no lo afirmes.';
+const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Diego tiene 29 años, es carpintero (hace cocinas, clósets y muebles en madera), vive en Soacha, Colombia; su esposa se llama Leidy; tiene DOS GATOS llamados Mila y Jasper (son gatos, no perros); apenas está aprendiendo inglés. Si no sabes un dato, no lo afirmes.';
 function personalCtx(name){ return /^(diego|leidy)$/i.test(String(name||'').trim())?PERSONAL_CONTEXT:''; }
 function generatePrompt(){
   const name=getName()||'el estudiante';

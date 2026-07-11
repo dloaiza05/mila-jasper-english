@@ -2356,7 +2356,7 @@ function buildFmtChips(){
 }
 /* Instructivo del QUIZ NORMAL */
 /* Datos REALES del hogar de Diego, para que la IA personalice correcto y NO invente */
-const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Diego tiene 29 años, es carpintero (hace cocinas, clósets y muebles en madera), vive en Soacha, Colombia; su esposa se llama Leidy; tiene DOS GATOS llamados Mila y Jasper (son gatos, no perros); apenas está aprendiendo inglés. Si no sabes un dato, no lo afirmes.';
+const PERSONAL_CONTEXT=' DATOS REALES DEL ESTUDIANTE (verídicos, úsalos para personalizar y NO inventes otros): Diego tiene 29 años, es carpintero (hace cocinas, clósets y muebles en madera), vive en Soacha, Colombia; su esposa se llama Leidy y tiene 28 años; tienen DOS GATOS llamados Mila y Jasper (son gatos, no perros); Diego apenas está aprendiendo inglés. Si no sabes un dato, no lo afirmes.';
 function personalCtx(name){ return /^(diego|leidy)$/i.test(String(name||'').trim())?PERSONAL_CONTEXT:''; }
 function generatePrompt(){
   const name=getName()||'el estudiante';

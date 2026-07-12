@@ -68,11 +68,11 @@
       <button id="tab-dialogo" onclick="switchTab('dialogo')" class="flex-1 font-extrabold py-3 px-3 rounded-2xl text-sm md:text-base bg-white text-slate-500 border-2 border-slate-200">💬 Diálogos de a dos</button>
     </div>
 
-    <!-- ===== PANEL: QUIZ NORMAL (como estaba) ===== -->
-    <div id="panel-normal">
-    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
-      <h3 class="font-extrabold text-violet-700 text-lg mb-1">🧙 1) Arma el instructivo del quiz</h3>
-      <p class="text-xs text-slate-500 mb-4">Elige quién estudia, uno o varios temas, los tipos de pregunta y cuántas. Luego copia el instructivo y pégalo en tu IA.</p>
+    <!-- ===== PANEL: QUIZ NORMAL ===== -->
+    <div id="panel-normal" class="flex flex-col">
+    <div class="order-2 bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-violet-200">
+      <h3 class="font-extrabold text-violet-700 text-lg mb-1">🧙 2) ¿Quieres un tema nuevo? Arma tu instructivo</h3>
+      <p class="text-xs text-slate-500 mb-4">Opcional. Elige quién estudia, uno o varios temas, los tipos de pregunta y cuántas. Copia el instructivo, pégalo en tu IA y trae el código al recuadro de arriba.</p>
       <div class="space-y-3">
         <!-- Paso A: quién -->
         <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
@@ -254,9 +254,9 @@
       </div>
     </div>
 
-    <!-- ===== 2) JUGAR: quiz listo (derecha) o pegar código (izquierda) ===== -->
-    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-emerald-200">
-      <h3 class="font-extrabold text-emerald-700 text-lg mb-1">🎮 2) Juega ya</h3>
+    <!-- ===== 1) JUGAR: quiz listo (derecha) o pegar código (izquierda) ===== -->
+    <div class="order-1 bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-emerald-200">
+      <h3 class="font-extrabold text-emerald-700 text-lg mb-1">🎮 1) Juega ya</h3>
       <p class="text-xs text-slate-500 mb-3">A la <b>derecha</b> eliges un quiz listo por tema. A la <b>izquierda</b> pegas el código que te dio una IA (paso 1).</p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- IZQUIERDA: pegar código de IA -->
@@ -381,17 +381,13 @@
       </div><!-- /grid -->
     </div>
 
-    <div class="bg-white rounded-2xl shadow p-4 border border-blue-100 text-center">
-      <p class="text-slate-600 text-sm mb-3">¿Quieres probar sin pegar nada? Carga un quiz de ejemplo con todos los tipos de pregunta.</p>
-      <button onclick="loadDemo()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full text-base shadow-lg transition-transform hover:scale-105">🎯 Cargar quiz de ejemplo</button>
-    </div>
     </div><!-- /panel-normal -->
 
     <!-- ===== PANEL: DIÁLOGOS DE A DOS ===== -->
-    <div id="panel-dialogo" class="hidden">
-      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
-        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">💬 1) Arma el instructivo de diálogos</h3>
-        <p class="text-xs text-slate-500 mb-4">Conversaciones en inglés con pronunciación español latino y traducción, para jugar de a dos.</p>
+    <div id="panel-dialogo" class="hidden flex flex-col">
+      <div class="order-2 bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
+        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">💬 2) ¿Quieres una situación nueva? Arma tu instructivo</h3>
+        <p class="text-xs text-slate-500 mb-4">Opcional. Conversaciones en inglés con pronunciación español latino y traducción, para jugar de a dos.</p>
         <div class="space-y-4">
           <div>
             <p class="text-sm font-bold text-slate-700 mb-2">👤 ¿Quién juega? (tú)</p>
@@ -475,8 +471,8 @@
           <p id="gen-status-d" class="hidden text-center text-sm text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 rounded-xl py-2">✅ ¡Copiado! Pégalo (Ctrl+V) en tu IA y trae el código abajo.</p>
         </div>
       </div>
-      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
-        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">🎮 2) Juega el diálogo</h3>
+      <div class="order-1 bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-fuchsia-200">
+        <h3 class="font-extrabold text-fuchsia-700 text-lg mb-1">🎮 1) Juega el diálogo</h3>
         <p class="text-xs text-slate-500 mb-3">Derecha: elige un diálogo listo. Izquierda: pega el código de la IA y compártelo por QR.</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- IZQUIERDA -->
@@ -1236,6 +1232,10 @@ function vocabAvail(list){
 /* Motor de un tema: devuelve qué formatos puede producir y una función compose(fmt) */
 function topicEngine(topicLabel){
   const pack=TOPIC_PACKS[topicLabel];
+  if(pack && pack.gen){ // generador por piezas: cientos de frases únicas y correctas
+    const g=pack.gen; const sample=Array.from({length:6},g); const avail=grammarAvail(sample);
+    return {availFmts:avail, compose:(f)=> f==='multiple'?grammarMultiple(Array.from({length:8},g)): f==='emparejar'?grammarMatch(Array.from({length:8},g)): composeGrammar(g(),f)};
+  }
   if(pack && pack.kind==='vocab'){ const L=pack.list, tm=pack.tema||topicLabel; return {availFmts:vocabAvail(L), compose:(f)=> f==='multiple'?vocabMultiple(L,tm):composeVocab(L,f,tm)}; }
   if(pack){ const pool=pack.seeds; return {availFmts:grammarAvail(pool), compose:(f)=> f==='multiple'?grammarMultiple(pool): f==='emparejar'?grammarMatch(pool): composeGrammar(pick(pool),f)}; }
   const sf=safeTopicPack(topicLabel); return {availFmts:vocabAvail(sf.list), compose:(f)=> f==='multiple'?vocabMultiple(sf.list,sf.tema):composeVocab(sf.list,f,sf.tema)};
@@ -1318,8 +1318,56 @@ const TOPIC_CONCEPT={
 };
 function conceptFor(q){ return (q&&q.tema&&TOPIC_CONCEPT[q.tema])||''; }
 /* ---- PACKS CURADOS (a fondo, con contexto de Diego). El resto de temas usa safeTopicPack ---- */
+/* ============ GENERADORES POR PIEZAS (arman cientos de frases ÚNICAS y CORRECTAS) ============ */
+const BE_PRON_M={am:'am',is:'is',are:'ar'};
+// sujetos con su forma de "to be" + conjugación de ser/estar en español + pronunciación
+const TB_SUBJ=[
+ {en:'I',be:'am',es:'Yo',ser:'soy',estar:'estoy',pron:'ái'},
+ {en:'You',be:'are',es:'Tú',ser:'eres',estar:'estás',pron:'iú'},
+ {en:'He',be:'is',es:'Él',ser:'es',estar:'está',pron:'ji'},
+ {en:'She',be:'is',es:'Ella',ser:'es',estar:'está',pron:'shi'},
+ {en:'It',be:'is',es:'Eso',ser:'es',estar:'está',pron:'it'},
+ {en:'We',be:'are',es:'Nosotros',ser:'somos',estar:'estamos',pron:'uí',pl:true},
+ {en:'They',be:'are',es:'Ellos',ser:'son',estar:'están',pron:'déi',pl:true},
+ {en:'Diego',be:'is',es:'Diego',ser:'es',estar:'está',pron:'Diego'},
+ {en:'Leidy',be:'is',es:'Leidy',ser:'es',estar:'está',pron:'Leidy'},
+ {en:'Mila and Jasper',be:'are',es:'Mila y Jasper',ser:'son',estar:'están',pron:'Mila and Jasper',pl:true},
+ {en:'My wife',be:'is',es:'Mi esposa',ser:'es',estar:'está',pron:'mái uáif'},
+ {en:'My brothers',be:'are',es:'Mis hermanos',ser:'son',estar:'están',pron:'mái bráders',pl:true}
+];
+// complementos de GÉNERO INVARIABLE en español (para no equivocar masculino/femenino): adjetivos -e/consonante + lugares
+const TB_COMP=[
+ {en:'happy',s:'feliz',p:'felices',v:'estar',pr:'jápi'},
+ {en:'sad',s:'triste',p:'tristes',v:'estar',pr:'sad'},
+ {en:'big',s:'grande',p:'grandes',v:'ser',pr:'big'},
+ {en:'strong',s:'fuerte',p:'fuertes',v:'ser',pr:'strong'},
+ {en:'intelligent',s:'inteligente',p:'inteligentes',v:'ser',pr:'intéliyent'},
+ {en:'important',s:'importante',p:'importantes',v:'ser',pr:'impórtant'},
+ {en:'young',s:'joven',p:'jóvenes',v:'ser',pr:'iáng'},
+ {en:'friendly',s:'amable',p:'amables',v:'ser',pr:'fréndli'},
+ {en:'responsible',s:'responsable',p:'responsables',v:'ser',pr:'rispónsibol'},
+ {en:'popular',s:'popular',p:'populares',v:'ser',pr:'pópiular'},
+ {en:'interesting',s:'interesante',p:'interesantes',v:'ser',pr:'íntrestin'},
+ {en:'from Colombia',s:'de Colombia',p:'de Colombia',v:'ser',pr:'from Colómbia'},
+ {en:'from Bogotá',s:'de Bogotá',p:'de Bogotá',v:'ser',pr:'from Bogotá'},
+ {en:'at home',s:'en casa',p:'en casa',v:'estar',pr:'at jóum'},
+ {en:'in Soacha',s:'en Soacha',p:'en Soacha',v:'estar',pr:'in Sóacha'},
+ {en:'at work',s:'en el trabajo',p:'en el trabajo',v:'estar',pr:'at uérk'},
+ {en:'in Bogotá',s:'en Bogotá',p:'en Bogotá',v:'estar',pr:'in Bogotá'},
+ {en:'in Mosquera',s:'en Mosquera',p:'en Mosquera',v:'estar',pr:'in Moskéra'}
+];
+function toBeGen(){
+  const s=pick(TB_SUBJ), c=pick(TB_COMP);
+  const esComp = s.pl ? c.p : c.s;
+  const verb = c.v==='ser' ? s.ser : s.estar;
+  const sentence = s.en+' '+s.be+' '+c.en+'.';
+  const q = s.en+' ___ '+c.en+'.';
+  const trad = s.es+' '+verb+' '+esComp+'.';
+  const pron = s.pron+' '+BE_PRON_M[s.be]+' '+c.pr;
+  return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'I → am · He/She/It → is · You/We/They → are', 'Un solo "to be" = ser Y estar (am/is/are).', 'Verb To Be', 'Sujeto + to be + complemento');
+}
 const TOPIC_PACKS={
-  'Verb To Be — am/is/are (A1)':{ kind:'grammar', seeds:[
+  'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
     gseed('He ___ my brother.','is',['am','are','be'],'He is my brother.','Él es mi hermano.','ji is mái bráder','He/She/It → is','','Verb To Be','Sujeto + to be + complemento'),
     gseed('She ___ from Bogotá.','is',['am','are','be'],'She is from Bogotá.','Ella es de Bogotá.','shi is from Bogotá','He/She/It → is','','Verb To Be','Sujeto + to be + complemento'),

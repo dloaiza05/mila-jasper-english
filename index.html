@@ -1509,6 +1509,69 @@ function presentContinuousGen(){
   const trad=su.es+' '+CONJ_ESTAR[su.pers]+' '+V_GER[v.b]+' '+c.es+'.'; const pron=su.pron+' '+BE_PRON_M[be]+' '+v.pb+'ing '+c.pr;
   return gseed(q, v.ing, [v.b,v.s,v.past], sentence, trad, pron, 'am/is/are + verbo-ing (acción ahora)', '-e: quita e (make→making) · vocal+cons: doble (run→running).', 'Present Continuous', 'Sujeto + am/is/are + verbo-ing');
 }
+// sustantivos con género y plural (para posesivos y demostrativos)
+const SIMPLE_NOUN=[
+ {en:'dog',es:'perro',g:'m',pl:'dogs',plEs:'perros',pr:'dog'},
+ {en:'cat',es:'gato',g:'m',pl:'cats',plEs:'gatos',pr:'cat'},
+ {en:'house',es:'casa',g:'f',pl:'houses',plEs:'casas',pr:'jáus'},
+ {en:'car',es:'carro',g:'m',pl:'cars',plEs:'carros',pr:'car'},
+ {en:'book',es:'libro',g:'m',pl:'books',plEs:'libros',pr:'buk'},
+ {en:'table',es:'mesa',g:'f',pl:'tables',plEs:'mesas',pr:'téibol'},
+ {en:'friend',es:'amigo',g:'m',pl:'friends',plEs:'amigos',pr:'frend'},
+ {en:'truck',es:'camión',g:'m',pl:'trucks',plEs:'camiones',pr:'trak'},
+ {en:'phone',es:'teléfono',g:'m',pl:'phones',plEs:'teléfonos',pr:'fóun'},
+ {en:'drone',es:'dron',g:'m',pl:'drones',plEs:'drones',pr:'dróun'},
+ {en:'key',es:'llave',g:'f',pl:'keys',plEs:'llaves',pr:'ki'},
+ {en:'bag',es:'bolsa',g:'f',pl:'bags',plEs:'bolsas',pr:'bag'},
+ {en:'pen',es:'lapicero',g:'m',pl:'pens',plEs:'lapiceros',pr:'pen'},
+ {en:'chair',es:'silla',g:'f',pl:'chairs',plEs:'sillas',pr:'cher'},
+ {en:'window',es:'ventana',g:'f',pl:'windows',plEs:'ventanas',pr:'uíndou'},
+ {en:'shoe',es:'zapato',g:'m',pl:'shoes',plEs:'zapatos',pr:'shu'}
+];
+// PLURALES (singular → plural, regulares e irregulares)
+const NOUNS_PL=[
+ {sg:'dog',pl:'dogs',esS:'perro',esP:'perros',g:'m'},{sg:'box',pl:'boxes',esS:'caja',esP:'cajas',g:'f'},
+ {sg:'baby',pl:'babies',esS:'bebé',esP:'bebés',g:'m'},{sg:'man',pl:'men',esS:'hombre',esP:'hombres',g:'m'},
+ {sg:'child',pl:'children',esS:'niño',esP:'niños',g:'m'},{sg:'foot',pl:'feet',esS:'pie',esP:'pies',g:'m'},
+ {sg:'knife',pl:'knives',esS:'cuchillo',esP:'cuchillos',g:'m'},{sg:'watch',pl:'watches',esS:'reloj',esP:'relojes',g:'m'},
+ {sg:'city',pl:'cities',esS:'ciudad',esP:'ciudades',g:'f'},{sg:'tomato',pl:'tomatoes',esS:'tomate',esP:'tomates',g:'m'},
+ {sg:'woman',pl:'women',esS:'mujer',esP:'mujeres',g:'f'},{sg:'tooth',pl:'teeth',esS:'diente',esP:'dientes',g:'m'},
+ {sg:'leaf',pl:'leaves',esS:'hoja',esP:'hojas',g:'f'},{sg:'bus',pl:'buses',esS:'bus',esP:'buses',g:'m'},
+ {sg:'party',pl:'parties',esS:'fiesta',esP:'fiestas',g:'f'},{sg:'person',pl:'people',esS:'persona',esP:'personas',g:'f'},
+ {sg:'mouse',pl:'mice',esS:'ratón',esP:'ratones',g:'m'},{sg:'table',pl:'tables',esS:'mesa',esP:'mesas',g:'f'},
+ {sg:'car',pl:'cars',esS:'carro',esP:'carros',g:'m'},{sg:'book',pl:'books',esS:'libro',esP:'libros',g:'m'},
+ {sg:'key',pl:'keys',esS:'llave',esP:'llaves',g:'f'},{sg:'family',pl:'families',esS:'familia',esP:'familias',g:'f'}
+];
+const PL_NUM=[{en:'two',es:'dos'},{en:'three',es:'tres'},{en:'five',es:'cinco'},{en:'ten',es:'diez'}];
+function pluralsGen(){
+  const n=pick(NOUNS_PL), num=pick(PL_NUM);
+  const wrong=[...new Set([n.sg+'s',n.sg+'es',n.sg+'ies',n.sg])].filter(x=>x!==n.pl).slice(0,3);
+  const sentence='One '+n.sg+', '+num.en+' '+n.pl+'.'; const q='One '+n.sg+', '+num.en+' ___.';
+  const trad=(n.g==='f'?'Una ':'Un ')+n.esS+', '+num.es+' '+n.esP+'.';
+  return gseed(q, n.pl, wrong, sentence, trad, '', 'Regular: +s/+es · consonante+y→ies · irregulares (man→men, child→children)', 'Después de s/x/ch/sh se agrega -es.', 'Plurals', 'singular → plural');
+}
+// POSESIVOS
+const POSS=[{en:'my',hint:'de mí',es:'mi',inv:true,pr:'mái'},{en:'your',hint:'de ti',es:'tu',inv:true,pr:'iór'},{en:'his',hint:'de él',es:'su',inv:true,pr:'jis'},{en:'her',hint:'de ella',es:'su',inv:true,pr:'jer'},{en:'our',hint:'de nosotros',inv:false,pr:'áur'},{en:'their',hint:'de ellos',es:'su',inv:true,pr:'der'}];
+const POSS_CARRIER=[{en:'This is',es:'Esto es',pr:'dis is'},{en:'That is',es:'Eso es',pr:'dat is'},{en:'I have',es:'Tengo',pr:'ái jav'}];
+function possessivesGen(){
+  const car=pick(POSS_CARRIER), p=pick(POSS), n=pick(SIMPLE_NOUN);
+  const esP = p.inv? p.es : (n.g==='f'?'nuestra':'nuestro');
+  const sentence=car.en+' '+p.en+' '+n.en+'.'; const q=car.en+' ___ '+n.en+'. ('+p.hint+')';
+  const trad=car.es+' '+esP+' '+n.es+'.'; const pron=car.pr+' '+p.pr+' '+n.pr;
+  return gseed(q, p.en, shuffle(POSS.map(x=>x.en).filter(x=>x!==p.en)).slice(0,3), sentence, trad, pron, 'my=mi · your=tu · his=su(de él) · her=su(de ella) · our=nuestro · their=su(de ellos)', 'their (su) ≠ there (allá).', 'Possessives', 'Posesivo + sustantivo');
+}
+// DEMOSTRATIVOS
+const DEMO=[{en:'This',pl:false,hint:'aquí, uno',pr:'dis'},{en:'That',pl:false,hint:'allá, uno',pr:'dat'},{en:'These',pl:true,hint:'aquí, varios',pr:'díis'},{en:'Those',pl:true,hint:'allá, varios',pr:'dóus'}];
+const DEMO_ADJ=[{en:'big',s:'grande',p:'grandes',pr:'big'},{en:'important',s:'importante',p:'importantes',pr:'impórtant'},{en:'interesting',s:'interesante',p:'interesantes',pr:'íntrestin'},{en:'elegant',s:'elegante',p:'elegantes',pr:'élegant'},{en:'special',s:'especial',p:'especiales',pr:'spéshal'},{en:'strong',s:'fuerte',p:'fuertes',pr:'strong'},{en:'popular',s:'popular',p:'populares',pr:'pópiular'},{en:'incredible',s:'increíble',p:'increíbles',pr:'incrédibol'}];
+function demES(d,g){ const map={This:['Este','Esta'],That:['Ese','Esa'],These:['Estos','Estas'],Those:['Esos','Esas']}; return map[d.en][g==='f'?1:0]; }
+function demonstrativesGen(){
+  const d=pick(DEMO), n=pick(SIMPLE_NOUN), a=pick(DEMO_ADJ);
+  const noun=d.pl?n.pl:n.en; const be=d.pl?'are':'is';
+  const sentence=d.en+' '+noun+' '+be+' '+a.en+'.'; const q='___ '+noun+' '+be+' '+a.en+'. ('+d.hint+')';
+  const dem=demES(d,n.g); const adjEs=d.pl?a.p:a.s; const nEs=d.pl?n.plEs:n.es; const verb=d.pl?'son':'es';
+  const trad=dem+' '+nEs+' '+verb+' '+adjEs+'.'; const pron=d.pr+' '+n.pr+' '+(d.pl?'ar':'is')+' '+a.pr;
+  return gseed(q, d.en, DEMO.map(x=>x.en).filter(x=>x!==d.en), sentence, trad, pron, 'cerca+sing=this · lejos+sing=that · cerca+pl=these · lejos+pl=those', '', 'Demonstratives', 'Demostrativo + sustantivo + verbo');
+}
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
@@ -1542,7 +1605,7 @@ const TOPIC_PACKS={
     gseed('I have ___ egg for breakfast.','an',['a','the'],'I have an egg for breakfast.','Como un huevo en el desayuno.','ái jav an eg for brékfast','an + vocal (egg)','','Articles','Sujeto + verbo + a/an + sustantivo'),
     gseed('It is ___ old house.','an',['a','the'],'It is an old house.','Es una casa vieja.','it is an óuld jáus','an + vocal (old)','Mira la palabra SIGUIENTE: "old" empieza en vocal → an.','Articles','to be + a/an + adjetivo + sustantivo')
   ]},
-  'Plurals — regular and irregular (A1)':{ kind:'grammar', seeds:[
+  'Plurals — regular and irregular (A1)':{ kind:'grammar', gen:pluralsGen, _seeds_old:[
     gseed('one dog, two ___','dogs',['doges','dog','doggs'],'two dogs','dos perros','tu dogs','Regular: + s','','Plurals','singular → plural'),
     gseed('one box, two ___','boxes',['boxs','box','boxies'],'two boxes','dos cajas','tu bóxes','Termina en x → + es','Después de s, x, ch, sh se añade -es.','Plurals','singular → plural'),
     gseed('one baby, two ___','babies',['babys','babyes','baby'],'two babies','dos bebés','tu béibis','Consonante + y → ies','"baby" → cambia y por ies.','Plurals','singular → plural'),
@@ -1552,14 +1615,14 @@ const TOPIC_PACKS={
     gseed('one knife, two ___','knives',['knifes','knife','knifs'],'two knives','dos cuchillos','tu náivs','f → ves','Muchas palabras con f cambian a ves.','Plurals','singular → plural'),
     gseed('one watch, two ___','watches',['watchs','watch','watchies'],'two watches','dos relojes','tu uátches','Termina en ch → + es','','Plurals','singular → plural')
   ]},
-  'Possessive Adjectives — my/your/his (A1)':{ kind:'grammar', seeds:[
+  'Possessive Adjectives — my/your/his (A1)':{ kind:'grammar', gen:possessivesGen, _seeds_old:[
     gseed('This is ___ hammer. (de mí)','my',['your','his','her'],'This is my hammer.','Este es mi martillo.','dis is mái jámer','yo → my','','Possessives','Demostrativo + to be + posesivo + sustantivo'),
     gseed('That is ___ house. (de ella)','her',['his','my','their'],'That is her house.','Esa es su casa (de ella).','dat is jer jáus','ella → her','"her" = su (de ella).','Possessives','Demostrativo + to be + posesivo + sustantivo'),
     gseed('This is ___ dog. (de él)','his',['her','my','your'],'This is his dog.','Este es su perro (de él).','dis is jis dog','él → his','"his" = su (de él).','Possessives','Demostrativo + to be + posesivo + sustantivo'),
     gseed('These are ___ tools. (de nosotros)','our',['their','your','my'],'These are our tools.','Estas son nuestras herramientas.','díis ar áur tuls','nosotros → our','','Possessives','Demostrativo + to be + posesivo + sustantivo'),
     gseed('That is ___ car. (de ellos)','their',['there','our','his'],'That is their car.','Ese es su carro (de ellos).','dat is der car','ellos → their','No confundir "their" (su) con "there" (allá).','Possessives','Demostrativo + to be + posesivo + sustantivo')
   ]},
-  'Demonstratives — this/that/these/those (A1)':{ kind:'grammar', seeds:[
+  'Demonstratives — this/that/these/those (A1)':{ kind:'grammar', gen:demonstrativesGen, _seeds_old:[
     gseed('___ is my hammer. (aquí, uno)','This',['These','That','Those'],'This is my hammer.','Este es mi martillo.','dis is mái jámer','cerca + singular → this','','Demonstratives','Demostrativo + to be + complemento'),
     gseed('___ is your house. (allá, uno)','That',['Those','This','These'],'That is your house.','Esa es tu casa.','dat is iór jáus','lejos + singular → that','','Demonstratives','Demostrativo + to be + complemento'),
     gseed('___ are my cats. (aquí, varios)','These',['This','Those','That'],'These are my cats.','Estos son mis gatos.','díis ar mái cats','cerca + plural → these','','Demonstratives','Demostrativo + to be + complemento'),

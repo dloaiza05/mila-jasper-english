@@ -1365,7 +1365,19 @@ const TB_COMP=[
  {en:'in Soacha',s:'en Soacha',p:'en Soacha',v:'estar',pr:'in Sóacha'},
  {en:'at work',s:'en el trabajo',p:'en el trabajo',v:'estar',pr:'at uérk'},
  {en:'in Bogotá',s:'en Bogotá',p:'en Bogotá',v:'estar',pr:'in Bogotá'},
- {en:'in Mosquera',s:'en Mosquera',p:'en Mosquera',v:'estar',pr:'in Moskéra'}
+ {en:'in Mosquera',s:'en Mosquera',p:'en Mosquera',v:'estar',pr:'in Moskéra'},
+ {en:'special',s:'especial',p:'especiales',v:'ser',pr:'spéshal'},
+ {en:'incredible',s:'increíble',p:'increíbles',v:'ser',pr:'incrédibol'},
+ {en:'elegant',s:'elegante',p:'elegantes',v:'ser',pr:'élegant'},
+ {en:'brilliant',s:'brillante',p:'brillantes',v:'ser',pr:'bríliant'},
+ {en:'excellent',s:'excelente',p:'excelentes',v:'ser',pr:'ékselent'},
+ {en:'normal',s:'normal',p:'normales',v:'ser',pr:'nórmal'},
+ {en:'from Mosquera',s:'de Mosquera',p:'de Mosquera',v:'ser',pr:'from Moskéra'},
+ {en:'at school',s:'en la escuela',p:'en la escuela',v:'estar',pr:'at skul'},
+ {en:'at the park',s:'en el parque',p:'en el parque',v:'estar',pr:'at de park'},
+ {en:'in the office',s:'en la oficina',p:'en la oficina',v:'estar',pr:'in di ófis'},
+ {en:'on the bus',s:'en el bus',p:'en el bus',v:'estar',pr:'on de bas'},
+ {en:'outside',s:'afuera',p:'afuera',v:'estar',pr:'áutsaid'}
 ];
 function toBeGen(){
   const s=pick(TB_SUBJ), c=pick(TB_COMP);
@@ -1428,6 +1440,75 @@ function presentSimpleGen(){
   const wrong=[v.b,v.s,v.ing,v.past].filter(x=>x!==form);
   return gseed(q, form, wrong, sentence, trad, pron, 'He/She/It → verbo + s · I/You/We/They → verbo base', 'En presente simple solo he/she/it añaden -s.', 'Present Simple', 'Sujeto + verbo (+s con he/she/it)');
 }
+// datos extra reutilizables (infinitivos, gerundios, conjugaciones auxiliares)
+const V_INF={work:'trabajar',live:'vivir',study:'estudiar',drive:'manejar',eat:'comer',drink:'beber',play:'jugar',read:'leer',cook:'cocinar',run:'correr',sleep:'dormir',walk:'caminar',travel:'viajar',rest:'descansar'};
+const V_GER={work:'trabajando',live:'viviendo',study:'estudiando',drive:'manejando',eat:'comiendo',drink:'bebiendo',play:'jugando',read:'leyendo',cook:'cocinando',run:'corriendo',sleep:'durmiendo',walk:'caminando',travel:'viajando',rest:'descansando'};
+const CONJ_PODER={yo:'puedo',tu:'puedes',el:'puede',nos:'podemos',ellos:'pueden'};
+const CONJ_ESTAR={yo:'estoy',tu:'estás',el:'está',nos:'estamos',ellos:'están'};
+const AUX_PRON={"don't":'dóunt',"doesn't":'dásent','Do':'du','Does':'das','not':'not','can':'can',"can't":'cant','Can':'can'};
+function beOf(su){ return su.pers==='yo'?'am':(su.s3?'is':'are'); }
+const PRONOUNS7=['I','You','He','She','It','We','They'];
+// 1) Subject Pronouns
+function subjectPronounGen(){
+  const pr=pick(TB_SUBJ.filter(s=>PRONOUNS7.includes(s.en))), c=pick(TB_COMP);
+  const esComp=pr.pl?c.p:c.s; const verb=c.v==='ser'?pr.ser:pr.estar;
+  const sentence=pr.en+' '+pr.be+' '+c.en+'.';
+  const q='___ '+pr.be+' '+c.en+'. ('+pr.es.toLowerCase()+')';
+  const trad=pr.es+' '+verb+' '+esComp+'.';
+  const pron=pr.pron+' '+BE_PRON_M[pr.be]+' '+c.pr;
+  return gseed(q, pr.en, shuffle(PRONOUNS7.filter(x=>x!==pr.en)).slice(0,3), sentence, trad, pron, 'I=yo · you=tú · he=él · she=ella · it=eso · we=nosotros · they=ellos', '"I" siempre en mayúscula; "it" para cosas y animales.', 'Subject Pronouns', 'Pronombre + verbo');
+}
+// 2) Verb To Be — negativos y preguntas
+function toBeNegQuestGen(){
+  const s=pick(TB_SUBJ), c=pick(TB_COMP); const esC=s.pl?c.p:c.s; const verb=c.v==='ser'?s.ser:s.estar;
+  if(Math.random()<0.5){
+    const sentence=s.en+' '+s.be+' not '+c.en+'.'; const q=s.en+' ___ not '+c.en+'. (negativo)';
+    const trad=s.es+' no '+verb+' '+esC+'.'; const pron=s.pron+' '+BE_PRON_M[s.be]+' not '+c.pr;
+    return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'negativo: sujeto + am/is/are + not', 'La negación solo agrega "not".', 'Verb To Be neg/quest', 'Sujeto + to be + not + complemento');
+  } else {
+    const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1);
+    const sentence=beCap+' '+s.en+' '+c.en+'?'; const q='___ '+s.en+' '+c.en+'? (pregunta)';
+    const trad='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+s.es.toLowerCase()+' '+esC+'?'; const pron=BE_PRON_M[s.be]+' '+s.pron+' '+c.pr;
+    return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'pregunta: am/is/are + sujeto + ...?', 'En preguntas el verbo va primero.', 'Verb To Be neg/quest', 'Am/Is/Are + sujeto + complemento?');
+  }
+}
+// 3) Present Simple — negativos y preguntas (do/does)
+function psNegQuestGen(){
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP);
+  if(Math.random()<0.5){
+    const aux=su.s3?"doesn't":"don't"; const sentence=su.en+' '+aux+' '+v.b+' '+c.en+'.'; const q=su.en+' ___ '+v.b+' '+c.en+'. (no)';
+    const trad=su.es+' no '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+AUX_PRON[aux]+' '+v.pb+' '+c.pr;
+    return gseed(q, aux, [su.s3?"don't":"doesn't",'not','no'], sentence, trad, pron, "negativo: don't (I/you/we/they) · doesn't (he/she/it) + verbo base", 'Con don\'t/doesn\'t el verbo va en base (sin -s).', 'Present Simple neg/quest', 'Sujeto + don\'t/doesn\'t + verbo base');
+  } else {
+    const aux=su.s3?'Does':'Do'; const sentence=aux+' '+su.en+' '+v.b+' '+c.en+'?'; const q='___ '+su.en+' '+v.b+' '+c.en+'? (pregunta)';
+    const trad='¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?'; const pron=AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr;
+    return gseed(q, aux, [su.s3?'Do':'Does','Are','Is'], sentence, trad, pron, 'pregunta: Do (I/you/we/they) · Does (he/she/it) + sujeto + verbo base', '', 'Present Simple neg/quest', 'Do/Does + sujeto + verbo base?');
+  }
+}
+// 4) Tercera persona -s (solo he/she/it)
+function thirdPersonSGen(){
+  const su=pick(V_SUBJ.filter(s=>s.s3)), v=pick(PS_VERB), c=pick(PS_COMP);
+  const sentence=su.en+' '+v.s+' '+c.en+'.'; const q=su.en+' ___ '+c.en+'. ('+v.b+')';
+  const trad=su.es+' '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+v.ps+' '+c.pr;
+  return gseed(q, v.s, [v.b,v.ing,v.past], sentence, trad, pron, 'he/she/it: + s (go→goes, watch→watches, study→studies)', '-o/-ch/-sh/-x → +es · consonante+y → ies.', 'Third person -s', 'Sujeto (he/she/it) + verbo + s');
+}
+// 5) Can / Can't
+function canGen(){
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP); const m=Math.random(); let sentence,q,trad,answer,wrong;
+  const poder=CONJ_PODER[su.pers], inf=V_INF[v.b];
+  if(m<0.34){ sentence=su.en+' can '+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. ('+poder+')'; trad=su.es+' '+poder+' '+inf+' '+c.es+'.'; answer='can'; wrong=['cans','is','does']; }
+  else if(m<0.67){ sentence=su.en+" can't "+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. (no '+poder+')'; trad=su.es+' no '+poder+' '+inf+' '+c.es+'.'; answer="can't"; wrong=['cans',"doesn't",'not']; }
+  else { sentence='Can '+su.en+' '+v.b+' '+c.en+'?'; q='___ '+su.en+' '+v.b+' '+c.en+'? (¿'+poder+'?)'; trad='¿'+su.es+' '+poder+' '+inf+' '+c.es+'?'; answer='Can'; wrong=['Do','Does','Are']; }
+  const pron=su.pron+' '+AUX_PRON[answer]+' '+v.pb+' '+c.pr;
+  return gseed(q, answer, wrong, sentence, trad, pron, 'can + verbo base (igual para todos) · negativo can\'t · pregunta Can al inicio', 'can no cambia con la persona (nunca "cans").', 'Can', 'Sujeto + can + verbo base');
+}
+// 6) Present Continuous (-ing)
+function presentContinuousGen(){
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP); const be=beOf(su);
+  const sentence=su.en+' '+be+' '+v.ing+' '+c.en+'.'; const q=su.en+' '+be+' ___ '+c.en+'. ('+v.b+' → -ing)';
+  const trad=su.es+' '+CONJ_ESTAR[su.pers]+' '+V_GER[v.b]+' '+c.es+'.'; const pron=su.pron+' '+BE_PRON_M[be]+' '+v.pb+'ing '+c.pr;
+  return gseed(q, v.ing, [v.b,v.s,v.past], sentence, trad, pron, 'am/is/are + verbo-ing (acción ahora)', '-e: quita e (make→making) · vocal+cons: doble (run→running).', 'Present Continuous', 'Sujeto + am/is/are + verbo-ing');
+}
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
@@ -1445,7 +1526,7 @@ const TOPIC_PACKS={
     gseed('My truck ___ big and strong.','is',['are','am','be'],'My truck is big and strong.','Mi camión es grande y fuerte.','mái trak is big and strong','El/la (una cosa) → is','Diego maneja camión en rutas Soacha–Bogotá–Mosquera.','Verb To Be','Sujeto + to be + adjetivo'),
     gseed('South Park ___ my favorite show.','is',['are','am','be'],'South Park is my favorite show.','South Park es mi programa favorito.','South Park is mái féivorit shóu','Una cosa → is','','Verb To Be','Sujeto + to be + complemento')
   ]},
-  'Subject Pronouns — I, you, he... (A1)':{ kind:'grammar', seeds:[
+  'Subject Pronouns — I, you, he... (A1)':{ kind:'grammar', gen:subjectPronounGen, _seeds_old:[
     gseed('___ am a carpenter. (yo)','I',['He','You','They'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','"Yo" = I (siempre mayúscula)','"I" se escribe SIEMPRE con mayúscula.','Subject Pronouns','Pronombre + verbo'),
     gseed('___ is my sister. (ella)','She',['He','It','They'],'She is my sister.','Ella es mi hermana.','shi is mái síster','"Ella" = She','','Subject Pronouns','Pronombre + verbo'),
     gseed('___ is my brother. (él)','He',['She','It','We'],'He is my brother.','Él es mi hermano.','ji is mái bráder','"Él" = He','','Subject Pronouns','Pronombre + verbo'),
@@ -1484,7 +1565,7 @@ const TOPIC_PACKS={
     gseed('___ are my cats. (aquí, varios)','These',['This','Those','That'],'These are my cats.','Estos son mis gatos.','díis ar mái cats','cerca + plural → these','','Demonstratives','Demostrativo + to be + complemento'),
     gseed('___ are your tools. (allá, varios)','Those',['That','This','These'],'Those are your tools.','Esas son tus herramientas.','dóus ar iór tuls','lejos + plural → those','','Demonstratives','Demostrativo + to be + complemento')
   ]},
-  'Can / Can\'t — abilities (A1)':{ kind:'grammar', seeds:[
+  'Can / Can\'t — abilities (A1)':{ kind:'grammar', gen:canGen, _seeds_old:[
     gseed('I ___ make furniture. (puedo)','can',['cans','am','do'],'I can make furniture.','Yo puedo hacer muebles.','ái can méik férnicher','can + verbo base','Después de "can" el verbo va SIN to y sin -s.','Can','Sujeto + can + verbo base'),
     gseed('She ___ speak English. (puede)','can',['cans','is','does'],'She can speak English.','Ella puede hablar inglés.','shi can spik ínglish','can es igual para todos','"She can", no "she cans".','Can','Sujeto + can + verbo base'),
     gseed('I ___ swim. (no puedo)','cannot',['can not have','cans','do not can'],'I cannot swim.','No puedo nadar.','ái canót suím','negativo → cannot / can’t','"cannot" = "can’t" = no puedo.','Can','Sujeto + cannot + verbo base'),
@@ -1568,13 +1649,13 @@ const TOPIC_PACKS={
     {en:'closet',es:'clóset',p:'clóset',c:'sustantivo'},{en:'shelf',es:'estante',p:'shelf',c:'sustantivo'},{en:'drawer',es:'cajón',p:'dróer',c:'sustantivo'},
     {en:'sofa',es:'sofá',p:'sóufa',c:'sustantivo'},{en:'wall',es:'pared',p:'uól',c:'sustantivo'},{en:'floor',es:'piso',p:'flor',c:'sustantivo'}
   ]},
-  'Present Simple — negatives and questions with do/does (A1)':{ kind:'grammar', seeds:[
+  'Present Simple — negatives and questions with do/does (A1)':{ kind:'grammar', gen:psNegQuestGen, _seeds_old:[
     gseed('She ___ like coffee. (no)','doesn\'t',['don\'t','isn\'t','not'],'She doesn\'t like coffee.','A ella no le gusta el café.','shi dásent láik cófi','He/She/It → doesn\'t','Con he/she/it la negación es "doesn\'t" y el verbo va SIN -s.','Present Simple neg/quest','Sujeto + doesn\'t + verbo base'),
     gseed('I ___ work on Sundays. (no)','don\'t',['doesn\'t','am not','not'],'I don\'t work on Sundays.','No trabajo los domingos.','ái dóunt uérk on sándeis','I/You/We/They → don\'t','','Present Simple neg/quest','Sujeto + don\'t + verbo base'),
     gseed('___ he speak English? (¿?)','Does',['Do','Is','Are'],'Does he speak English?','¿Él habla inglés?','das ji spik ínglish','he/she/it → Does','En preguntas: Does + sujeto + verbo base (sin -s).','Present Simple neg/quest','Does + sujeto + verbo base?'),
     gseed('___ you live in Soacha? (¿?)','Do',['Does','Are','Is'],'Do you live in Soacha?','¿Vives en Soacha?','du iú liv in Sóacha','you/we/they → Do','','Present Simple neg/quest','Do + sujeto + verbo base?')
   ]},
-  'Third person -s tricks: goes, watches, studies (A1)':{ kind:'grammar', seeds:[
+  'Third person -s tricks: goes, watches, studies (A1)':{ kind:'grammar', gen:thirdPersonSGen, _seeds_old:[
     gseed('He ___ to work. (go)','goes',['gos','goies','go'],'He goes to work.','Él va a trabajar.','ji góus tu uérk','go → goes','Verbos en -o añaden -es.','Third person -s','Sujeto + verbo (+es)'),
     gseed('She ___ TV. (watch)','watches',['watchs','watch','watchies'],'She watches TV.','Ella ve televisión.','shi uátches ti-ví','-ch → +es','','Third person -s','Sujeto + verbo (+es)'),
     gseed('He ___ English. (study)','studies',['studys','study','studdies'],'He studies English.','Él estudia inglés.','ji stádis ínglish','consonante+y → ies','','Third person -s','Sujeto + verbo (+ies)'),
@@ -1633,7 +1714,7 @@ const TOPIC_PACKS={
     gseed('She ___ happy. (estaba)','was',['were','is','are'],'She was happy.','Ella estaba feliz.','shi uós jápi','She → was','','Was/Were','Sujeto + was + complemento'),
     gseed('We ___ in Soacha. (estábamos)','were',['was','are','am'],'We were in Soacha.','Estábamos en Soacha.','uí uér in Sóacha','We → were','','Was/Were','Sujeto + were + lugar')
   ]},
-  'Present Continuous — -ing spelling traps (A2)':{ kind:'grammar', seeds:[
+  'Present Continuous — -ing spelling traps (A2)':{ kind:'grammar', gen:presentContinuousGen, _seeds_old:[
     gseed('I am ___ furniture now. (make)','making',['makeing','makking','make'],'I am making furniture now.','Estoy haciendo muebles ahora.','ái am méiking férnicher náu','verbo con -e → quita e + ing','make → making (sin la e).','Present Continuous','Sujeto + am/is/are + verbo-ing'),
     gseed('She is ___ TV. (watch)','watching',['watchting','watchin','watch'],'She is watching TV.','Ella está viendo televisión.','shi is uátching ti-ví','+ing normal','','Present Continuous','Sujeto + is + verbo-ing'),
     gseed('They are ___ now. (run)','running',['runing','runningg','run'],'They are running now.','Ellos están corriendo ahora.','déi ar ráning náu','vocal+consonante → doble + ing','run → running (doble n).','Present Continuous','Sujeto + are + verbo-ing'),
@@ -1762,7 +1843,7 @@ const TOPIC_PACKS={
     {en:'rarely',es:'rara vez',p:'rérli',c:'adverbio'},{en:'never',es:'nunca',p:'néver',c:'adverbio'},
     {en:'every day',es:'todos los días',p:'évri déi',c:'adverbio'},{en:'once a week',es:'una vez por semana',p:'uáns a uík',c:'adverbio'}
   ]},
-  'Verb To Be — negatives and questions (A1)':{ kind:'grammar', seeds:[
+  'Verb To Be — negatives and questions (A1)':{ kind:'grammar', gen:toBeNegQuestGen, _seeds_old:[
     gseed('I ___ a doctor. (no soy)','am not',['is not','are not','not am'],'I am not a doctor.','No soy doctor.','ái am not a dóctor','I → am not','La negación de "am" es "am not" (no hay "amn\'t").','Verb To Be neg/quest','Sujeto + am/is/are + not + complemento'),
     gseed('She ___ at home. (no está)','is not',['am not','are not','not is'],'She is not at home.','Ella no está en casa.','shi is not at jóum','He/She/It → is not (isn\'t)','','Verb To Be neg/quest','Sujeto + is + not + complemento'),
     gseed('They ___ tired. (no están)','are not',['is not','am not','not are'],'They are not tired.','Ellos no están cansados.','déi ar not táierd','You/We/They → are not (aren\'t)','','Verb To Be neg/quest','Sujeto + are + not + complemento'),

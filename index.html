@@ -1572,6 +1572,42 @@ function demonstrativesGen(){
   const trad=dem+' '+nEs+' '+verb+' '+adjEs+'.'; const pron=d.pr+' '+n.pr+' '+(d.pl?'ar':'is')+' '+a.pr;
   return gseed(q, d.en, DEMO.map(x=>x.en).filter(x=>x!==d.en), sentence, trad, pron, 'cerca+sing=this · lejos+sing=that · cerca+pl=these · lejos+pl=those', '', 'Demonstratives', 'Demostrativo + sustantivo + verbo');
 }
+// PREPOSICIONES DE LUGAR
+const PREP_PLACE=[{en:'on',es:'sobre',pr:'on'},{en:'in',es:'dentro de',pr:'in'},{en:'under',es:'debajo de',pr:'ánder'},{en:'next to',es:'al lado de',pr:'nékst tu'},{en:'behind',es:'detrás de',pr:'bijáind'},{en:'in front of',es:'enfrente de',pr:'in front ov'}];
+const PLACE_N=SIMPLE_NOUN.filter(n=>['table','house','car','chair','bag'].indexOf(n.en)>=0);
+function prepPlaceGen(){
+  const n1=pick(SIMPLE_NOUN); let n2=pick(PLACE_N); if(n2.en===n1.en)n2=pick(PLACE_N); const p=pick(PREP_PLACE);
+  const sentence='The '+n1.en+' is '+p.en+' the '+n2.en+'.'; const q='The '+n1.en+' is ___ the '+n2.en+'. ('+p.es+')';
+  let trad=(n1.g==='f'?'La ':'El ')+n1.es+' está '+p.es+' '+(n2.g==='f'?'la ':'el ')+n2.es+'.'; trad=trad.replace(/ de el /g,' del ').replace(/ a el /g,' al ');
+  const pron='de '+n1.pr+' is '+p.pr+' de '+n2.pr;
+  return gseed(q, p.en, shuffle(PREP_PLACE.map(x=>x.en).filter(x=>x!==p.en)).slice(0,3), sentence, trad, pron, 'in=dentro · on=sobre · under=debajo · next to=al lado', '', 'Prepositions of Place', 'Sujeto + to be + preposición + lugar');
+}
+// THERE IS / THERE ARE
+const THERE_PLACE=[{en:'here',es:'aquí'},{en:'in the room',es:'en el cuarto'},{en:'in the garden',es:'en el jardín'},{en:'on the table',es:'sobre la mesa'}];
+function thereIsAreGen(){
+  const n=pick(SIMPLE_NOUN), pl=pick(THERE_PLACE);
+  if(Math.random()<0.5){ const sentence='There are two '+n.pl+' '+pl.en+'.'; const q='There ___ two '+n.pl+' '+pl.en+'. (hay)';
+    return gseed(q,'are',['is','am','be'],sentence,'Hay dos '+n.plEs+' '+pl.es+'.','der ar tu '+n.pr+'s '+pl.en,'plural → There are','','There is/are','There is/are + sustantivo + lugar'); }
+  const sentence='There is a '+n.en+' '+pl.en+'.'; const q='There ___ a '+n.en+' '+pl.en+'. (hay)';
+  return gseed(q,'is',['are','am','be'],sentence,'Hay '+(n.g==='f'?'una ':'un ')+n.es+' '+pl.es+'.','der is a '+n.pr+' '+pl.en,'singular/incontable → There is','','There is/are','There is/are + sustantivo + lugar');
+}
+// HAVE GOT / HAS GOT
+const CONJ_TENER={yo:'tengo',tu:'tienes',el:'tiene',nos:'tenemos',ellos:'tienen'};
+function haveGotGen(){
+  const su=pick(V_SUBJ), n=pick(SIMPLE_NOUN); const ans=su.s3?'has got':'have got';
+  const sentence=su.en+' '+ans+' a '+n.en+'.'; const q=su.en+' ___ a '+n.en+'. (tiene)';
+  const trad=su.es+' '+CONJ_TENER[su.pers]+' '+(n.g==='f'?'una ':'un ')+n.es+'.'; const pron=su.pron+' '+(su.s3?'jas got':'jav got')+' a '+n.pr;
+  return gseed(q, ans, [su.s3?'have got':'has got','have','has'], sentence, trad, pron, 'I/You/We/They → have got · He/She/It → has got', '"have got" = tener (posesión).', 'Have got', 'Sujeto + have/has got + sustantivo');
+}
+// ARTÍCULOS a / an
+const NOUNS_ART=[{en:'apple',art:'an',es:'manzana',g:'f',pr:'ápol'},{en:'egg',art:'an',es:'huevo',g:'m',pr:'eg'},{en:'orange',art:'an',es:'naranja',g:'f',pr:'órinch'},{en:'umbrella',art:'an',es:'paraguas',g:'m',pr:'ambréla'},{en:'hour',art:'an',es:'hora',g:'f',pr:'áuer'},{en:'elephant',art:'an',es:'elefante',g:'m',pr:'élefant'},{en:'idea',art:'an',es:'idea',g:'f',pr:'aidía'},{en:'orange',art:'an',es:'naranja',g:'f',pr:'órinch'},{en:'dog',art:'a',es:'perro',g:'m',pr:'dog'},{en:'car',art:'a',es:'carro',g:'m',pr:'car'},{en:'table',art:'a',es:'mesa',g:'f',pr:'téibol'},{en:'house',art:'a',es:'casa',g:'f',pr:'jáus'},{en:'book',art:'a',es:'libro',g:'m',pr:'buk'},{en:'university',art:'a',es:'universidad',g:'f',pr:'iunivérsiti'},{en:'phone',art:'a',es:'teléfono',g:'m',pr:'fóun'},{en:'truck',art:'a',es:'camión',g:'m',pr:'trak'},{en:'friend',art:'a',es:'amigo',g:'m',pr:'frend'}];
+const ART_CARRIER=[{en:'This is',es:'Esto es',pr:'dis is'},{en:'I have',es:'Tengo',pr:'ái jav'},{en:'It is',es:'Es',pr:'it is'},{en:'She has',es:'Ella tiene',pr:'shi jas'}];
+function articlesGen(){
+  const car=pick(ART_CARRIER), n=pick(NOUNS_ART);
+  const sentence=car.en+' '+n.art+' '+n.en+'.'; const q=car.en+' ___ '+n.en+'.';
+  const trad=car.es+' '+(n.g==='f'?'una ':'un ')+n.es+'.'; const pron=car.pr+' '+n.art+' '+n.pr;
+  return gseed(q, n.art, [n.art==='a'?'an':'a','the'], sentence, trad, pron, 'an + sonido de VOCAL (a,e,i,o,u) · a + sonido de CONSONANTE', 'Mira la palabra que SIGUE: an hour (h muda), a university (suena "yu").', 'Articles', 'Sujeto + a/an + sustantivo');
+}
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
@@ -1597,7 +1633,7 @@ const TOPIC_PACKS={
     gseed('___ are my cats. (ellos)','They',['We','You','He'],'They are my cats.','Ellos son mis gatos.','déi ar mái cats','"Ellos/ellas" = They','Mila y Jasper son los gatos de Diego.','Subject Pronouns','Pronombre + verbo'),
     gseed('___ is a big table. (eso)','It',['He','She','They'],'It is a big table.','Es una mesa grande.','it is a big téibol','Para cosas/animales = It','"It" se usa para cosas y animales, no para personas.','Subject Pronouns','Pronombre + verbo')
   ]},
-  'Articles — a/an/the (A1)':{ kind:'grammar', seeds:[
+  'Articles — a/an/the (A1)':{ kind:'grammar', gen:articlesGen, _seeds_old:[
     gseed('She is ___ engineer.','an',['a','the'],'She is an engineer.','Ella es ingeniera.','shi is an enyiníar','an + sonido de vocal','"an" antes de sonido de vocal (a,e,i,o,u).','Articles','Sujeto + to be + a/an + sustantivo'),
     gseed('He is ___ carpenter.','a',['an','the'],'He is a carpenter.','Él es carpintero.','ji is a cárpenter','a + sonido de consonante','"carpenter" empieza en consonante → a.','Articles','Sujeto + to be + a/an + sustantivo'),
     gseed('I have ___ apple.','an',['a','the'],'I have an apple.','Tengo una manzana.','ái jav an ápol','an + vocal (apple)','','Articles','Sujeto + verbo + a/an + sustantivo'),
@@ -1636,13 +1672,13 @@ const TOPIC_PACKS={
     gseed('I ___ drive a truck. (puedo)','can',['cans','am','do'],'I can drive a truck.','Yo puedo manejar un camión.','ái can dráiv a trak','can + verbo base','Diego maneja camión; va por la licencia C1.','Can','Sujeto + can + verbo base'),
     gseed('Diego ___ fly a drone. (puede)','can',['cans','is','does'],'Diego can fly a drone.','Diego puede volar un dron.','Diego can flái a dróun','can es igual para todos','Diego vuela un dron DJI Mini 3.','Can','Sujeto + can + verbo base')
   ]},
-  'There is / There are (A1)':{ kind:'grammar', seeds:[
+  'There is / There are (A1)':{ kind:'grammar', gen:thereIsAreGen, _seeds_old:[
     gseed('___ a table in the kitchen. (hay, uno)','There is',['There are','It is','There am'],'There is a table in the kitchen.','Hay una mesa en la cocina.','der is a téibol in de kíchen','singular → There is','','There is/are','There is/are + sustantivo + lugar'),
     gseed('___ two dogs in the garden. (hay, varios)','There are',['There is','They are','There am'],'There are two dogs in the garden.','Hay dos perros en el jardín.','der ar tu dogs in de gárden','plural → There are','','There is/are','There is/are + sustantivo + lugar'),
     gseed('___ some water in the glass. (hay)','There is',['There are','It is','There be'],'There is some water in the glass.','Hay algo de agua en el vaso.','der is sam uáter in de glas','incontable → There is','"water" es incontable → is.','There is/are','There is/are + sustantivo + lugar'),
     gseed('___ many houses in Soacha. (hay)','There are',['There is','It are','There be'],'There are many houses in Soacha.','Hay muchas casas en Soacha.','der ar méni jáuses in Sóacha','plural → There are','','There is/are','There is/are + sustantivo + lugar')
   ]},
-  'Prepositions of Place — in/on/at/under (A1)':{ kind:'grammar', seeds:[
+  'Prepositions of Place — in/on/at/under (A1)':{ kind:'grammar', gen:prepPlaceGen, _seeds_old:[
     gseed('The hammer is ___ the table. (sobre)','on',['in','under','at'],'The hammer is on the table.','El martillo está sobre la mesa.','de jámer is on de téibol','sobre una superficie → on','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
     gseed('The tools are ___ the box. (dentro)','in',['on','under','at'],'The tools are in the box.','Las herramientas están dentro de la caja.','de tuls ar in de box','dentro → in','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
     gseed('The dog is ___ the table. (debajo)','under',['on','in','at'],'The dog is under the table.','El perro está debajo de la mesa.','de dog is ánder de téibol','debajo → under','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
@@ -1731,7 +1767,7 @@ const TOPIC_PACKS={
     gseed('___ run in the workshop. (no corras)','Don\'t',['No','Not','Doesn\'t'],'Don\'t run in the workshop.','No corras en el taller.','dóunt ran in de uérkshop','orden negativa → Don\'t + verbo','','Imperatives','Don\'t + verbo base'),
     gseed('___ careful with the saw. (ten cuidado)','Be',['Being','Are','Is'],'Be careful with the saw.','Ten cuidado con la sierra.','bi kérful uíd de so','ser/estar imperativo → Be','','Imperatives','Be + adjetivo')
   ]},
-  'Have got / Has got (A1)':{ kind:'grammar', seeds:[
+  'Have got / Has got (A1)':{ kind:'grammar', gen:haveGotGen, _seeds_old:[
     gseed('I ___ two cats. (tengo)','have got',['has got','have','got'],'I have got two cats.','Tengo dos gatos.','ái jav got tu cats','I/You/We/They → have got','"have got" = tener (posesión).','Have got','Sujeto + have/has got + complemento'),
     gseed('She ___ a new car. (tiene)','has got',['have got','has','got'],'She has got a new car.','Ella tiene un carro nuevo.','shi jas got a niú car','He/She/It → has got','','Have got','Sujeto + have/has got + complemento'),
     gseed('Diego ___ a workshop. (tiene)','has got',['have got','has','got'],'Diego has got a workshop.','Diego tiene un taller.','Diego jas got a uérkshop','él → has got','','Have got','Sujeto + has got + complemento')

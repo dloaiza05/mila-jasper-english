@@ -639,7 +639,7 @@ const SYMBOL_INFO={'?':{en:'question mark',es:'signo de interrogación',pron:'cu
 function numToWords(n){ n=parseInt(n,10); if(isNaN(n)) return null;
   if(n<0){ const p=numToWords(-n); return {en:'minus '+p.en, es:'menos '+p.es}; }
   if(n<20) return {en:NUM_EN_ONES[n], es:NUM_ES_ONES[n]};
-  if(n<100){ const t=Math.floor(n/10),o=n%10; return {en:NUM_EN_TENS[t]+(o?'-'+NUM_EN_ONES[o]:''), es:(t===2&&o?('veinti'+NUM_ES_ONES[o]):NUM_ES_TENS[t]+(o?' y '+NUM_ES_ONES[o]:''))}; }
+  if(n<100){ const t=Math.floor(n/10),o=n%10; const VEINTI={1:'veintiuno',2:'veintidós',3:'veintitrés',4:'veinticuatro',5:'veinticinco',6:'veintiséis',7:'veintisiete',8:'veintiocho',9:'veintinueve'}; return {en:NUM_EN_TENS[t]+(o?'-'+NUM_EN_ONES[o]:''), es:(t===2&&o?VEINTI[o]:NUM_ES_TENS[t]+(o?' y '+NUM_ES_ONES[o]:''))}; }
   if(n<1000){ const h=Math.floor(n/100),r=n%100; const rp=r?numToWords(r):null; return {en:NUM_EN_ONES[h]+' hundred'+(rp?' '+rp.en:''), es:((h===1&&!r)?'cien':NUM_ES_HUND[h])+(rp?' '+rp.es:'')}; }
   if(n<=999999){ const th=Math.floor(n/1000),r=n%1000; const tp=numToWords(th),rp=r?numToWords(r):null; return {en:tp.en+' thousand'+(rp?' '+rp.en:''), es:(th===1?'mil':tp.es+' mil')+(rp?' '+rp.es:'')}; }
   return {en:String(n), es:String(n)}; }
@@ -1448,6 +1448,8 @@ const CONJ_ESTAR={yo:'estoy',tu:'estás',el:'está',nos:'estamos',ellos:'están'
 const AUX_PRON={"don't":'dóunt',"doesn't":'dásent','Do':'du','Does':'das','not':'not','can':'can',"can't":'cant','Can':'can'};
 function beOf(su){ return su.pers==='yo'?'am':(su.s3?'is':'are'); }
 const PRONOUNS7=['I','You','He','She','It','We','They'];
+// en preguntas, el pronombre va en minúscula después del auxiliar (Do they? · Is he?) — "I" y los nombres NO cambian
+function lcSub(en){ return ['You','He','She','It','We','They'].indexOf(en)>=0 ? en.toLowerCase() : en; }
 // 1) Subject Pronouns
 function subjectPronounGen(){
   const pr=pick(TB_SUBJ.filter(s=>PRONOUNS7.includes(s.en))), c=pick(TB_COMP);
@@ -1467,7 +1469,7 @@ function toBeNegQuestGen(){
     return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'negativo: sujeto + am/is/are + not', 'La negación solo agrega "not".', 'Verb To Be neg/quest', 'Sujeto + to be + not + complemento');
   } else {
     const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1);
-    const sentence=beCap+' '+s.en+' '+c.en+'?'; const q='___ '+s.en+' '+c.en+'? (pregunta)';
+    const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (pregunta)';
     const trad='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+s.es.toLowerCase()+' '+esC+'?'; const pron=BE_PRON_M[s.be]+' '+s.pron+' '+c.pr;
     return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'pregunta: am/is/are + sujeto + ...?', 'En preguntas el verbo va primero.', 'Verb To Be neg/quest', 'Am/Is/Are + sujeto + complemento?');
   }
@@ -1480,7 +1482,7 @@ function psNegQuestGen(){
     const trad=su.es+' no '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+AUX_PRON[aux]+' '+v.pb+' '+c.pr;
     return gseed(q, aux, [su.s3?"don't":"doesn't",'not','no'], sentence, trad, pron, "negativo: don't (I/you/we/they) · doesn't (he/she/it) + verbo base", 'Con don\'t/doesn\'t el verbo va en base (sin -s).', 'Present Simple neg/quest', 'Sujeto + don\'t/doesn\'t + verbo base');
   } else {
-    const aux=su.s3?'Does':'Do'; const sentence=aux+' '+su.en+' '+v.b+' '+c.en+'?'; const q='___ '+su.en+' '+v.b+' '+c.en+'? (pregunta)';
+    const aux=su.s3?'Does':'Do'; const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (pregunta)';
     const trad='¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?'; const pron=AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr;
     return gseed(q, aux, [su.s3?'Do':'Does','Are','Is'], sentence, trad, pron, 'pregunta: Do (I/you/we/they) · Does (he/she/it) + sujeto + verbo base', '', 'Present Simple neg/quest', 'Do/Does + sujeto + verbo base?');
   }
@@ -1498,7 +1500,7 @@ function canGen(){
   const poder=CONJ_PODER[su.pers], inf=V_INF[v.b];
   if(m<0.34){ sentence=su.en+' can '+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. ('+poder+')'; trad=su.es+' '+poder+' '+inf+' '+c.es+'.'; answer='can'; wrong=['cans','is','does']; }
   else if(m<0.67){ sentence=su.en+" can't "+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. (no '+poder+')'; trad=su.es+' no '+poder+' '+inf+' '+c.es+'.'; answer="can't"; wrong=['cans',"doesn't",'not']; }
-  else { sentence='Can '+su.en+' '+v.b+' '+c.en+'?'; q='___ '+su.en+' '+v.b+' '+c.en+'? (¿'+poder+'?)'; trad='¿'+su.es+' '+poder+' '+inf+' '+c.es+'?'; answer='Can'; wrong=['Do','Does','Are']; }
+  else { sentence='Can '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿'+poder+'?)'; trad='¿'+su.es+' '+poder+' '+inf+' '+c.es+'?'; answer='Can'; wrong=['Do','Does','Are']; }
   const pron=su.pron+' '+AUX_PRON[answer]+' '+v.pb+' '+c.pr;
   return gseed(q, answer, wrong, sentence, trad, pron, 'can + verbo base (igual para todos) · negativo can\'t · pregunta Can al inicio', 'can no cambia con la persona (nunca "cans").', 'Can', 'Sujeto + can + verbo base');
 }
@@ -1608,6 +1610,62 @@ function articlesGen(){
   const trad=car.es+' '+(n.g==='f'?'una ':'un ')+n.es+'.'; const pron=car.pr+' '+n.art+' '+n.pr;
   return gseed(q, n.art, [n.art==='a'?'an':'a','the'], sentence, trad, pron, 'an + sonido de VOCAL (a,e,i,o,u) · a + sonido de CONSONANTE', 'Mira la palabra que SIGUE: an hour (h muda), a university (suena "yu").', 'Articles', 'Sujeto + a/an + sustantivo');
 }
+// NÚMEROS (reusa numToWords/numPron)
+function numbersGen(){
+  const n=2+Math.floor(Math.random()*98); const correct=numToWords(n).en, es=numToWords(n).es;
+  const pool=new Set(); [n-1,n+1,n+2,n-2,n+10,n-10].forEach(k=>{ if(k>0&&k<100&&k!==n){ const w=numToWords(k).en; if(w)pool.add(w); } });
+  const traps={forty:'fourty',fourteen:'forteen',ninety:'ninty',ninety_:'',fifteen:'fiveteen',fifty:'fivety'}; if(traps[correct])pool.add(traps[correct]);
+  const wrong=shuffle([...pool]).slice(0,3);
+  return gseed(n+' in English is ___.', correct, wrong, n+' = '+correct, 'El número '+n+' en inglés es "'+correct+'" ('+es+').', numPron(correct), '40=forty (sin U) · 13 thirteen ≠ 30 thirty', 'Trampa: forty, no "fourty".', 'Numbers', '¿Cómo se escribe el número en inglés?');
+}
+// PREPOSICIONES DE TIEMPO
+const TIME_ITEMS=[
+ {en:"six o'clock",prep:'at',es:'a las seis',pr:'six oclók'},{en:"seven o'clock",prep:'at',es:'a las siete',pr:'séven oclók'},
+ {en:'noon',prep:'at',es:'al mediodía',pr:'nun'},{en:'night',prep:'at',es:'en la noche',pr:'náit'},
+ {en:'Monday',prep:'on',es:'el lunes',pr:'mándei'},{en:'Friday',prep:'on',es:'el viernes',pr:'fráidei'},
+ {en:'Sunday',prep:'on',es:'el domingo',pr:'sándei'},{en:'my birthday',prep:'on',es:'en mi cumpleaños',pr:'mái bérzdei'},
+ {en:'July',prep:'in',es:'en julio',pr:'yulái'},{en:'December',prep:'in',es:'en diciembre',pr:'disémber'},
+ {en:'the morning',prep:'in',es:'en la mañana',pr:'de mórning'},{en:'the afternoon',prep:'in',es:'en la tarde',pr:'de afternún'},
+ {en:'winter',prep:'in',es:'en invierno',pr:'uínter'}
+];
+const PT_CARRIER=[{en:'I work',es:'Trabajo',pr:'ái uérk'},{en:'I study',es:'Estudio',pr:'ái stádi'},{en:'I rest',es:'Descanso',pr:'ái rest'},{en:'We travel',es:'Viajamos',pr:'uí trável'}];
+function prepTimeGen(){
+  const car=pick(PT_CARRIER), t=pick(TIME_ITEMS);
+  const sentence=car.en+' '+t.prep+' '+t.en+'.'; const q=car.en+' ___ '+t.en+'.';
+  return gseed(q, t.prep, ['at','on','in'].filter(x=>x!==t.prep), sentence, car.es+' '+t.es+'.', car.pr+' '+t.prep+' '+t.pr, 'at + hora · on + día · in + mes/año/parte del día (pero AT night)', 'Excepción: at night.', 'Prepositions of Time', 'Sujeto + verbo + preposición + tiempo');
+}
+// IMPERATIVOS
+const IMP_ACT=[{v:'Open',es:'Abre',neg:'No abras',obj:'the door',objEs:'la puerta',pr:'óupen'},{v:'Close',es:'Cierra',neg:'No cierres',obj:'the window',objEs:'la ventana',pr:'clóus'},{v:'Read',es:'Lee',neg:'No leas',obj:'the book',objEs:'el libro',pr:'rid'},{v:'Eat',es:'Come',neg:'No comas',obj:'the apple',objEs:'la manzana',pr:'it'},{v:'Study',es:'Estudia',neg:'No estudies',obj:'English',objEs:'inglés',pr:'stádi'},{v:'Call',es:'Llama',neg:'No llames',obj:'Leidy',objEs:'a Leidy',pr:'col'},{v:'Drive',es:'Maneja',neg:'No manejes',obj:'the truck',objEs:'el camión',pr:'dráiv'},{v:'Wash',es:'Lava',neg:'No laves',obj:'the car',objEs:'el carro',pr:'uósh'}];
+function imperativesGen(){
+  const a=pick(IMP_ACT);
+  if(Math.random()<0.5){
+    const sentence=a.v+' '+a.obj+', please.'; const q='___ '+a.obj+', please. ('+a.es.toLowerCase()+')';
+    return gseed(q, a.v, [a.v+'s',a.v+'ing','To '+a.v.toLowerCase()], sentence, a.es+' '+a.objEs+', por favor.', a.pr+' '+a.obj, 'orden → verbo base al inicio (sin sujeto)', '', 'Imperatives', 'Verbo base + complemento');
+  }
+  const sentence="Don't "+a.v.toLowerCase()+' '+a.obj+'.'; const q='___ '+a.v.toLowerCase()+' '+a.obj+'. (no '+a.es.toLowerCase()+')';
+  return gseed(q, "Don't", ['No','Not',"Doesn't"], sentence, a.neg+' '+a.objEs+'.', "dóunt "+a.pr+' '+a.obj, 'orden negativa → Don\'t + verbo base', '', 'Imperatives', 'Don\'t + verbo base');
+}
+// LA HORA
+function tellingTimeGen(){
+  const h=1+Math.floor(Math.random()*12), hn=h===12?1:h+1;
+  const T=[{mm:'00',en:"It's "+h+" o'clock.",ans:"o'clock",wrong:['hours','clock','times'],es:'Son las '+h+' en punto.'},
+   {mm:'15',en:"It's a quarter past "+h+'.',ans:'past',wrong:['to','after','over'],es:'Son las '+h+' y cuarto.'},
+   {mm:'30',en:"It's half past "+h+'.',ans:'half',wrong:['middle','quarter','thirty'],es:'Son las '+h+' y media.'},
+   {mm:'45',en:"It's a quarter to "+hn+'.',ans:'to',wrong:['past','before','of'],es:'Son las '+h+':45 (un cuarto para las '+hn+').'}];
+  const t=pick(T); const sentence=h+':'+t.mm+' — '+t.en; const q=h+':'+t.mm+' — '+t.en.replace(t.ans,'___');
+  return gseed(q, t.ans, t.wrong, sentence, t.es, '', "o'clock=en punto · past=y (cuarto/media) · to=menos (para la siguiente)", '', 'Telling the Time', "It's + hora");
+}
+// ORDEN DE LA PREGUNTA (mezcla to be + do/does)
+function questionOrderGen(){
+  if(Math.random()<0.5){
+    const s=pick(TB_SUBJ), c=pick(TB_COMP); const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1); const verb=c.v==='ser'?s.ser:s.estar; const esC=s.pl?c.p:c.s;
+    const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (¿?)';
+    return gseed(q, s.be, ['am','is','are','do'].filter(x=>x!==s.be).slice(0,3), sentence, '¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+s.es.toLowerCase()+' '+esC+'?', BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
+  }
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP); const aux=su.s3?'Does':'Do';
+  const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿?)';
+  return gseed(q, aux, [su.s3?'Do':'Does','Is','Are'], sentence, '¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?', AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr, 'con otros verbos: Do/Does + sujeto + verbo base', '', 'Question Order', 'Do/Does + sujeto + verbo base?');
+}
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
@@ -1696,7 +1754,7 @@ const TOPIC_PACKS={
     gseed('Leidy ___ English with me. (study)','studies',['studys','study','studdies'],'Leidy studies English with me.','Leidy estudia inglés conmigo.','Leidy stádis ínglish uíd mi','cons.+y → ies','Estudian juntos en ULA.','Present Simple','Sujeto + verbo (+ies)'),
     gseed('We ___ our cats Mila and Jasper. (love)','love',['loves','loving','luv'],'We love our cats Mila and Jasper.','Amamos a nuestros gatos Mila y Jasper.','uí lav áur cats Mila and Jasper','We → verbo base','','Present Simple','Sujeto + verbo base')
   ]},
-  'Numbers, Days and Dates — spelling traps: forty (A1)':{ kind:'grammar', seeds:[
+  'Numbers, Days and Dates — spelling traps: forty (A1)':{ kind:'grammar', gen:numbersGen, _seeds_old:[
     gseed('40 in English is ___','forty',['fourty','fourthy','forti'],'40 = forty','cuarenta','fórti','40 pierde la U de four','TRAMPA: es "forty", NO "fourty".','Numbers','¿Cómo se escribe el número?'),
     gseed('14 in English is ___','fourteen',['fortteen','fourty','forteen'],'14 = fourteen','catorce','fórtin','14 SÍ lleva la U (four+teen)','No confundir 14 (fourteen) con 40 (forty).','Numbers','¿Cómo se escribe el número?'),
     gseed('13 in English is ___','thirteen',['thirtteen','threeteen','thurteen'],'13 = thirteen','trece','zértin','13 = thirteen','','Numbers','¿Cómo se escribe el número?'),
@@ -1761,7 +1819,7 @@ const TOPIC_PACKS={
     gseed('She ___ the dishes. (wash)','washes',['washs','wash','washies'],'She washes the dishes.','Ella lava los platos.','shi uáshes de díshes','-sh → +es','','Third person -s','Sujeto + verbo (+es)'),
     gseed('It ___ at night. (fly)','flies',['flys','fly','flyies'],'It flies at night.','Vuela de noche.','it fláis at náit','consonante+y → ies','fly → flies.','Third person -s','Sujeto + verbo (+ies)')
   ]},
-  'Imperatives — commands (A1)':{ kind:'grammar', seeds:[
+  'Imperatives — commands (A1)':{ kind:'grammar', gen:imperativesGen, _seeds_old:[
     gseed('___ the door, please. (abre)','Open',['Opens','Opening','To open'],'Open the door, please.','Abre la puerta, por favor.','óupen de dor, plis','orden → verbo base al inicio','El imperativo usa el verbo base, sin sujeto.','Imperatives','Verbo base + complemento'),
     gseed('___ down, please. (siéntate)','Sit',['Sits','Sitting','You sit'],'Sit down, please.','Siéntate, por favor.','sit dáun, plis','orden → verbo base','','Imperatives','Verbo base + complemento'),
     gseed('___ run in the workshop. (no corras)','Don\'t',['No','Not','Doesn\'t'],'Don\'t run in the workshop.','No corras en el taller.','dóunt ran in de uérkshop','orden negativa → Don\'t + verbo','','Imperatives','Don\'t + verbo base'),
@@ -1772,13 +1830,13 @@ const TOPIC_PACKS={
     gseed('She ___ a new car. (tiene)','has got',['have got','has','got'],'She has got a new car.','Ella tiene un carro nuevo.','shi jas got a niú car','He/She/It → has got','','Have got','Sujeto + have/has got + complemento'),
     gseed('Diego ___ a workshop. (tiene)','has got',['have got','has','got'],'Diego has got a workshop.','Diego tiene un taller.','Diego jas got a uérkshop','él → has got','','Have got','Sujeto + has got + complemento')
   ]},
-  'Prepositions of Time — in/on/at (tricky!) (A1)':{ kind:'grammar', seeds:[
+  'Prepositions of Time — in/on/at (tricky!) (A1)':{ kind:'grammar', gen:prepTimeGen, _seeds_old:[
     gseed('I wake up ___ six o\'clock. (a las)','at',['in','on','to'],'I wake up at six o\'clock.','Me despierto a las seis.','ái uéik ap at six oclók','hora exacta → at','at + hora exacta.','Prepositions of Time','at + hora'),
     gseed('I work ___ Monday. (el)','on',['in','at','to'],'I work on Monday.','Trabajo el lunes.','ái uérk on mándei','día → on','on + día de la semana.','Prepositions of Time','on + día'),
     gseed('I study ___ the morning. (en)','in',['on','at','to'],'I study in the morning.','Estudio en la mañana.','ái stádi in de mórning','parte del día → in','in the morning/afternoon/evening (pero AT night).','Prepositions of Time','in + parte del día'),
     gseed('My birthday is ___ July. (en)','in',['on','at','to'],'My birthday is in July.','Mi cumpleaños es en julio.','mái bérzdei is in yulái','mes → in','in + mes o año.','Prepositions of Time','in + mes')
   ]},
-  'Telling the Time (A1)':{ kind:'grammar', seeds:[
+  'Telling the Time (A1)':{ kind:'grammar', gen:tellingTimeGen, _seeds_old:[
     gseed('3:00 — It\'s three ___','o\'clock',['hours','clock','times'],'It\'s three o\'clock.','Son las tres en punto.','its zrí oclók','hora en punto → o\'clock','','Telling the Time','It\'s + hora + o\'clock'),
     gseed('3:15 — It\'s a quarter ___ three','past',['to','after','over'],'It\'s a quarter past three.','Son las tres y cuarto.','its a cuórter past zrí','y cuarto → quarter past','past = pasada la hora.','Telling the Time','quarter past + hora'),
     gseed('3:30 — It\'s ___ past three','half',['middle','quarter','thirty'],'It\'s half past three.','Son las tres y media.','its jaf past zrí','y media → half past','half = media.','Telling the Time','half past + hora'),
@@ -1789,7 +1847,7 @@ const TOPIC_PACKS={
     gseed('I am tired ___ happy. (pero)','but',['and','or','so'],'I am tired but happy.','Estoy cansado pero feliz.','ái am táierd bat jápi','contraste → but','','Connectors','... but ...'),
     gseed('Tea ___ coffee? (o)','or',['and','but','so'],'Tea or coffee?','¿Té o café?','ti or cófi','opción → or','','Connectors','... or ...?')
   ]},
-  'Question Word Order — Do you...? Is she...? (A1)':{ kind:'grammar', seeds:[
+  'Question Word Order — Do you...? Is she...? (A1)':{ kind:'grammar', gen:questionOrderGen, _seeds_old:[
     gseed('___ you a carpenter? (¿eres?)','Are',['Do','Is','Does'],'Are you a carpenter?','¿Eres carpintero?','ar iú a cárpenter','to be → verbo primero','Con to be la pregunta empieza con am/is/are.','Question Order','To be + sujeto + complemento?'),
     gseed('___ she like music? (¿le gusta?)','Does',['Is','Do','Are'],'Does she like music?','¿A ella le gusta la música?','das shi láik miúsic','verbo normal (he/she/it) → Does','','Question Order','Does + sujeto + verbo base?'),
     gseed('___ they at home? (¿están?)','Are',['Do','Is','Does'],'Are they at home?','¿Están en casa?','ar déi at jóum','to be plural → Are','','Question Order','Are + sujeto + lugar?')

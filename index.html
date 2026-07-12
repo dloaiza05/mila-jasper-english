@@ -1181,6 +1181,17 @@ function composeVocab(list, fmt, tema){
     const four=shuffle(list).slice(0,4); if(four.length<3) return null;
     return {formato:'emparejar', kind:'vocab', q:'Match each English word with its meaning:', pairs:four.map(x=>({a:x.en,b:x.es})), trad:four.map(x=>x.en+' = '+x.es).join(' · '), pron:'', form:'', cat:'', extra:'', tema:T, estructura:'Match the word with its meaning', concepto:cpt};
   }
+  if(fmt==='completar'){
+    return {formato:'completar', kind:'vocab', emoji:emojiFor(item.en), q:'Complete in English:', template:'___ = «'+item.es+'»', answers:[item.en], sentence:item.en+' = '+item.es, trad:'«'+item.es+'» = '+item.en, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Escribe la palabra en inglés', concepto:cpt};
+  }
+  if(fmt==='huecos'){
+    const d=vocabDistract(list,item,'en'); const bank=shuffle([item.en].concat(d.slice(0,3)));
+    return {formato:'huecos', kind:'vocab', emoji:emojiFor(item.en), q:'Complete by tapping the correct word:', template:'___ = «'+item.es+'»', answers:[item.en], bank:bank, sentence:item.en+' = '+item.es, trad:'«'+item.es+'» = '+item.en, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Toca la palabra en inglés', concepto:cpt};
+  }
+  if(fmt==='ordenar'){
+    const order=('I know the word '+item.en).split(' ');
+    return {formato:'ordenar', kind:'vocab', q:'Put the words in the correct order:', order:order, sentence:'I know the word '+item.en+'.', trad:'Conozco la palabra '+item.en+' («'+item.es+'»).', pron:'ái nóu de uérd '+(item.p||item.en), form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Sujeto + verbo + complemento', concepto:cpt};
+  }
   return null;
 }
 /* VARIAS CORRECTAS (multiple) — SEGURO: marca todas las traducciones correctas (varias buenas, varias malas) */
@@ -1227,7 +1238,7 @@ function grammarAvail(pool){
   return ['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar'].filter(x=>f.has(x));
 }
 function vocabAvail(list){
-  const f=['opcion','escribir','vf']; if(list.length>=4){ f.push('multiple'); } if(list.length>=3){ f.push('emparejar'); } return f;
+  const f=['opcion','vf','escribir','completar','huecos','ordenar']; if(list.length>=4){ f.push('multiple'); } if(list.length>=3){ f.push('emparejar'); } return f;
 }
 /* Motor de un tema: devuelve qué formatos puede producir y una función compose(fmt) */
 function topicEngine(topicLabel){
@@ -1366,6 +1377,57 @@ function toBeGen(){
   const pron = s.pron+' '+BE_PRON_M[s.be]+' '+c.pr;
   return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'I → am · He/She/It → is · You/We/They → are', 'Un solo "to be" = ser Y estar (am/is/are).', 'Verb To Be', 'Sujeto + to be + complemento');
 }
+// sujetos para verbos (s3 = agrega -s en 3ª persona; pers = persona española)
+const V_SUBJ=[
+ {en:'I',es:'Yo',s3:false,pers:'yo',pron:'ái'},
+ {en:'You',es:'Tú',s3:false,pers:'tu',pron:'iú'},
+ {en:'He',es:'Él',s3:true,pers:'el',pron:'ji'},
+ {en:'She',es:'Ella',s3:true,pers:'el',pron:'shi'},
+ {en:'We',es:'Nosotros',s3:false,pers:'nos',pron:'uí'},
+ {en:'They',es:'Ellos',s3:false,pers:'ellos',pron:'déi'},
+ {en:'Diego',es:'Diego',s3:true,pers:'el',pron:'Diego'},
+ {en:'Leidy',es:'Leidy',s3:true,pers:'el',pron:'Leidy'},
+ {en:'My brother',es:'Mi hermano',s3:true,pers:'el',pron:'mái bráder'}
+];
+// verbos con formas en inglés + conjugación española por persona (yo/tu/el/nos/ellos)
+const PS_VERB=[
+ {b:'work',s:'works',ing:'working',past:'worked',es:{yo:'trabajo',tu:'trabajas',el:'trabaja',nos:'trabajamos',ellos:'trabajan'},pb:'uérk',ps:'uérks'},
+ {b:'live',s:'lives',ing:'living',past:'lived',es:{yo:'vivo',tu:'vives',el:'vive',nos:'vivimos',ellos:'viven'},pb:'liv',ps:'livs'},
+ {b:'study',s:'studies',ing:'studying',past:'studied',es:{yo:'estudio',tu:'estudias',el:'estudia',nos:'estudiamos',ellos:'estudian'},pb:'stádi',ps:'stádis'},
+ {b:'drive',s:'drives',ing:'driving',past:'drove',es:{yo:'manejo',tu:'manejas',el:'maneja',nos:'manejamos',ellos:'manejan'},pb:'dráiv',ps:'dráivs'},
+ {b:'eat',s:'eats',ing:'eating',past:'ate',es:{yo:'como',tu:'comes',el:'come',nos:'comemos',ellos:'comen'},pb:'it',ps:'its'},
+ {b:'drink',s:'drinks',ing:'drinking',past:'drank',es:{yo:'bebo',tu:'bebes',el:'bebe',nos:'bebemos',ellos:'beben'},pb:'drink',ps:'drinks'},
+ {b:'play',s:'plays',ing:'playing',past:'played',es:{yo:'juego',tu:'juegas',el:'juega',nos:'jugamos',ellos:'juegan'},pb:'pléi',ps:'pléis'},
+ {b:'read',s:'reads',ing:'reading',past:'read',es:{yo:'leo',tu:'lees',el:'lee',nos:'leemos',ellos:'leen'},pb:'rid',ps:'rids'},
+ {b:'cook',s:'cooks',ing:'cooking',past:'cooked',es:{yo:'cocino',tu:'cocinas',el:'cocina',nos:'cocinamos',ellos:'cocinan'},pb:'cuk',ps:'cuks'},
+ {b:'run',s:'runs',ing:'running',past:'ran',es:{yo:'corro',tu:'corres',el:'corre',nos:'corremos',ellos:'corren'},pb:'ran',ps:'rans'},
+ {b:'sleep',s:'sleeps',ing:'sleeping',past:'slept',es:{yo:'duermo',tu:'duermes',el:'duerme',nos:'dormimos',ellos:'duermen'},pb:'slip',ps:'slips'},
+ {b:'walk',s:'walks',ing:'walking',past:'walked',es:{yo:'camino',tu:'caminas',el:'camina',nos:'caminamos',ellos:'caminan'},pb:'uók',ps:'uóks'},
+ {b:'travel',s:'travels',ing:'traveling',past:'traveled',es:{yo:'viajo',tu:'viajas',el:'viaja',nos:'viajamos',ellos:'viajan'},pb:'trável',ps:'trávels'},
+ {b:'rest',s:'rests',ing:'resting',past:'rested',es:{yo:'descanso',tu:'descansas',el:'descansa',nos:'descansamos',ellos:'descansan'},pb:'rest',ps:'rests'}
+];
+// complementos ADVERBIALES invariables (sirven con cualquier verbo, sin problema de género/número)
+const PS_COMP=[
+ {en:'every day',es:'todos los días',pr:'évri déi'},
+ {en:'in the morning',es:'en la mañana',pr:'in de mórning'},
+ {en:'at night',es:'en la noche',pr:'at náit'},
+ {en:'on weekends',es:'los fines de semana',pr:'on uíkends'},
+ {en:'in Soacha',es:'en Soacha',pr:'in Sóacha'},
+ {en:'after work',es:'después del trabajo',pr:'áfter uérk'},
+ {en:'with Leidy',es:'con Leidy',pr:'uíd Leidy'},
+ {en:'at home',es:'en casa',pr:'at jóum'},
+ {en:'here',es:'aquí',pr:'jíar'}
+];
+function presentSimpleGen(){
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP);
+  const form = su.s3 ? v.s : v.b;
+  const sentence = su.en+' '+form+' '+c.en+'.';
+  const q = su.en+' ___ '+c.en+'. ('+v.b+')';
+  const trad = su.es+' '+v.es[su.pers]+' '+c.es+'.';
+  const pron = su.pron+' '+(su.s3?v.ps:v.pb)+' '+c.pr;
+  const wrong=[v.b,v.s,v.ing,v.past].filter(x=>x!==form);
+  return gseed(q, form, wrong, sentence, trad, pron, 'He/She/It → verbo + s · I/You/We/They → verbo base', 'En presente simple solo he/she/it añaden -s.', 'Present Simple', 'Sujeto + verbo (+s con he/she/it)');
+}
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
@@ -1442,7 +1504,7 @@ const TOPIC_PACKS={
     gseed('The dog is ___ the table. (debajo)','under',['on','in','at'],'The dog is under the table.','El perro está debajo de la mesa.','de dog is ánder de téibol','debajo → under','','Prepositions of Place','Sujeto + to be + preposición + lugar'),
     gseed('Diego is ___ home. (en)','at',['in','on','under'],'Diego is at home.','Diego está en casa.','Diego is at jóum','"at home" es fijo','"at home" siempre juntos, sin the.','Prepositions of Place','Sujeto + to be + at + lugar')
   ]},
-  'Present Simple — affirmative (A1)':{ kind:'grammar', seeds:[
+  'Present Simple — affirmative (A1)':{ kind:'grammar', gen:presentSimpleGen, _seeds_old:[
     gseed('Diego ___ furniture every day. (build)','builds',['build','buildes','building'],'Diego builds furniture every day.','Diego construye muebles todos los días.','Diego bilds férnicher évri déi','He/She/It + verbo + s','','Present Simple','Sujeto + verbo (+s con he/she/it)'),
     gseed('She ___ to work every day. (go)','goes',['go','gos','going'],'She goes to work every day.','Ella va a trabajar todos los días.','shi góus tu uérk évri déi','go → goes (con he/she/it)','Verbos en -o añaden -es: go→goes.','Present Simple','Sujeto + verbo (+es)'),
     gseed('He ___ English at night. (study)','studies',['studys','study','studdies'],'He studies English at night.','Él estudia inglés en la noche.','ji stádis ínglish at náit','consonante+y → ies','study→studies.','Present Simple','Sujeto + verbo (+ies)'),

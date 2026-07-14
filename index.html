@@ -1254,7 +1254,7 @@ function topicEngine(topicLabel){
 }
 /* Une varios temas + filtra por tipo (estricto: solo produce lo pedido) + baraja */
 function buildMixedQuiz(topics, count, typeSet){
-  count=Math.max(1,Math.min(200,parseInt(count,10)||40));
+  count=Math.max(1,Math.min(300,parseInt(count,10)||40));
   const wantAll=!typeSet || typeSet.has('todos') || typeSet.size===0;
   const engines={}, pairs=[];
   topics.forEach(t=>{ const e=topicEngine(t); engines[t]=e; const fs= wantAll? e.availFmts : e.availFmts.filter(f=>typeSet.has(f)); fs.forEach(f=>pairs.push([t,f])); });
@@ -2181,8 +2181,61 @@ const DIALOG_PACKS={
 function dialogQuiz(tema, lines, subs){ return [{ formato:'dialogo', q:'Lee y practica esta conversación:', dialogue:lines, subs:subs, tema:tema }]; }
 /* Registra en el GLOSARIO global TODAS las palabras de packs y generadores, para que al tocar
    cualquier palabra SIEMPRE aparezca su traducción. (addG no sobreescribe lo que ya existe.) */
+/* Gran banco de vocabulario cotidiano [inglés, español, pronunciación] para llegar a ~1200 palabras */
+const EXTRA_VOCAB=[
+ // cuerpo
+ ['head','cabeza','jed'],['face','cara','féis'],['ear','oreja','íar'],['nose','nariz','nóus'],['mouth','boca','máuz'],['neck','cuello','nek'],['arm','brazo','arm'],['hand','mano','jand'],['finger','dedo','fínguer'],['leg','pierna','leg'],['knee','rodilla','ni'],['stomach','estómago','stómak'],['heart','corazón','jart'],['tongue','lengua','tang'],['lip','labio','lip'],['shoulder','hombro','shóulder'],['skin','piel','skin'],['blood','sangre','blad'],['bone','hueso','bóun'],['brain','cerebro','bréin'],
+ // frutas y verduras
+ ['banana','banano','banána'],['grape','uva','gréip'],['strawberry','fresa','stróberi'],['lemon','limón','lémon'],['pineapple','piña','páinapol'],['watermelon','sandía','uótermelon'],['pear','pera','per'],['peach','durazno','pich'],['potato','papa','potéito'],['onion','cebolla','ónion'],['carrot','zanahoria','károt'],['garlic','ajo','gárlik'],['lettuce','lechuga','létus'],['corn','maíz','corn'],['beans','frijoles','bins'],['pepper','pimienta','péper'],['salt','sal','solt'],['oil','aceite','óil'],['sugar','azúcar','shúgar'],['flour','harina','fláur'],
+ // comida preparada
+ ['salad','ensalada','sálad'],['sandwich','sándwich','sánduich'],['hamburger','hamburguesa','jámburguer'],['pasta','pasta','pásta'],['soup','sopa','sup'],['chocolate','chocolate','chócolat'],['ice cream','helado','áis crim'],['butter','mantequilla','báter'],['honey','miel','jáni'],['cereal','cereal','sírial'],['yogurt','yogur','yógurt'],['ham','jamón','jam'],['sausage','salchicha','sósech'],['cake','pastel','kéik'],['cookie','galleta','cúki'],['bread','pan','bred'],['egg','huevo','eg'],['cheese','queso','chis'],['rice','arroz','ráis'],['meat','carne','mit'],
+ // bebidas
+ ['juice','jugo','yus'],['soda','gaseosa','sóuda'],['beer','cerveza','bir'],['wine','vino','uáin'],['tea','té','ti'],['coffee','café','cófi'],['water','agua','uóter'],['milk','leche','milk'],
+ // animales
+ ['lion','león','láion'],['tiger','tigre','táiguer'],['bear','oso','ber'],['monkey','mono','mánki'],['snake','serpiente','snéik'],['frog','rana','frog'],['spider','araña','spáider'],['ant','hormiga','ant'],['bee','abeja','bi'],['butterfly','mariposa','báterflai'],['wolf','lobo','uúlf'],['fox','zorro','fox'],['goat','cabra','góut'],['donkey','burro','dánki'],['turkey','pavo','térki'],['dolphin','delfín','dólfin'],['whale','ballena','uéil'],['shark','tiburón','shark'],['elephant','elefante','élefant'],['rabbit','conejo','rábit'],
+ // naturaleza
+ ['tree','árbol','tri'],['flower','flor','fláuer'],['grass','pasto','gras'],['river','río','ríver'],['lake','lago','léik'],['sea','mar','si'],['ocean','océano','óushan'],['mountain','montaña','máunten'],['hill','colina','jil'],['forest','bosque','fórest'],['beach','playa','bich'],['sky','cielo','skái'],['cloud','nube','cláud'],['star','estrella','star'],['moon','luna','mun'],['fire','fuego','fáier'],['stone','piedra','stóun'],['sand','arena','sand'],['island','isla','áiland'],['leaf','hoja','lif'],
+ // casa y objetos
+ ['garage','garaje','garásh'],['garden','jardín','gárden'],['roof','techo','ruf'],['stairs','escaleras','sters'],['lamp','lámpara','lamp'],['mirror','espejo','míror'],['picture','cuadro','píkchur'],['curtain','cortina','kérten'],['carpet','alfombra','kárpet'],['blanket','cobija','blánket'],['pillow','almohada','pílou'],['towel','toalla','táuel'],['soap','jabón','sóup'],['spoon','cuchara','spun'],['fork','tenedor','fork'],['plate','plato','pléit'],['cup','taza','cap'],['glass','vaso','glas'],['bottle','botella','bótol'],['fridge','nevera','frish'],['oven','horno','óven'],['stove','estufa','stóuv'],['sink','lavaplatos','sink'],['clock','reloj (de pared)','clok'],
+ // ropa
+ ['t-shirt','camiseta','tíshert'],['jeans','jeans','yins'],['shorts','pantaloneta','shorts'],['skirt','falda','skert'],['coat','abrigo','cóut'],['sweater','suéter','suéter'],['boots','botas','buts'],['cap','gorra','cap'],['gloves','guantes','glavs'],['scarf','bufanda','scarf'],['belt','cinturón','belt'],['tie','corbata','tái'],['glasses','gafas','gláses'],['ring','anillo','ring'],['watch','reloj','uótch'],
+ // tecnología
+ ['computer','computador','compiúter'],['laptop','portátil','láptop'],['screen','pantalla','skrin'],['keyboard','teclado','kíbord'],['camera','cámara','kámera'],['television','televisor','télevishon'],['radio','radio','réidio'],['internet','internet','ínternet'],['battery','batería','báteri'],['charger','cargador','chárcher'],['headphones','audífonos','jédfouns'],['robot','robot','róubot'],['password','contraseña','pásuord'],['email','correo','ímeil'],['message','mensaje','mésach'],['file','archivo','fáil'],['button','botón','báton'],['drone','dron','dróun'],['photo','foto','fóto'],['video','video','vídio'],
+ // transporte y ciudad
+ ['train','tren','tréin'],['plane','avión','pléin'],['ship','barco','ship'],['helicopter','helicóptero','jélicopter'],['ambulance','ambulancia','ámbiulans'],['road','carretera','róud'],['bridge','puente','brich'],['ticket','tiquete','tíket'],['station','estación','stéishon'],['airport','aeropuerto','érport'],['hotel','hotel','joutél'],['museum','museo','miusíam'],['library','biblioteca','láibreri'],['cinema','cine','sínema'],['stadium','estadio','stéidiam'],['factory','fábrica','fáktori'],['farm','finca','farm'],['gym','gimnasio','yim'],['town','pueblo','táun'],['village','aldea','vílash'],
+ // trabajos
+ ['firefighter','bombero','fáierfaiter'],['lawyer','abogado','lóier'],['dentist','dentista','déntist'],['artist','artista','ártist'],['singer','cantante','sínguer'],['actor','actor','áktor'],['writer','escritor','ráiter'],['pilot','piloto','páilot'],['soldier','soldado','sóulcher'],['scientist','científico','sáientist'],['mechanic','mecánico','mekánik'],['plumber','plomero','plámer'],['electrician','electricista','ilektríshan'],['manager','gerente','mánacher'],['cashier','cajero','kashír'],['president','presidente','président'],
+ // verbos comunes
+ ['jump','saltar','yamp'],['ride','montar','ráid'],['look','mirar','luk'],['hear','oír','jir'],['feel','sentir','fil'],['touch','tocar','tach'],['smell','oler','smel'],['taste','probar','téist'],['think','pensar','zink'],['understand','entender','anderstánd'],['learn','aprender','lern'],['teach','enseñar','tich'],['clean','limpiar','klin'],['buy','comprar','bái'],['sell','vender','sel'],['pay','pagar','péi'],['give','dar','guiv'],['take','tomar','téik'],['bring','traer','bring'],['send','enviar','send'],['ask','preguntar','ask'],['answer','responder','ánser'],['meet','conocer','mit'],['visit','visitar','vísit'],['grow','crecer','gróu'],['change','cambiar','chéinch'],['break','romper','bréik'],['fix','arreglar','fix'],['cut','cortar','cat'],['push','empujar','push'],['pull','halar','pul'],['throw','lanzar','zróu'],['catch','atrapar','catch'],['win','ganar','uín'],['lose','perder','lus'],['wait','esperar','uéit'],['find','encontrar','fáind'],['carry','cargar','kári'],['wear','usar (ropa)','uér'],['use','usar','ius'],['keep','guardar','kip'],['leave','salir/dejar','liv'],['arrive','llegar','aráiv'],['return','regresar','ritérn'],['enter','entrar','énter'],['climb','escalar','cláim'],['fall','caer','fol'],['sit','sentarse','sit'],['stand','pararse','stand'],['turn','girar','tern'],['move','mover','muv'],['stay','quedarse','stéi'],['help','ayudar','jelp'],['start','empezar','start'],['stop','parar','stop'],['carry on','continuar','kári on'],
+ // adjetivos
+ ['long','largo','long'],['wide','ancho','uáid'],['narrow','angosto','nárou'],['thick','grueso','zik'],['thin','delgado','zin'],['heavy','pesado','jévi'],['light','ligero/luz','láit'],['fast','rápido','fast'],['slow','lento','slóu'],['cool','fresco','kul'],['ugly','feo','ágli'],['healthy','sano','jélzi'],['weak','débil','uík'],['rich','rico','rich'],['poor','pobre','pur'],['clean','limpio','klin'],['dirty','sucio','dérti'],['dry','seco','drái'],['wet','mojado','uét'],['full','lleno','ful'],['empty','vacío','émpti'],['right','correcto/derecha','ráit'],['wrong','incorrecto','rong'],['same','igual','séim'],['different','diferente','díferent'],['dangerous','peligroso','déincheros'],['safe','seguro','séif'],['quiet','callado','kuáiet'],['loud','ruidoso','láud'],['dark','oscuro','dark'],['bright','brillante','bráit'],['soft','suave','soft'],['hard','duro/difícil','jard'],['sweet','dulce','suít'],['sour','agrio','sáur'],['salty','salado','sólti'],['fresh','fresco','fresh'],['delicious','delicioso','delíshos'],['funny','gracioso','fáni'],['boring','aburrido','bóring'],['famous','famoso','féimos'],['honest','honesto','ónest'],['brave','valiente','bréiv'],['smart','inteligente','smart'],['lazy','perezoso','léisi'],['free','libre/gratis','fri'],['late','tarde','léit'],['early','temprano','érli'],['near','cerca','nir'],['far','lejos','far'],['nice','agradable','náis'],['kind','amable','káind'],['angry','enojado','ángri'],
+ // tiempo y adverbios
+ ['today','hoy','tudéi'],['tomorrow','mañana','tumórou'],['yesterday','ayer','iésterdei'],['soon','pronto','sun'],['always','siempre','óluéis'],['never','nunca','néver'],['sometimes','a veces','sámtaims'],['often','a menudo','ófen'],['usually','usualmente','iúshuali'],['evening','tarde/noche','ívning'],['week','semana','uík'],['month','mes','manz'],['year','año','yir'],['minute','minuto','mínit'],['holiday','vacaciones/feriado','jólidei'],['weekend','fin de semana','uíkend'],
+ // otros útiles
+ ['money','dinero','máni'],['job','trabajo/empleo','yob'],['idea','idea','aidía'],['problem','problema','próblem'],['question','pregunta','kuéschon'],['answer','respuesta','ánser'],['story','historia','stóri'],['song','canción','song'],['game','juego','guéim'],['party','fiesta','párti'],['gift','regalo','guift'],['news','noticias','nius'],['price','precio','práis'],['world','mundo','uérld'],['country','país','kántri'],['language','idioma','lánguach'],['friend','amigo','frend'],['love','amor','lav'],['life','vida','láif'],['time','tiempo','táim'],['people','gente','pípol'],['thing','cosa','zing'],['place','lugar','pléis'],['way','camino/manera','uéi'],['work','trabajo','uérk'],['home','casa/hogar','jóum'],['school','escuela','skul'],['book','libro','buk'],['word','palabra','uérd'],['name','nombre','néim'],['number','número','námber'],['color','color','cólor']
+];
+const EXTRA_VOCAB2=[
+ // materias
+ ['math','matemáticas','maz'],['science','ciencia','sáiens'],['history','historia','jístori'],['geography','geografía','yiógrafi'],['art','arte','art'],['biology','biología','baiólochi'],['chemistry','química','kémistri'],['physics','física','físiks'],
+ // deportes
+ ['soccer','fútbol','sóker'],['basketball','baloncesto','básketbol'],['tennis','tenis','ténis'],['baseball','béisbol','béisbol'],['swimming','natación','suíming'],['running','correr','rárning'],['cycling','ciclismo','sáikling'],['boxing','boxeo','bóksing'],['volleyball','voleibol','vólibol'],['golf','golf','golf'],['dancing','baile','dánsing'],['sport','deporte','sport'],
+ // comida extra
+ ['shrimp','camarón','shrimp'],['mango','mango','mángo'],['cherry','cereza','chéri'],['coconut','coco','cóconat'],['mushroom','champiñón','máshrum'],['cucumber','pepino','kiúcamber'],['broccoli','brócoli','brócoli'],['pumpkin','calabaza','pámkin'],['jam','mermelada','yam'],['pancake','panqueque','pánkeik'],['pie','tarta','pái'],['candy','dulce','kándi'],['popcorn','crispetas','pópcorn'],['snack','pasabocas','snak'],
+ // animales extra
+ ['camel','camello','kámel'],['giraffe','jirafa','yiráf'],['zebra','cebra','síbra'],['kangaroo','canguro','kangarú'],['penguin','pingüino','pénguin'],['owl','búho','ául'],['eagle','águila','ígol'],['parrot','loro','párot'],['crocodile','cocodrilo','crócodail'],['turtle','tortuga','tértol'],['lizard','lagarto','lísard'],['dinosaur','dinosaurio','dáinosor'],['squirrel','ardilla','skuírel'],['octopus','pulpo','óctopus'],['bat','murciélago','bat'],
+ // sentimientos y abstractos
+ ['fear','miedo','fir'],['hope','esperanza','jóup'],['dream','sueño','drim'],['luck','suerte','lak'],['fun','diversión','fan'],['joy','alegría','yói'],['pain','dolor','péin'],['worry','preocupación','uóri'],['surprise','sorpresa','surpráis'],['pride','orgullo','práid'],['trust','confianza','trast'],['peace','paz','pis'],['war','guerra','uór'],['danger','peligro','déincher'],['plan','plan','plan'],['goal','meta','góul'],['choice','elección','chóis'],['chance','oportunidad','chans'],['reason','razón','ríson'],['result','resultado','risált'],['fact','hecho','fakt'],['truth','verdad','truz'],['lie','mentira','lái'],['secret','secreto','sícret'],['promise','promesa','prómis'],['rule','regla','rul'],['law','ley','lo'],['freedom','libertad','frídom'],['power','poder','páuer'],['mistake','error','mistéik'],['success','éxito','saksés'],['health','salud','jelz'],['strength','fuerza','strenz'],
+ // preposiciones y adverbios
+ ['above','encima','abáv'],['below','debajo','bilóu'],['between','entre','bituín'],['through','a través','zru'],['across','al otro lado','acrós'],['around','alrededor','aráund'],['against','contra','aguénst'],['toward','hacia','tuórd'],['without','sin','uidáut'],['during','durante','diúring'],['until','hasta','antíl'],['since','desde','sins'],['already','ya','olrédi'],['yet','todavía','iet'],['still','aún','stil'],['almost','casi','ólmoust'],['enough','suficiente','ináf'],['together','juntos','tuguéder'],['alone','solo','alóun'],['again','otra vez','aguén'],['maybe','quizás','méibi'],['really','realmente','ríli'],['quite','bastante','kuáit'],['also','también','ólsou'],['however','sin embargo','jauéver'],['although','aunque','oldóu'],['finally','finalmente','fáinali'],['suddenly','de repente','sádenli'],['everywhere','en todas partes','évriuer'],['somewhere','en algún lugar','sámuer'],['nothing','nada','názing'],['everything','todo','évrizing'],['someone','alguien','sámuan'],['everyone','todos','évriuan'],
+ // trabajos y personas extra
+ ['baker','panadero','béiker'],['butcher','carnicero','búcher'],['judge','juez','yach'],['coach','entrenador','cóuch'],['guard','guardia','gard'],['sailor','marinero','séilor'],['painter','pintor','péinter'],['dancer','bailarín','dánser'],['photographer','fotógrafo','fotógrafer'],['programmer','programador','prógramer'],['designer','diseñador','disáiner'],['accountant','contador','acáuntant'],['architect','arquitecto','árkitekt'],['librarian','bibliotecario','laibrérian'],['neighbor','vecino','néibor'],['boss','jefe','bos'],['customer','cliente','cástomer'],['guest','invitado','guest'],['stranger','extraño','stréincher'],['team','equipo','tim'],['group','grupo','grup'],
+ // tiempo y otros
+ ['moment','momento','móment'],['midnight','medianoche','mídnait'],['dawn','amanecer','don'],['future','futuro','fiúchur'],['past','pasado','past'],['present','presente','présent'],['forever','para siempre','foréver'],['nature','naturaleza','néichur'],['air','aire','er'],['earth','tierra','erz'],['light','luz','láit'],['sound','sonido','sáund'],['voice','voz','vóis'],['smile','sonrisa','smáil'],['kiss','beso','kis'],['hug','abrazo','jag'],['tear','lágrima','tir'],['blood','sangre','blad']
+];
 function autoRegisterGlossary(){
   try{
+    EXTRA_VOCAB.forEach(v=>addG(v[0], v[1], '', v[2]||''));
+    EXTRA_VOCAB2.forEach(v=>addG(v[0], v[1], '', v[2]||''));
     Object.keys(TOPIC_PACKS).forEach(k=>{ const p=TOPIC_PACKS[k]; if(p && p.kind==='vocab' && p.list){ p.list.forEach(it=>{ addG(it.en,it.es,it.c||'',it.p||''); }); } });
     if(typeof SIMPLE_NOUN!=='undefined') SIMPLE_NOUN.forEach(n=>{ addG(n.en,n.es,'sustantivo',n.pr); addG(n.pl,n.plEs,'sustantivo',''); });
     if(typeof NOUNS_PL!=='undefined') NOUNS_PL.forEach(n=>{ addG(n.sg,n.esS,'sustantivo',''); addG(n.pl,n.esP,'sustantivo',''); });
@@ -2929,7 +2982,7 @@ function renderTopicChips(arr, boxId, dial){
 }
 function pushTopic(arr, boxId, dial, val){ const v=String(val||'').trim(); if(!v) return; if(!arr.some(t=>t.toLowerCase()===v.toLowerCase())) arr.push(v); renderTopicChips(arr,boxId,dial); updateGenSummary(); }
 /* Fichas de CANTIDAD (segmento) sincronizadas con el select oculto #gen-count */
-const GEN_COUNTS=[10,20,30,40,50,70,100,150,200];
+const GEN_COUNTS=[10,20,30,40,50,70,100,150,200,300];
 function buildCountChips(){
   const box=document.getElementById('gen-counts'); if(!box) return; const cur=document.getElementById('gen-count').value; box.innerHTML='';
   GEN_COUNTS.forEach(n=>{
@@ -3141,7 +3194,8 @@ function finalizeSub(ok, exp, sq, fb){
 /* opción múltiple (1 correcta) */
 function renderChoice(q,ctx){
   const box=document.createElement('div'); box.className='space-y-2';
-  q.opts.forEach((opt,i)=>{
+  const opts=shuffle(q.opts.slice()); // re-baraja: la correcta cae en cualquier posición a/b/c/d cada vez
+  opts.forEach((opt,i)=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
     const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
     btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="hidden icon-status text-lg"></span>';
@@ -3157,7 +3211,8 @@ function renderChoice(q,ctx){
 /* varias correctas */
 function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
-  q.opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
+  const opts=shuffle(q.opts.slice()); // re-baraja posiciones a/b/c/d
+  opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
     const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
     b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="check-box text-lg">⬜</span>';
     b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
@@ -3166,11 +3221,11 @@ function renderMultiple(q,ctx){
   ctx.area.appendChild(box);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   chk.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); let ok=true; const falto=[], sobro=[];
-    q.opts.forEach((opt,i)=>{ const b=buttons[i]; b.disabled=true; b.classList.add('btn-disabled'); const chosen=sel.has(i);
+    opts.forEach((opt,i)=>{ const b=buttons[i]; b.disabled=true; b.classList.add('btn-disabled'); const chosen=sel.has(i);
       if(opt.c===1){ b.classList.add('bg-green-100','border-green-400'); b.querySelector('.check-box').textContent=chosen?'✅':'✔️'; if(!chosen){ok=false; falto.push(opt.t);} }
       else if(chosen){ b.classList.add('bg-red-100','border-red-400'); b.querySelector('.check-box').textContent='❌'; ok=false; sobro.push(opt.t); } });
     chk.disabled=true; chk.classList.add('btn-disabled');
-    const cr=q.opts.filter(o=>o.c===1).map(o=>o.t);
+    const cr=opts.filter(o=>o.c===1).map(o=>o.t);
     let msg;
     if(ok){ msg='¡Correcto! '+(cr.length>1?('Las '+cr.length+' correctas eran: '+cr.join(', ')+'.'):'Marcaste la correcta.'); }
     else { const p=[]; if(falto.length)p.push('te faltó marcar: '+falto.join(', ')); if(sobro.length)p.push('sobró: '+sobro.join(', ')); msg='Casi. '+p.join(' · ')+'. En total había '+cr.length+' correcta'+(cr.length>1?'s':'')+': '+cr.join(', ')+'.'; }

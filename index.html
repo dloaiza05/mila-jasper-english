@@ -2053,6 +2053,55 @@ const DIALOG_PACKS={
     {formato:'opcion', tema:'Greetings', q:'What is the name of the second person?', opts:shuffle([{t:'Leidy',c:1,r:'✅ Ella dice "I am Leidy".'},{t:'Mila',c:0,r:'❌ No dijo Mila.'},{t:'Diego',c:0,r:'❌ Diego es la primera persona.'}]), sentence:'Her name is Leidy.', trad:'Ella se llama Leidy.', pron:'jer néim is Leidy', estructura:'Comprensión del diálogo', extra:'"name" = nombre.'},
     {formato:'vf', tema:'Greetings', q:'"Nice to meet you" means "mucho gusto".', answer:true, r:'✅ Verdadero: es el saludo al conocer a alguien.', sentence:'Nice to meet you.', trad:'Mucho gusto.', pron:'náis tu mit iú', estructura:'Verdadero o falso', extra:''},
     {formato:'escribir', tema:'Greetings', q:'¿Cómo se dice "gracias" en inglés? (dos palabras)', answer:'thank you', respuestas:['thank you','thanks'], sentence:'Thank you.', trad:'Gracias.', pron:'zénk iú', estructura:'Escribe la expresión', extra:''}
+  ])},
+  'Personal Information — name, age, phone (A1)':{ tema:'Personal Info', build:(name)=>dialogQuiz('Personal Information',[
+    {quien:'Ana',en:'Hi! What is your name?',es:'¡Hola! ¿Cómo te llamas?',pron:'jái! uát is iór néim?'},
+    {quien:name||'Diego',en:'My name is '+(name||'Diego')+'. What is your name?',es:'Me llamo '+(name||'Diego')+'. ¿Cómo te llamas tú?',pron:'mái néim is '+(name||'Diego')+'. uát is iór néim?'},
+    {quien:'Ana',en:'I am Ana. How old are you?',es:'Soy Ana. ¿Cuántos años tienes?',pron:'ái am Ana. jáu óuld ar iú?'},
+    {quien:name||'Diego',en:'I am 29 years old. And you?',es:'Tengo 29 años. ¿Y tú?',pron:'ái am tuénti-náin íars óuld. and iú?'},
+    {quien:'Ana',en:'I am 25. What is your phone number?',es:'Tengo 25. ¿Cuál es tu número de teléfono?',pron:'ái am tuénti-fáiv. uát is iór fóun námber?'},
+    {quien:name||'Diego',en:'It is three, zero, zero, one, two, three.',es:'Es tres, cero, cero, uno, dos, tres.',pron:'it is zri, síro, síro, uán, tu, zri.'},
+    {quien:'Ana',en:'Thank you! Nice to meet you.',es:'¡Gracias! Mucho gusto.',pron:'zénk iú! náis tu mit iú.'}
+  ],[
+    {formato:'opcion',tema:'Personal Info',q:'How old is Diego?',opts:shuffle([{t:'29 years old',c:1,r:'✅ Dice "I am 29 years old".'},{t:'25 years old',c:0,r:'❌ Esa es Ana.'},{t:'30 years old',c:0,r:'❌ No.'}]),sentence:'Diego is 29 years old.',trad:'Diego tiene 29 años.',pron:'Diego is tuénti-náin íars óuld',estructura:'Comprensión',extra:'"years old" = años de edad.'},
+    {formato:'vf',tema:'Personal Info',q:'"How old are you?" means "¿Cuántos años tienes?".',answer:true,r:'✅ Verdadero.',sentence:'How old are you?',trad:'¿Cuántos años tienes?',pron:'jáu óuld ar iú',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Personal Info',q:'¿Cómo se dice "número de teléfono" en inglés? (dos palabras)',answer:'phone number',respuestas:['phone number'],sentence:'phone number',trad:'número de teléfono',pron:'fóun námber',estructura:'Escribe',extra:''}
+  ])},
+  'Talking about Family (A1)':{ tema:'Family', build:(name)=>dialogQuiz('Family',[
+    {quien:'Leidy',en:'Do you have a big family?',es:'¿Tienes una familia grande?',pron:'du iú jav a big fámili?'},
+    {quien:name||'Diego',en:'Yes! I have five brothers. My father is Alonso.',es:'¡Sí! Tengo cinco hermanos. Mi papá es Alonso.',pron:'iés! ái jav fáiv bráders. mái fáder is Alonso.'},
+    {quien:'Leidy',en:'Wow! Do you have any pets?',es:'¡Guau! ¿Tienes mascotas?',pron:'uáu! du iú jav éni pets?'},
+    {quien:name||'Diego',en:'Yes, I have two cats: Mila and Jasper.',es:'Sí, tengo dos gatos: Mila y Jasper.',pron:'iés, ái jav tu cats: Mila and Jasper.'},
+    {quien:'Leidy',en:'They are beautiful! Is your wife here?',es:'¡Son hermosos! ¿Tu esposa está aquí?',pron:'déi ar biútiful! is iór uáif jíar?'},
+    {quien:name||'Diego',en:'Yes, my wife Leidy is here. We study English together.',es:'Sí, mi esposa Leidy está aquí. Estudiamos inglés juntos.',pron:'iés, mái uáif Leidy is jíar. uí stádi ínglish tuguéder.'}
+  ],[
+    {formato:'opcion',tema:'Family',q:'How many brothers does Diego have?',opts:shuffle([{t:'Five',c:1,r:'✅ Dice "I have five brothers".'},{t:'Two',c:0,r:'❌ Esos son los gatos.'},{t:'Ten',c:0,r:'❌ No.'}]),sentence:'Diego has five brothers.',trad:'Diego tiene cinco hermanos.',pron:'Diego jas fáiv bráders',estructura:'Comprensión',extra:'"brother" = hermano.'},
+    {formato:'vf',tema:'Family',q:'"Mila and Jasper are dogs" is correct.',answer:false,r:'❌ Falso: son gatos (cats).',sentence:'Mila and Jasper are cats.',trad:'Mila y Jasper son gatos.',pron:'Mila and Jasper ar cats',estructura:'Verdadero o falso',extra:'"cat" = gato.'},
+    {formato:'escribir',tema:'Family',q:'¿Cómo se dice "esposa" en inglés?',answer:'wife',respuestas:['wife'],sentence:'my wife Leidy',trad:'mi esposa Leidy',pron:'mái uáif Leidy',estructura:'Escribe',extra:''}
+  ])},
+  'Nationalities — Where are you from? (A1)':{ tema:'Nationalities', build:(name)=>dialogQuiz('Nationalities',[
+    {quien:'Tom',en:'Hi! Where are you from?',es:'¡Hola! ¿De dónde eres?',pron:'jái! uér ar iú from?'},
+    {quien:name||'Diego',en:'I am from Colombia. I am Colombian. And you?',es:'Soy de Colombia. Soy colombiano. ¿Y tú?',pron:'ái am from Colómbia. ái am colómbian. and iú?'},
+    {quien:'Tom',en:'I am from the United States. I am American.',es:'Soy de Estados Unidos. Soy estadounidense.',pron:'ái am from de iunáited stéits. ái am américan.'},
+    {quien:name||'Diego',en:'Nice! Do you speak Spanish?',es:'¡Genial! ¿Hablas español?',pron:'náis! du iú spik spánish?'},
+    {quien:'Tom',en:'A little. I am learning. Do you speak English?',es:'Un poco. Estoy aprendiendo. ¿Tú hablas inglés?',pron:'a lítol. ái am lérning. du iú spik ínglish?'},
+    {quien:name||'Diego',en:'Yes, I study English every day with my wife.',es:'Sí, estudio inglés todos los días con mi esposa.',pron:'iés, ái stádi ínglish évri déi uíd mái uáif.'}
+  ],[
+    {formato:'opcion',tema:'Nationalities',q:'Where is Diego from?',opts:shuffle([{t:'Colombia',c:1,r:'✅ "I am from Colombia".'},{t:'The United States',c:0,r:'❌ Ese es Tom.'},{t:'Spain',c:0,r:'❌ No.'}]),sentence:'Diego is from Colombia.',trad:'Diego es de Colombia.',pron:'Diego is from Colómbia',estructura:'Comprensión',extra:'"from" = de/desde.'},
+    {formato:'vf',tema:'Nationalities',q:'"Colombian" means "colombiano".',answer:true,r:'✅ Verdadero.',sentence:'I am Colombian.',trad:'Soy colombiano.',pron:'ái am colómbian',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Nationalities',q:'¿Cómo preguntas "¿de dónde eres?" en inglés? (cuatro palabras: Where...)',answer:'where are you from',respuestas:['where are you from','where are you from?'],sentence:'Where are you from?',trad:'¿De dónde eres?',pron:'uér ar iú from',estructura:'Escribe',extra:''}
+  ])},
+  'Talking about Pets (A1)':{ tema:'Pets', build:(name)=>dialogQuiz('Pets',[
+    {quien:'Ana',en:'Do you have any pets?',es:'¿Tienes mascotas?',pron:'du iú jav éni pets?'},
+    {quien:name||'Diego',en:'Yes, I have two cats. Their names are Mila and Jasper.',es:'Sí, tengo dos gatos. Se llaman Mila y Jasper.',pron:'iés, ái jav tu cats. der néims ar Mila and Jasper.'},
+    {quien:'Ana',en:'How nice! Are they big or small?',es:'¡Qué lindo! ¿Son grandes o pequeños?',pron:'jáu náis! ar déi big or smol?'},
+    {quien:name||'Diego',en:'Mila is small and Jasper is big. They are very friendly.',es:'Mila es pequeña y Jasper es grande. Son muy amables.',pron:'Mila is smol and Jasper is big. déi ar véri fréndli.'},
+    {quien:'Ana',en:'Do they sleep in your house?',es:'¿Duermen en tu casa?',pron:'du déi slip in iór jáus?'},
+    {quien:name||'Diego',en:'Yes, they sleep on the sofa every night.',es:'Sí, duermen en el sofá todas las noches.',pron:'iés, déi slip on de sóufa évri náit.'}
+  ],[
+    {formato:'opcion',tema:'Pets',q:'How many cats does Diego have?',opts:shuffle([{t:'Two',c:1,r:'✅ "I have two cats".'},{t:'One',c:0,r:'❌ No.'},{t:'Three',c:0,r:'❌ No.'}]),sentence:'Diego has two cats.',trad:'Diego tiene dos gatos.',pron:'Diego jas tu cats',estructura:'Comprensión',extra:'"cat" = gato.'},
+    {formato:'vf',tema:'Pets',q:'"Jasper is big" is correct.',answer:true,r:'✅ Verdadero.',sentence:'Jasper is big.',trad:'Jasper es grande.',pron:'Jasper is big',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Pets',q:'¿Cómo se dice "gatos" en inglés?',answer:'cats',respuestas:['cats'],sentence:'two cats',trad:'dos gatos',pron:'tu cats',estructura:'Escribe',extra:''}
   ])}
 };
 /* Arma un objeto de quiz de diálogo (una "lectura" con dialogue + subs) */

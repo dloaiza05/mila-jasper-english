@@ -1666,6 +1666,21 @@ function questionOrderGen(){
   const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿?)';
   return gseed(q, aux, [su.s3?'Do':'Does','Is','Are'], sentence, '¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?', AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr, 'con otros verbos: Do/Does + sujeto + verbo base', '', 'Question Order', 'Do/Does + sujeto + verbo base?');
 }
+// CONECTORES and/but/or
+const CONN_AND=[{x:'coffee',y:'tea',xe:'café',ye:'té'},{x:'Mila',y:'Jasper',xe:'Mila',ye:'Jasper'},{x:'bread',y:'milk',xe:'pan',ye:'leche'},{x:'Bogotá',y:'Mosquera',xe:'Bogotá',ye:'Mosquera'},{x:'dogs',y:'cats',xe:'perros',ye:'gatos'}];
+const CONN_BUT=[{a:'tired',b:'happy',ae:'cansado',be:'feliz'},{a:'busy',b:'happy',ae:'ocupado',be:'feliz'},{a:'sad',b:'happy',ae:'triste',be:'feliz'}];
+const CONN_OR=[{x:'tea',y:'coffee',xe:'té',ye:'café'},{x:'red',y:'blue',xe:'rojo',ye:'azul'},{x:'now',y:'later',xe:'ahora',ye:'después'},{x:'yes',y:'no',xe:'sí',ye:'no'}];
+function connectorsGen(){
+  const m=Math.random();
+  if(m<0.34){ const p=pick(CONN_AND); return gseed('I like '+p.x+' ___ '+p.y+'. (y)','and',['but','or'],'I like '+p.x+' and '+p.y+'.','Me gusta '+p.xe+' y '+p.ye+'.','ái láik '+p.x+' and '+p.y,'and = y (suma)','','Connectors','... and ...'); }
+  if(m<0.67){ const p=pick(CONN_BUT); return gseed('I am '+p.a+' ___ '+p.b+'. (pero)','but',['and','or'],'I am '+p.a+' but '+p.b+'.','Estoy '+p.ae+' pero '+p.be+'.','ái am '+p.a+' bat '+p.b,'but = pero (contraste)','','Connectors','... but ...'); }
+  const p=pick(CONN_OR); return gseed(p.x+' ___ '+p.y+'? (o)','or',['and','but'],p.x+' or '+p.y+'?','¿'+p.xe+' o '+p.ye+'?','','or = o (opción)','','Connectors','... or ...?');
+}
+// ALFABETO
+const LETTER_Q=[{L:'H',name:'aitch',w:['hache','ache','eich']},{L:'W',name:'double-u',w:['doble-u','uve doble','ve']},{L:'Y',name:'why',w:['ye','yi','i griega']},{L:'J',name:'jay',w:['jota','yi','ja']},{L:'G',name:'gee',w:['ge','yi','gue']},{L:'I',name:'eye',w:['i','e','ei']},{L:'R',name:'ar',w:['ere','er','or']},{L:'Q',name:'cue',w:['cu','ku','qu']},{L:'X',name:'ex',w:['equis','ix','eks']},{L:'Z',name:'zee',w:['zeta','zi','zed']},{L:'C',name:'cee',w:['ce','si','ci']},{L:'V',name:'vee',w:['uve','ve','bi']},{L:'A',name:'ay',w:['a','ah','e']},{L:'K',name:'kay',w:['ka','ke','ki']}];
+function alphabetGen(){ const x=pick(LETTER_Q);
+  return gseed('The letter '+x.L+' is called ___.', x.name, x.w.slice(0,3), 'The letter '+x.L+' is called "'+x.name+'".', 'La letra '+x.L+' se dice "'+x.name+'".', '', 'cada letra tiene su nombre en inglés', 'Deletrear: How do you spell...?', 'Alphabet', 'La letra ___ se llama ___');
+}
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
     gseed('I ___ a carpenter.','am',['is','are','be'],'I am a carpenter.','Yo soy carpintero.','ái am a cárpenter','I → am','Con "I" SIEMPRE va "am".','Verb To Be','Sujeto + to be + complemento'),
@@ -1842,7 +1857,7 @@ const TOPIC_PACKS={
     gseed('3:30 — It\'s ___ past three','half',['middle','quarter','thirty'],'It\'s half past three.','Son las tres y media.','its jaf past zrí','y media → half past','half = media.','Telling the Time','half past + hora'),
     gseed('2:45 — It\'s a quarter ___ three','to',['past','before','of'],'It\'s a quarter to three.','Son las tres menos cuarto (2:45).','its a cuórter tu zrí','menos cuarto → quarter to','to = para/antes de la hora siguiente.','Telling the Time','quarter to + hora siguiente')
   ]},
-  'Basic Connectors — and/but/or (A1)':{ kind:'grammar', seeds:[
+  'Basic Connectors — and/but/or (A1)':{ kind:'grammar', gen:connectorsGen, _seeds_old:[
     gseed('I like coffee ___ tea. (y)','and',['but','or','so'],'I like coffee and tea.','Me gusta el café y el té.','ái láik cófi and ti','suma → and','','Connectors','... and ...'),
     gseed('I am tired ___ happy. (pero)','but',['and','or','so'],'I am tired but happy.','Estoy cansado pero feliz.','ái am táierd bat jápi','contraste → but','','Connectors','... but ...'),
     gseed('Tea ___ coffee? (o)','or',['and','but','so'],'Tea or coffee?','¿Té o café?','ti or cófi','opción → or','','Connectors','... or ...?')
@@ -2008,7 +2023,7 @@ const TOPIC_PACKS={
     gseed('___ she your wife? (¿es?)','Is',['Are','Am','Does'],'Is she your wife?','¿Ella es tu esposa?','is shi iór uáif','he/she/it → Is','','Verb To Be neg/quest','Is + sujeto + complemento?'),
     gseed('___ I late? (¿estoy?)','Am',['Is','Are','Do'],'Am I late?','¿Estoy tarde?','am ái léit','I → Am','','Verb To Be neg/quest','Am + I + complemento?')
   ]},
-  'Alphabet and Spelling — How do you spell...? (A1)':{ kind:'grammar', seeds:[
+  'Alphabet and Spelling — How do you spell...? (A1)':{ kind:'grammar', gen:alphabetGen, _seeds_old:[
     gseed('The letter "H" is called ___','aitch',['hache','ache','eich'],'The letter H is called "aitch".','La letra H se dice "aitch".','de léter éich is éich','H → "aitch"','La H suena "éich", no "hache".','Alphabet','La letra ___ se dice ___'),
     gseed('The letter "W" is called ___','double-u',['doble-u','uve doble','ve'],'The letter W is called "double-u".','La letra W se dice "double-u".','de léter dábliu is dábliu','W → "double-u"','','Alphabet','La letra ___ se dice ___'),
     gseed('The letter "Y" is called ___','why',['ye','yi','i griega'],'The letter Y is called "why".','La letra Y se dice "why".','de léter uái is uái','Y → "why" (suena igual que why)','','Alphabet','La letra ___ se dice ___'),

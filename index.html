@@ -2103,6 +2103,78 @@ const DIALOG_PACKS={
     {formato:'opcion',tema:'Pets',q:'How many cats does Diego have?',opts:shuffle([{t:'Two',c:1,r:'✅ "I have two cats".'},{t:'One',c:0,r:'❌ No.'},{t:'Three',c:0,r:'❌ No.'}]),sentence:'Diego has two cats.',trad:'Diego tiene dos gatos.',pron:'Diego jas tu cats',estructura:'Comprensión',extra:'"cat" = gato.'},
     {formato:'vf',tema:'Pets',q:'"Jasper is big" is correct.',answer:true,r:'✅ Verdadero.',sentence:'Jasper is big.',trad:'Jasper es grande.',pron:'Jasper is big',estructura:'Verdadero o falso',extra:''},
     {formato:'escribir',tema:'Pets',q:'¿Cómo se dice "gatos" en inglés?',answer:'cats',respuestas:['cats'],sentence:'two cats',trad:'dos gatos',pron:'tu cats',estructura:'Escribe',extra:''}
+  ])},
+  'Describing People (A1)':{ tema:'Describing People', build:(name)=>dialogQuiz('Describing People',[
+    {quien:'Ana',en:'Who is your best friend?',es:'¿Quién es tu mejor amigo?',pron:'ju is iór best frend?'},
+    {quien:name||'Diego',en:'My wife Leidy. She is tall and friendly.',es:'Mi esposa Leidy. Ella es alta y amable.',pron:'mái uáif Leidy. shi is tol and fréndli.'},
+    {quien:'Ana',en:'Does she have long hair?',es:'¿Ella tiene el pelo largo?',pron:'das shi jav long jéer?'},
+    {quien:name||'Diego',en:'Yes, she has long, black hair and brown eyes.',es:'Sí, ella tiene el pelo largo y negro y ojos marrones.',pron:'iés, shi jas long, blak jéer and bráun áis.'},
+    {quien:'Ana',en:'And how are you?',es:'¿Y cómo eres tú?',pron:'and jáu ar iú?'},
+    {quien:name||'Diego',en:'I am short and strong. I am a happy person.',es:'Soy bajo y fuerte. Soy una persona feliz.',pron:'ái am short and strong. ái am a jápi pérson.'}
+  ],[
+    {formato:'opcion',tema:'Describing People',q:'What color is Leidy hair?',opts:shuffle([{t:'Black',c:1,r:'✅ "long, black hair".'},{t:'Blue',c:0,r:'❌ No.'},{t:'Red',c:0,r:'❌ No.'}]),sentence:'Her hair is black.',trad:'Su pelo es negro.',pron:'jer jéer is blak',estructura:'Comprensión',extra:'"hair" = pelo/cabello.'},
+    {formato:'vf',tema:'Describing People',q:'"tall" means "alto".',answer:true,r:'✅ Verdadero.',sentence:'She is tall.',trad:'Ella es alta.',pron:'shi is tol',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Describing People',q:'¿Cómo se dice "ojos" en inglés?',answer:'eyes',respuestas:['eyes'],sentence:'brown eyes',trad:'ojos marrones',pron:'bráun áis',estructura:'Escribe',extra:''}
+  ])},
+  'Telling the Time and Dates (A1)':{ tema:'Time and Dates', build:(name)=>dialogQuiz('Time and Dates',[
+    {quien:'Tom',en:'What time is it?',es:'¿Qué hora es?',pron:'uát táim is it?'},
+    {quien:name||'Diego',en:'It is half past seven.',es:'Son las siete y media.',pron:'it is jaf past séven.'},
+    {quien:'Tom',en:'What time do you start work?',es:'¿A qué hora empiezas a trabajar?',pron:'uát táim du iú start uérk?'},
+    {quien:name||'Diego',en:'I start at five in the morning.',es:'Empiezo a las cinco de la mañana.',pron:'ái start at fáiv in de mórning.'},
+    {quien:'Tom',en:'Wow, early! What is the date today?',es:'¡Guau, temprano! ¿Qué fecha es hoy?',pron:'uáu, érli! uát is de déit tudéi?'},
+    {quien:name||'Diego',en:'Today is Monday, July 6th.',es:'Hoy es lunes, 6 de julio.',pron:'tudéi is mándei, yulái sixz.'}
+  ],[
+    {formato:'opcion',tema:'Time and Dates',q:'What time does Diego start work?',opts:shuffle([{t:'At five in the morning',c:1,r:'✅ "I start at five".'},{t:'At seven',c:0,r:'❌ Esa es la hora actual.'},{t:'At noon',c:0,r:'❌ No.'}]),sentence:'Diego starts at five.',trad:'Diego empieza a las cinco.',pron:'Diego starts at fáiv',estructura:'Comprensión',extra:'"start" = empezar.'},
+    {formato:'vf',tema:'Time and Dates',q:'"half past seven" means "las siete y media".',answer:true,r:'✅ Verdadero.',sentence:'half past seven',trad:'las siete y media',pron:'jaf past séven',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Time and Dates',q:'¿Cómo preguntas "¿qué hora es?" en inglés? (cuatro palabras: What...)',answer:'what time is it',respuestas:['what time is it','what time is it?'],sentence:'What time is it?',trad:'¿Qué hora es?',pron:'uát táim is it',estructura:'Escribe',extra:''}
+  ])},
+  'At the Store — basic shopping (A1)':{ tema:'Shopping', build:(name)=>dialogQuiz('At the Store',[
+    {quien:'Seller',en:'Hello! Can I help you?',es:'¡Hola! ¿Le puedo ayudar?',pron:'jelóu! can ái jelp iú?'},
+    {quien:name||'Diego',en:'Yes, I want a new shirt, please.',es:'Sí, quiero una camisa nueva, por favor.',pron:'iés, ái uánt a niú shert, plis.'},
+    {quien:'Seller',en:'What color do you want?',es:'¿Qué color quiere?',pron:'uát cólor du iú uánt?'},
+    {quien:name||'Diego',en:'A blue shirt. How much is it?',es:'Una camisa azul. ¿Cuánto cuesta?',pron:'a blu shert. jáu mach is it?'},
+    {quien:'Seller',en:'It is thirty thousand pesos.',es:'Cuesta treinta mil pesos.',pron:'it is zérti záusand pésos.'},
+    {quien:name||'Diego',en:'Perfect. I take it. Thank you!',es:'Perfecto. Me la llevo. ¡Gracias!',pron:'pérfect. ái téik it. zénk iú!'}
+  ],[
+    {formato:'opcion',tema:'Shopping',q:'What does Diego want to buy?',opts:shuffle([{t:'A shirt',c:1,r:'✅ "I want a new shirt".'},{t:'A car',c:0,r:'❌ No.'},{t:'Shoes',c:0,r:'❌ No.'}]),sentence:'Diego wants a shirt.',trad:'Diego quiere una camisa.',pron:'Diego uánts a shert',estructura:'Comprensión',extra:'"shirt" = camisa.'},
+    {formato:'vf',tema:'Shopping',q:'"How much is it?" means "¿cuánto cuesta?".',answer:true,r:'✅ Verdadero.',sentence:'How much is it?',trad:'¿Cuánto cuesta?',pron:'jáu mach is it',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Shopping',q:'¿Cómo se dice "azul" en inglés?',answer:'blue',respuestas:['blue'],sentence:'a blue shirt',trad:'una camisa azul',pron:'a blu shert',estructura:'Escribe',extra:''}
+  ])},
+  'Daily Routines conversation (A1)':{ tema:'Daily Routines', build:(name)=>dialogQuiz('Daily Routines',[
+    {quien:'Leidy',en:'What time do you wake up?',es:'¿A qué hora te despiertas?',pron:'uát táim du iú uéik ap?'},
+    {quien:name||'Diego',en:'I wake up at five and I have breakfast.',es:'Me despierto a las cinco y desayuno.',pron:'ái uéik ap at fáiv and ái jav brékfast.'},
+    {quien:'Leidy',en:'And then?',es:'¿Y luego?',pron:'and den?'},
+    {quien:name||'Diego',en:'I drive my truck to Bogotá. I work all day.',es:'Manejo mi camión a Bogotá. Trabajo todo el día.',pron:'ái dráiv mái trak tu Bogotá. ái uérk ol déi.'},
+    {quien:'Leidy',en:'What do you do at night?',es:'¿Qué haces en la noche?',pron:'uát du iú du at náit?'},
+    {quien:name||'Diego',en:'I study English with you and I go to bed at ten.',es:'Estudio inglés contigo y me acuesto a las diez.',pron:'ái stádi ínglish uíd iú and ái góu tu bed at ten.'}
+  ],[
+    {formato:'opcion',tema:'Daily Routines',q:'What time does Diego wake up?',opts:shuffle([{t:'At five',c:1,r:'✅ "I wake up at five".'},{t:'At ten',c:0,r:'❌ Esa es cuando se acuesta.'},{t:'At noon',c:0,r:'❌ No.'}]),sentence:'Diego wakes up at five.',trad:'Diego se despierta a las cinco.',pron:'Diego uéiks ap at fáiv',estructura:'Comprensión',extra:'"wake up" = despertarse.'},
+    {formato:'vf',tema:'Daily Routines',q:'"go to bed" means "acostarse".',answer:true,r:'✅ Verdadero.',sentence:'I go to bed at ten.',trad:'Me acuesto a las diez.',pron:'ái góu tu bed at ten',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Daily Routines',q:'¿Cómo se dice "desayunar" en inglés? (dos palabras: have...)',answer:'have breakfast',respuestas:['have breakfast'],sentence:'I have breakfast.',trad:'Yo desayuno.',pron:'ái jav brékfast',estructura:'Escribe',extra:''}
+  ])},
+  'At the Market — fruits and prices (A1)':{ tema:'At the Market', build:(name)=>dialogQuiz('At the Market',[
+    {quien:'Seller',en:'Good morning! We have fresh apples today.',es:'¡Buenos días! Hoy tenemos manzanas frescas.',pron:'gud mórning! uí jav fresh ápols tudéi.'},
+    {quien:name||'Diego',en:'Great! How much are the apples?',es:'¡Genial! ¿Cuánto cuestan las manzanas?',pron:'gréit! jáu mach ar de ápols?'},
+    {quien:'Seller',en:'They are two thousand pesos per kilo.',es:'Cuestan dos mil pesos por kilo.',pron:'déi ar tu záusand pésos per kílo.'},
+    {quien:name||'Diego',en:'I want two kilos, and some bread too.',es:'Quiero dos kilos, y también algo de pan.',pron:'ái uánt tu kílos, and sam bred tú.'},
+    {quien:'Seller',en:'Here you are. Anything else?',es:'Aquí tiene. ¿Algo más?',pron:'jíar iú ar. énizing els?'},
+    {quien:name||'Diego',en:'No, thank you. That is all.',es:'No, gracias. Eso es todo.',pron:'nóu, zénk iú. dat is ol.'}
+  ],[
+    {formato:'opcion',tema:'At the Market',q:'What fruit does the seller have?',opts:shuffle([{t:'Apples',c:1,r:'✅ "fresh apples".'},{t:'Oranges',c:0,r:'❌ No.'},{t:'Bananas',c:0,r:'❌ No.'}]),sentence:'They have apples.',trad:'Tienen manzanas.',pron:'déi jav ápols',estructura:'Comprensión',extra:'"apple" = manzana.'},
+    {formato:'vf',tema:'At the Market',q:'Diego buys some bread too.',answer:true,r:'✅ Verdadero: "and some bread too".',sentence:'Diego buys some bread.',trad:'Diego compra algo de pan.',pron:'Diego báis sam bred',estructura:'Verdadero o falso',extra:'"bread" = pan.'},
+    {formato:'escribir',tema:'At the Market',q:'¿Cómo se dice "manzanas" en inglés?',answer:'apples',respuestas:['apples'],sentence:'fresh apples',trad:'manzanas frescas',pron:'fresh ápols',estructura:'Escribe',extra:''}
+  ])},
+  'Introducing a Friend (A1)':{ tema:'Introducing a Friend', build:(name)=>dialogQuiz('Introducing a Friend',[
+    {quien:name||'Diego',en:'Leidy, this is my friend Tom.',es:'Leidy, este es mi amigo Tom.',pron:'Leidy, dis is mái frend Tom.'},
+    {quien:'Leidy',en:'Hello Tom! Nice to meet you.',es:'¡Hola Tom! Mucho gusto.',pron:'jelóu Tom! náis tu mit iú.'},
+    {quien:'Tom',en:'Nice to meet you too. Where do you work?',es:'Mucho gusto también. ¿Dónde trabajas?',pron:'náis tu mit iú tú. uér du iú uérk?'},
+    {quien:'Leidy',en:'I am a teacher. Diego is a driver.',es:'Soy profesora. Diego es conductor.',pron:'ái am a tícher. Diego is a dráiver.'},
+    {quien:'Tom',en:'Cool! Do you have children?',es:'¡Qué bien! ¿Tienen hijos?',pron:'kul! du iú jav chíldren?'},
+    {quien:'Leidy',en:'No, but we have two cats: Mila and Jasper.',es:'No, pero tenemos dos gatos: Mila y Jasper.',pron:'nóu, bat uí jav tu cats: Mila and Jasper.'}
+  ],[
+    {formato:'opcion',tema:'Introducing a Friend',q:'What is Leidy job?',opts:shuffle([{t:'She is a teacher',c:1,r:'✅ "I am a teacher".'},{t:'She is a driver',c:0,r:'❌ Ese es Diego.'},{t:'She is a doctor',c:0,r:'❌ No.'}]),sentence:'Leidy is a teacher.',trad:'Leidy es profesora.',pron:'Leidy is a tícher',estructura:'Comprensión',extra:'"teacher" = profesor(a).'},
+    {formato:'vf',tema:'Introducing a Friend',q:'"this is my friend" means "este es mi amigo".',answer:true,r:'✅ Verdadero.',sentence:'This is my friend.',trad:'Este es mi amigo.',pron:'dis is mái frend',estructura:'Verdadero o falso',extra:''},
+    {formato:'escribir',tema:'Introducing a Friend',q:'¿Cómo se dice "conductor" en inglés?',answer:'driver',respuestas:['driver'],sentence:'a driver',trad:'un conductor',pron:'a dráiver',estructura:'Escribe',extra:''}
   ])}
 };
 /* Arma un objeto de quiz de diálogo (una "lectura" con dialogue + subs) */

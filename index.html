@@ -943,6 +943,7 @@ function exportLearned(){
 const SPANISH_EXTRA={};
 function addS(es,en,pron){ const k=norm(es); if(k && !SPANISH_EXTRA[k]) SPANISH_EXTRA[k]={en:en, tipo:'', pron:pron||''}; }
 [
+ ['caluroso','hot','jot'],['cepillarse','to brush','tu brash'],['cocinero','cook','cuk'],['gallina','hen / chicken','jen'],['hambre','hunger','jánguer'],['pescado','fish','fish'],['sed','thirst','zerst'],['volver','to come back','tu kam bak'],
  ['lee','read','rid'],['leer','to read','tu rid'],['sobre','about / on','abáut / on'],['tu','your','iór'],['tus','your','iór'],
  ['educación','education','eduquéishon'],['escribe','write','ráit'],['escribir','to write','tu ráit'],['ordena','order / sort','órder'],
  ['completa','complete','complít'],['completar','to complete','tu complít'],['une','match / join','match / yóin'],['marca','mark / check','mark'],
@@ -2106,6 +2107,23 @@ const DIALOG_PACKS={
 };
 /* Arma un objeto de quiz de diálogo (una "lectura" con dialogue + subs) */
 function dialogQuiz(tema, lines, subs){ return [{ formato:'dialogo', q:'Lee y practica esta conversación:', dialogue:lines, subs:subs, tema:tema }]; }
+/* Registra en el GLOSARIO global TODAS las palabras de packs y generadores, para que al tocar
+   cualquier palabra SIEMPRE aparezca su traducción. (addG no sobreescribe lo que ya existe.) */
+function autoRegisterGlossary(){
+  try{
+    Object.keys(TOPIC_PACKS).forEach(k=>{ const p=TOPIC_PACKS[k]; if(p && p.kind==='vocab' && p.list){ p.list.forEach(it=>{ addG(it.en,it.es,it.c||'',it.p||''); }); } });
+    if(typeof SIMPLE_NOUN!=='undefined') SIMPLE_NOUN.forEach(n=>{ addG(n.en,n.es,'sustantivo',n.pr); addG(n.pl,n.plEs,'sustantivo',''); });
+    if(typeof NOUNS_PL!=='undefined') NOUNS_PL.forEach(n=>{ addG(n.sg,n.esS,'sustantivo',''); addG(n.pl,n.esP,'sustantivo',''); });
+    if(typeof NOUNS_ART!=='undefined') NOUNS_ART.forEach(n=>addG(n.en,n.es,'sustantivo',n.pr));
+    if(typeof TB_COMP!=='undefined') TB_COMP.forEach(c=>{ if(c.en.indexOf(' ')<0) addG(c.en,c.s,'adjetivo',c.pr); });
+    if(typeof DEMO_ADJ!=='undefined') DEMO_ADJ.forEach(a=>addG(a.en,a.s,'adjetivo',a.pr));
+    if(typeof PS_VERB!=='undefined') PS_VERB.forEach(v=>{ const inf=(typeof V_INF!=='undefined'&&V_INF[v.b])||''; addG(v.b,inf,'verbo',v.pb); addG(v.s,inf,'verbo',v.ps); addG(v.ing,(typeof V_GER!=='undefined'&&V_GER[v.b])||inf,'verbo (‑ing)',''); addG(v.past,inf?('pasado de "'+v.b+'" ('+inf+')'):'','verbo (pasado)',''); });
+    for(let n=0;n<=100;n++){ const w=numToWords(n); if(w&&w.en){ addG(w.en,w.es,'número',numPron(w.en)); } }
+    if(typeof LETTER_Q!=='undefined') LETTER_Q.forEach(x=>addG(x.name,'nombre de la letra '+x.L,'letra',x.name));
+    [['after','después'],['afternoon','tarde'],['morning','mañana'],['before','antes'],['behind','detrás de'],['please','por favor'],['up','arriba'],['each','cada'],['means','significa'],['meaning','significado'],['later','después'],['half','media / mitad'],['past','pasada (la hora)'],['quarter','cuarto'],["o'clock",'en punto'],['noon','mediodía'],['outside','afuera'],['room','cuarto / habitación'],['words','palabras'],['word','palabra'],['order','orden'],['called','se llama'],['front','frente'],['next','siguiente / próximo'],['double','doble'],['back','de vuelta / atrás'],['breakfast','desayuno'],['lunch','almuerzo'],['dinner','cena'],['shower','ducha'],['police','policía'],['officer','oficial'],['together','juntos'],['learning','aprendiendo'],['little','poco'],['very','muy'],['too','también'],['name','nombre'],['pet','mascota'],['pets','mascotas'],['big','grande'],['small','pequeño'],['friendly','amable'],['beautiful','hermoso'],['their','su (de ellos)'],['names','nombres'],['number','número'],['phone','teléfono'],['zero','cero'],['sofa','sofá'],['night','noche'],['every','cada / todos'],['here','aquí'],['home','casa'],['work','trabajo / trabajar'],['from','de / desde'],['call','llamar'],['can','poder'],["can't",'no poder'],['clock','reloj'],['close','cerrar'],["doesn't",'no (con he/she/it)'],["don't",'no'],['listen','escuchar'],['movies','películas'],['music','música'],['office','oficina'],['open','abrir'],['tea','té'],['wake','despertar'],['wash','lavar'],['weekends','fines de semana'],['brush','cepillar'],['come','venir'],['cook','cocinar / cocinero'],['fish','pez / pescado'],['chicken','pollo / gallina'],['hot','caliente / caluroso'],['thirsty','con sed'],['hungry','con hambre']].forEach(p=>{ if(!lookupWord(p[0])) addG(p[0],p[1],'',''); });
+  }catch(e){}
+}
+autoRegisterGlossary();
 
 
 /* ============================================================ IMPORTAR CÓDIGO DE UNA IA ============================================================ */

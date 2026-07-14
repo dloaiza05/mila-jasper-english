@@ -550,6 +550,7 @@
           <div id="hint-vocab-wrap"><span class="font-bold text-slate-700">📚 Vocabulario:</span> <span id="hint-vocab" class="text-teal-700"></span></div>
           <div id="hint-extra-wrap"><span class="font-bold text-slate-700">💡 Dato:</span> <span id="hint-extra" class="text-emerald-700"></span></div>
           <div id="hint-form-wrap" class="bg-white p-2 rounded border border-slate-200"><span class="font-bold text-slate-800">⚙️ Regla:</span> <span id="hint-form" class="text-indigo-700 font-mono font-bold text-xs"></span></div>
+          <div id="hint-concept-wrap" style="display:none"><div id="hint-concept" class="concept-box"></div></div>
         </div>
       </div>
 
@@ -1302,9 +1303,9 @@ const TOPIC_CONCEPT={
  'Plurals':`<span class="c-title">📊 Plurales</span><table><tr><th>Regla</th><th>Ejemplo</th></tr><tr><td>Normal: + s</td><td>dog → dogs</td></tr><tr><td>s, x, ch, sh: + es</td><td>box → boxes</td></tr><tr><td>consonante + y → ies</td><td>baby → babies</td></tr><tr><td>f/fe → ves</td><td>knife → knives</td></tr><tr><td>Irregulares</td><td>man→men, child→children, foot→feet</td></tr></table>`,
  'Possessives':`<span class="c-title">📊 Adjetivos posesivos</span><table><tr><td>I → my</td><td>you → your</td></tr><tr><td>he → his</td><td>she → her</td></tr><tr><td>it → its</td><td>we → our</td></tr><tr><td colspan="2">they → their</td></tr></table>Ojo: <b>their</b> (su, de ellos) ≠ <b>there</b> (allá).`,
  'Demonstratives':`<span class="c-title">📊 this / that / these / those</span><table><tr><th></th><th>Singular</th><th>Plural</th></tr><tr><th>Cerca</th><td class="c-key">this</td><td class="c-key">these</td></tr><tr><th>Lejos</th><td class="c-key">that</td><td class="c-key">those</td></tr></table>`,
- 'Present Simple':`<span class="c-title">📊 Presente simple (rutinas)</span><table><tr><th>Sujeto</th><th>Verbo</th></tr><tr><td>I / You / We / They</td><td class="c-key">verbo base</td></tr><tr><td>He / She / It</td><td class="c-key">verbo + s</td></tr></table>-o → +es (go→goes) · -ch/-sh/-x → +es (watch→watches) · cons.+y → ies (study→studies)`,
+ 'Present Simple':`<span class="c-title">📊 Presente simple (rutinas)</span><b>¿Por qué?</b> Solo en 3ª persona singular (he/she/it) el verbo lleva <b>-s</b>.<table><tr><th>Sujeto</th><th>Verbo</th><th>Ejemplo</th></tr><tr><td>I / You / We / They</td><td class="c-key">verbo base</td><td>I work · they live</td></tr><tr><td>He / She / It</td><td class="c-key">verbo + s</td><td>She works · he lives</td></tr></table><b>Cambios de escritura (3ª persona):</b><table><tr><th>Regla</th><th>Ejemplo</th></tr><tr><td>-o → +es</td><td>go→goes, do→does</td></tr><tr><td>-ch/-sh/-x/-ss → +es</td><td>watch→watches, wash→washes</td></tr><tr><td>consonante+y → ies</td><td>study→studies, fly→flies</td></tr><tr><td>normal → +s</td><td>work→works, eat→eats</td></tr></table>`,
  'Present Simple neg/quest':`<span class="c-title">📊 Negativo y pregunta (do/does)</span><table><tr><th>Sujeto</th><th>Negativo</th><th>Pregunta</th></tr><tr><td>I/You/We/They</td><td class="c-key">don't</td><td class="c-key">Do</td></tr><tr><td>He/She/It</td><td class="c-key">doesn't</td><td class="c-key">Does</td></tr></table>Con does/doesn't el verbo va en BASE (sin -s): "Does he <b>work</b>?"`,
- 'Third person -s':`<span class="c-title">📊 Tercera persona: -s / -es / -ies</span><ul><li>Normal: + s → works, lives</li><li>-o, -ch, -sh, -x, -ss: + es → goes, watches, washes</li><li>consonante + y → ies → study→studies, fly→flies</li></ul>Solo con <b>he / she / it</b>.`,
+ 'Third person -s':`<span class="c-title">📊 Tercera persona: -s / -es / -ies</span><b>¿Por qué?</b> Con <b>he / she / it</b> (una sola persona/cosa) el verbo cambia.<table><tr><th>Regla</th><th>Ejemplo</th></tr><tr><td>normal → +s</td><td>work→works, live→lives</td></tr><tr><td>-o/-ch/-sh/-x/-ss → +es</td><td>go→goes, watch→watches, wash→washes</td></tr><tr><td>consonante+y → ies</td><td>study→studies, fly→flies</td></tr></table>Con I/you/we/they el verbo NO cambia (verbo base).`,
  'Can':`<span class="c-title">📊 Can / Can't (poder)</span><ul><li>Afirmativo: Sujeto + <span class="c-key">can</span> + verbo base (I can swim)</li><li>Negativo: <span class="c-key">can't</span> = cannot (I can't swim)</li><li>Pregunta: <span class="c-key">Can</span> + sujeto + verbo? (Can you help?)</li></ul>Igual para todos: she <b>can</b>, no "she cans".`,
  'Imperatives':`<span class="c-title">📊 Imperativo (órdenes)</span><ul><li>Afirmativo: verbo base → <b>Open</b> the door.</li><li>Negativo: <span class="c-key">Don't</span> + verbo → <b>Don't</b> run.</li></ul>No lleva sujeto (se sobreentiende "you").`,
  'Have got':`<span class="c-title">📊 Have got / Has got (tener)</span><table><tr><td>I/You/We/They</td><td class="c-key">have got</td></tr><tr><td>He/She/It</td><td class="c-key">has got</td></tr></table>= posesión. "I have got two cats."`,
@@ -1318,7 +1319,7 @@ const TOPIC_CONCEPT={
  'Past Simple':`<span class="c-title">📊 Pasado simple (regulares)</span><ul><li>Normal: + ed → work→worked</li><li>-e: + d → live→lived</li><li>cons.+y → ied → study→studied</li><li>vocal+consonante: doble + ed → stop→stopped</li></ul>`,
  'Past Simple irregular':`<span class="c-title">📊 Pasado irregular (memorizar)</span><table><tr><td>go→went</td><td>make→made</td></tr><tr><td>have→had</td><td>buy→bought</td></tr><tr><td>find→found</td><td>see→saw</td></tr></table>NO usan -ed.`,
  'Was/Were':`<span class="c-title">📊 Was / Were (pasado de to be)</span><table><tr><td>I / He / She / It</td><td class="c-key">was</td></tr><tr><td>You / We / They</td><td class="c-key">were</td></tr></table>`,
- 'Present Continuous':`<span class="c-title">📊 Presente continuo (-ing)</span><ul><li>am/is/are + verbo-ing (ahora)</li><li>-e: quita e → make→making</li><li>vocal+cons: doble → run→running</li></ul>`,
+ 'Present Continuous':`<span class="c-title">📊 Presente continuo (-ing)</span><b>¿Por qué?</b> Describe algo que pasa <b>AHORA</b> = am/is/are + verbo-ing.<table><tr><th>Regla de -ing</th><th>Ejemplo</th></tr><tr><td>normal → +ing</td><td>work→working, eat→eating</td></tr><tr><td>termina en -e: quita e</td><td>make→making, live→living</td></tr><tr><td>vocal+consonante: dobla</td><td>run→running, sit→sitting</td></tr><tr><td>-ie → ying</td><td>lie→lying</td></tr></table>I <b>am</b> · he/she/it <b>is</b> · you/we/they <b>are</b>`,
  'Comparatives':`<span class="c-title">📊 Comparativos</span><ul><li>Corto: + er + than → bigger than</li><li>Largo: more + adj + than → more difficult than</li><li>Irregular: good→better, bad→worse</li></ul>`,
  'Superlatives':`<span class="c-title">📊 Superlativos</span><ul><li>Corto: the + adj-est → the biggest</li><li>Largo: the most + adj → the most expensive</li><li>Irregular: the best, the worst</li></ul>`,
  'Future going to':`<span class="c-title">📊 Futuro: going to (planes)</span><table><tr><td>I</td><td class="c-key">am going to</td></tr><tr><td>He/She/It</td><td class="c-key">is going to</td></tr><tr><td>You/We/They</td><td class="c-key">are going to</td></tr></table>+ verbo base: "I am going to build."`,
@@ -2871,15 +2872,17 @@ function loadQuestion(){
   // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
   const qp=document.getElementById('q-pron');
-  const isGen = (q.kind==='grammar'||q.kind==='vocab'); // pregunta de nuestro motor de temas
-  // arriba: pronunciación + "Ver traducción". En el motor: SOLO opción/VF de gramática (el hueco ___ no revela). Importados/demo: comportamiento clásico.
-  const showTop = isGen ? ((fmt==='opcion'||fmt==='vf') && q.kind==='grammar') : (fmt!=='lectura'&&fmt!=='dialogo');
-  if(showTop){
-    const engPhrase = phon(q.q)? q.q : (q.sentence||'');
-    let ph=phonHTML(engPhrase); if(!ph && q.pron) ph=escapeHtml(q.pron);
-    if(ph){ qp.innerHTML='🗣️ '+ph; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
-    if(q.trad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
-  } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
+  // ARRIBA, entre el enunciado y la estructura: 🗣️ pronunciación (español latino) + 📖 Ver traducción. En TODOS los tipos.
+  // Frase de referencia: el enunciado si es inglés; si es instrucción (completar/huecos/ordenar) la oración objetivo.
+  const noTop = (fmt==='lectura'||fmt==='dialogo');
+  // en completar/huecos/ordenar/escribir el enunciado es una INSTRUCCIÓN; la pronunciación es de la ORACIÓN objetivo
+  const instrFmt = (fmt==='completar'||fmt==='huecos'||fmt==='ordenar'||fmt==='escribir');
+  const engPhrase = instrFmt ? (q.sentence||'') : (phon(q.q)? q.q : (q.sentence||''));
+  // pronunciación: en vocabulario/multiple/emparejar las opciones ya llevan su pronunciación, así que arriba no
+  const showPron = !noTop && fmt!=='multiple' && fmt!=='emparejar' && q.kind!=='vocab';
+  if(showPron){ let ph=phonHTML(engPhrase); if(!ph && q.pron) ph=escapeHtml(q.pron); if(ph){ qp.innerHTML='🗣️ '+ph; qp.classList.remove('hidden'); } else qp.classList.add('hidden'); }
+  else qp.classList.add('hidden');
+  if(q.trad && !noTop){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
   if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
@@ -2887,9 +2890,11 @@ function loadQuestion(){
   ui.hTrad.textContent=q.trad||''; ui.hPron.textContent=q.pron?`(${q.pron})`:''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
   const autoVocab=buildAutoHint(q);
   document.getElementById('hint-vocab').textContent=autoVocab;
-  show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-vocab-wrap'),!!autoVocab); show(document.getElementById('hint-extra-wrap'),!!q.extra); show(document.getElementById('hint-form-wrap'),!!q.form);
+  const hintConcept=q.concepto||conceptFor(q);
+  document.getElementById('hint-concept').innerHTML=hintConcept||'';
+  show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-vocab-wrap'),!!autoVocab); show(document.getElementById('hint-extra-wrap'),!!q.extra); show(document.getElementById('hint-form-wrap'),!!q.form); show(document.getElementById('hint-concept-wrap'),!!hintConcept);
   ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista';
-  const hayPista = fmt!=='lectura' && fmt!=='dialogo' && (q.trad||q.pron||q.extra||q.form||autoVocab);
+  const hayPista = fmt!=='lectura' && fmt!=='dialogo' && (q.trad||q.pron||q.extra||q.form||autoVocab||hintConcept);
   if(hayPista) ui.hintBtn.classList.remove('hidden'); else ui.hintBtn.classList.add('hidden');
   ui.counter.textContent=`${idx+1}/${quiz.length}`; ui.score.textContent=`Puntaje: ${score}`; ui.progress.style.width=`${(idx/quiz.length)*100}%`;
   ui.feedback.classList.add('hidden'); ui.nextBtn.classList.add('hidden'); ui.area.innerHTML='';
@@ -2897,8 +2902,6 @@ function loadQuestion(){
   if(fmt==='lectura'||fmt==='dialogo'){ renderLectura(q); return; }
   const ctx={ area:ui.area, answered:false, done:(ok,exp,qq)=>finalize(ok,exp,qq) };
   dispatchRender(q, ctx);
-  // ABAJO (junto a la respuesta): pronunciación de la oración + "Ver traducción" — completar/huecos/ordenar/escribir de GRAMÁTICA
-  if(q.kind==='grammar' && ['completar','huecos','ordenar','escribir'].includes(fmt) && q.sentence){ ui.area.appendChild(sentenceRefBlock(q)); }
 }
 /* Bloque de referencia bajo la respuesta: 🗣️ pronunciación de la oración + 📖 Ver traducción (oculta) */
 function sentenceRefBlock(q){

@@ -545,12 +545,12 @@
       <div id="hint-content" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-4 mb-6 text-sm shadow-inner slide-down">
         <p class="text-amber-800 font-bold mb-2 border-b border-amber-200 pb-1">Tu salvavidas:</p>
         <div class="grid grid-cols-1 gap-2">
-          <div id="hint-trad-wrap"><span class="font-bold text-slate-700">📖 Traducción:</span> <span id="hint-trad" class="text-blue-700 font-medium"></span></div>
-          <div id="hint-pron-wrap"><span class="font-bold text-slate-700">🗣️ Pronunciación:</span> <span id="hint-pron" class="text-purple-700 italic"></span></div>
-          <div id="hint-vocab-wrap"><span class="font-bold text-slate-700">📚 Vocabulario:</span> <span id="hint-vocab" class="text-teal-700"></span></div>
+          <div id="hint-concept-wrap" style="display:none"><div id="hint-concept" class="concept-box"></div></div>
+          <div id="hint-vocab-wrap"><span class="font-bold text-slate-700">📚 Palabras:</span> <span id="hint-vocab" class="text-teal-700"></span></div>
           <div id="hint-extra-wrap"><span class="font-bold text-slate-700">💡 Dato:</span> <span id="hint-extra" class="text-emerald-700"></span></div>
           <div id="hint-form-wrap" class="bg-white p-2 rounded border border-slate-200"><span class="font-bold text-slate-800">⚙️ Regla:</span> <span id="hint-form" class="text-indigo-700 font-mono font-bold text-xs"></span></div>
-          <div id="hint-concept-wrap" style="display:none"><div id="hint-concept" class="concept-box"></div></div>
+          <div id="hint-trad-wrap" class="hidden"><span class="font-bold text-slate-700">📖 Traducción:</span> <span id="hint-trad" class="text-blue-700 font-medium"></span></div>
+          <div id="hint-pron-wrap" class="hidden"><span class="font-bold text-slate-700">🗣️ Pronunciación:</span> <span id="hint-pron" class="text-purple-700 italic"></span></div>
         </div>
       </div>
 
@@ -1329,7 +1329,21 @@ const TOPIC_CONCEPT={
  'Alphabet':`<span class="c-title">📊 Letras que engañan</span><table><tr><td>H = "aitch" (éich)</td><td>W = "double-u" (dábliu)</td></tr><tr><td>Y = "why" (uái)</td><td>J = "jay" (yéi)</td></tr><tr><td>G = "gee" (yi)</td><td>I = "eye" (ái)</td></tr></table>Deletrear: "How do you spell...?" → letra por letra.`,
  'Ordinals':`<span class="c-title">📊 Números ordinales</span><table><tr><td>1º first</td><td>2º second</td><td>3º third</td></tr><tr><td>4º fourth</td><td>5º fifth</td><td>6º sixth</td></tr></table>Del 4 en adelante casi todos: número + <b>th</b> (fourth, tenth). Irregulares: first, second, third.`
 };
-function conceptFor(q){ return (q&&q.tema&&TOPIC_CONCEPT[q.tema])||''; }
+/* Concepto automático: si no hay tabla del tema, arma una con las PALABRAS de esta frase
+   (inglés · español · cómo suena) — así CUALQUIER pregunta (incluidos diálogos e importados) tiene su tabla. */
+function autoConceptFrom(q){
+  if(!q) return '';
+  const good=(q.opts&&q.opts.find(o=>o.c))?q.opts.find(o=>o.c).t:'';
+  const src=(q.sentence||'')+' '+(q.q||'')+' '+good;
+  const seen=new Set(), rows=[];
+  (src.match(/[A-Za-z']+/g)||[]).forEach(w=>{ const k=norm(w); if(!k||k.length<2||seen.has(k))return; seen.add(k);
+    const g=(typeof extraGlossary!=='undefined'&&extraGlossary[k])||(typeof LEARNED!=='undefined'&&LEARNED[k])||GLOSSARY[k];
+    if(g&&g.es){ rows.push('<tr><td class="c-key">'+escapeHtml(w.toLowerCase())+'</td><td>'+escapeHtml(String(g.es).split('/')[0].trim())+'</td><td><i>'+escapeHtml(g.pron||'')+'</i></td></tr>'); }
+  });
+  if(rows.length<1) return '';
+  return '<span class="c-title">📊 Palabras de esta frase</span><table><tr><th>English</th><th>Español</th><th>Suena</th></tr>'+rows.slice(0,6).join('')+'</table>';
+}
+function conceptFor(q){ return (q&&q.tema&&TOPIC_CONCEPT[q.tema]) || autoConceptFrom(q) || ''; }
 /* ---- PACKS CURADOS (a fondo, con contexto de Diego). El resto de temas usa safeTopicPack ---- */
 /* ============ GENERADORES POR PIEZAS (arman cientos de frases ÚNICAS y CORRECTAS) ============ */
 const BE_PRON_M={am:'am',is:'is',are:'ar'};

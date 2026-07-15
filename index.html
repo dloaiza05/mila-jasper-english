@@ -2886,17 +2886,16 @@ function loadQuestion(){
   // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
   const qp=document.getElementById('q-pron');
-  // ARRIBA, entre el enunciado y la estructura: 🗣️ pronunciación (español latino) + 📖 Ver traducción. En TODOS los tipos.
-  // Frase de referencia: el enunciado si es inglés; si es instrucción (completar/huecos/ordenar) la oración objetivo.
-  const noTop = (fmt==='lectura'||fmt==='dialogo');
-  // en completar/huecos/ordenar/escribir el enunciado es una INSTRUCCIÓN; la pronunciación es de la ORACIÓN objetivo
-  const instrFmt = (fmt==='completar'||fmt==='huecos'||fmt==='ordenar'||fmt==='escribir');
-  const engPhrase = instrFmt ? (q.sentence||'') : (phon(q.q)? q.q : (q.sentence||''));
-  // pronunciación: en vocabulario/multiple/emparejar las opciones ya llevan su pronunciación, así que arriba no
-  const showPron = !noTop && fmt!=='multiple' && fmt!=='emparejar' && q.kind!=='vocab';
-  if(showPron){ let ph=phonHTML(engPhrase); if(!ph && q.pron) ph=escapeHtml(q.pron); if(ph){ qp.innerHTML='🗣️ '+ph; qp.classList.remove('hidden'); } else qp.classList.add('hidden'); }
-  else qp.classList.add('hidden');
-  if(q.trad && !noTop){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
+  // La pronunciación + "Ver traducción" van SIEMPRE PEGADAS a su frase:
+  //  · opción / VF: la frase ES el enunciado → van ARRIBA (bajo el enunciado).
+  //  · completar / huecos / ordenar / escribir: la frase está en la respuesta → van ABAJO, junto a ella (sentenceRefBlock).
+  //  · emparejar / varias correctas: cada frase lleva su pronunciación debajo (en su botón).
+  const topFmt = (fmt==='opcion'||fmt==='vf');
+  if(topFmt && q.kind!=='vocab'){
+    let ph=phonHTML(q.q); if(!ph && q.pron) ph=escapeHtml(q.pron);
+    if(ph){ qp.innerHTML='🗣️ '+ph; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
+    if(q.trad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
+  } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
   if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
@@ -2916,6 +2915,8 @@ function loadQuestion(){
   if(fmt==='lectura'||fmt==='dialogo'){ renderLectura(q); return; }
   const ctx={ area:ui.area, answered:false, done:(ok,exp,qq)=>finalize(ok,exp,qq) };
   dispatchRender(q, ctx);
+  // ABAJO, PEGADO a la oración de la respuesta: 🗣️ pronunciación + 📖 Ver traducción (completar/huecos/ordenar/escribir)
+  if(['completar','huecos','ordenar','escribir'].includes(fmt) && q.sentence){ ui.area.appendChild(sentenceRefBlock(q)); }
 }
 /* Bloque de referencia bajo la respuesta: 🗣️ pronunciación de la oración + 📖 Ver traducción (oculta) */
 function sentenceRefBlock(q){
@@ -3309,7 +3310,7 @@ function renderMatch(q,ctx){
   const left=shuffle(q.pairs.map((p,i)=>({t:p.a,id:i}))), right=shuffle(q.pairs.map((p,i)=>({t:p.b,id:i})));
   let selBtn=null, selId=null, matched=0, errors=0;
   const grid=document.createElement('div'); grid.className='grid grid-cols-2 gap-3'; const colL=document.createElement('div'); colL.className='space-y-2'; const colR=document.createElement('div'); colR.className='space-y-2';
-  function mk(item,side){ const b=document.createElement('button'); b.innerHTML=wordSpanify(item.t); b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
+  function mk(item,side){ const b=document.createElement('button'); const ph=phonHTML(item.t); b.innerHTML='<span class="match-t block">'+wordSpanify(item.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal mt-0.5">🗣️ '+ph+'</span>':''); b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
     b.onclick=()=>{ if(ctx.answered||b.disabled)return;
       if(side==='L'){ if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=b; selId=item.id; b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }
       else { if(selId===null)return;

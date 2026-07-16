@@ -31,6 +31,11 @@
   @keyframes pop-ok { 0%{transform:scale(1)} 45%{transform:scale(1.04)} 100%{transform:scale(1)} }
   @keyframes shake-no { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 60%{transform:translateX(5px)} }
   .match-col-head { font-size:.65rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; text-align:center; padding:.2rem .5rem; border-radius:9999px; }
+  .tts-btn { display:inline-flex; align-items:center; justify-content:center; width:1.9rem; height:1.9rem; border-radius:9999px; background:#ede9fe; border:1px solid #ddd6fe; font-size:.95rem; margin-left:.35rem; vertical-align:middle; transition:all .15s; cursor:pointer; }
+  .tts-btn:hover { background:#c4b5fd; transform:scale(1.12); }
+  .tts-btn:active { transform:scale(.95); }
+  #progress-bar { background-size:200% 100%!important; animation:flow 3s linear infinite; }
+  @keyframes flow { 0%{background-position:0% 0}100%{background-position:200% 0} }
   .btn-disabled { opacity:.6; cursor:not-allowed; }
   .chip { transition: all .12s; }
   /* Tarjeta de CONCEPTO (mini-tabla/resumen del tema) */
@@ -280,6 +285,7 @@
           <tr><td class="border border-purple-100 p-1.5 font-bold">e final</td><td class="border border-purple-100 p-1.5">es muda, pero la vocal de antes "dice su nombre"</td><td class="border border-purple-100 p-1.5">make → <i class="text-purple-700">méik</i></td></tr>
         </table></div>
         <p class="mt-2 text-xs text-slate-500">💡 Además, al responder cada pregunta te mostramos <b>🔊 ¿Por qué suena así?</b> con las palabras de esa misma frase.</p>
+        <p class="mt-1 text-xs text-slate-600 bg-purple-50 border border-purple-100 rounded-lg p-2">🔊 <b>NUEVO — Audio:</b> toca el botón del parlante junto a cualquier pronunciación para <b>escucharla con voz americana</b>. El segundo toque la dice <b>lenta 🐢</b>. También al tocar una palabra suelta. Funciona con la voz de tu propio celular o computador, gratis.</p>
       </div>
     </details>
 
@@ -1134,6 +1140,45 @@ function isRedundant(small, big){
   const B=clean(big);
   let hit=0; ws.forEach(w=>{ if(B.indexOf(w)>=0)hit++; });
   return hit/ws.length>=0.7; // si ~70% de sus palabras clave ya están en el otro texto, es repetido
+}
+/* ============ AUDIO (TTS): escuchar palabras y frases con voz en inglés ============
+   Usa las voces del propio dispositivo (Web Speech API): GRATIS y funciona sin internet
+   una vez el sistema tiene la voz. Si el aparato no tiene voces, los botones se ocultan. */
+let TTS_VOICE=null, TTS_OK=false;
+function initTTS(){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    const vs=speechSynthesis.getVoices();
+    TTS_VOICE=vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;
+    TTS_OK=vs.length>0;
+    document.querySelectorAll('.tts-btn').forEach(b=>{ b.style.display=TTS_OK?'':'none'; });
+  }catch(e){}
+}
+if('speechSynthesis' in window){ initTTS(); try{ speechSynthesis.onvoiceschanged=initTTS; }catch(e){} }
+function speak(text, slow){
+  try{
+    if(!('speechSynthesis' in window)||!text) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text));
+    if(TTS_VOICE) u.voice=TTS_VOICE;
+    u.lang=(TTS_VOICE&&TTS_VOICE.lang)||'en-US';
+    u.rate=slow?0.6:0.85; u.pitch=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+/* Botón parlante como string HTML (dos toques: normal y lento 🐢) */
+function ttsBtnHTML(text, extraCls){
+  if(!('speechSynthesis' in window)) return '';
+  const t=escapeHtml(String(text));
+  return '<button type="button" class="tts-btn '+(extraCls||'')+'" data-say="'+t+'" onclick="event.stopPropagation();speak(this.dataset.say, this.dataset.slow===\'1\');this.dataset.slow=this.dataset.slow===\'1\'?\'0\':\'1\';" title="Toca para escuchar (2º toque: lento 🐢)">🔊</button>';
+}
+/* Botón parlante como elemento DOM */
+function ttsBtnEl(text){
+  if(!('speechSynthesis' in window)) return null;
+  const b=document.createElement('button'); b.type='button'; b.className='tts-btn'; b.textContent='🔊'; b.title='Toca para escuchar (2º toque: lento 🐢)';
+  let slow=false;
+  b.onclick=e=>{ e.stopPropagation(); speak(text, slow); slow=!slow; };
+  return b;
 }
 /* ============ FONÉTICA CONTEXTUAL (español latino, sin tecnicismos) ============
    Detecta los sonidos "difíciles" presentes en la frase y explica POR QUÉ suenan así,
@@ -2923,7 +2968,10 @@ function showWordPopup(el){
   else esMsg='ℹ️ No hay traducción para este símbolo.';
   document.getElementById('wp-es').textContent = esMsg;
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
-  document.getElementById('wp-pron').textContent = (g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
+  const wpPron=(g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
+  // audio de la palabra: si es palabra en inglés habla la palabra; si buscó español→inglés habla el inglés
+  const sayWord=g?word:(sp?sp.en:'');
+  document.getElementById('wp-pron').innerHTML = escapeHtml(wpPron)+(sayWord&&/^[a-zA-Z' ]+$/.test(sayWord)?ttsBtnHTML(sayWord):'');
   // 🔊 fonética contextual de ESTA palabra (por qué suena así)
   document.getElementById('wp-fon').innerHTML = (g&&/^[a-zA-Z']+$/.test(word)) ? fonTipsFor(word) : '';
   // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
@@ -3040,7 +3088,7 @@ function loadQuestion(){
   if(instrEs){
     const ipron=phon(String(q.q));
     ui.qText.innerHTML+='<div class="text-xs font-normal mt-1 space-y-0.5">'
-      +(ipron?'<div class="text-purple-600 italic">🗣️ '+escapeHtml(ipron)+'</div>':'')
+      +(ipron?'<div class="text-purple-600 italic">🗣️ '+escapeHtml(ipron)+ttsBtnHTML(String(q.q))+'</div>':'')
       +'<div><button class="text-blue-500 font-bold underline decoration-dotted" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">📖 Ver traducción</button><span class="hidden text-blue-700 ml-1">'+escapeHtml(instrEs)+'</span></div>'
       +'</div>';
   }
@@ -3055,7 +3103,7 @@ function loadQuestion(){
   const topFmt = (fmt==='opcion'||fmt==='vf');
   if(topFmt && q.kind!=='vocab'){
     let ph=phonHTML(q.q); if(!ph && q.pron) ph=escapeHtml(q.pron);
-    if(ph){ qp.innerHTML='🗣️ '+ph; qp.classList.remove('hidden'); } else qp.classList.add('hidden');
+    if(ph){ qp.innerHTML='🗣️ '+ph+ttsBtnHTML(q.q); qp.classList.remove('hidden'); } else qp.classList.add('hidden');
     if(q.trad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
   } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
   // estructura GENÉRICA (no revela la respuesta)
@@ -3070,7 +3118,7 @@ function loadQuestion(){
     stLine.innerHTML=html; stLine.classList.remove('hidden');
   } else stLine.classList.add('hidden');
   // pista global (las lecturas tienen su propia pista por sub-pregunta)
-  ui.hTrad.textContent=q.trad||''; ui.hPron.textContent=q.pron?`(${q.pron})`:''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
+  ui.hTrad.textContent=q.trad||''; ui.hPron.innerHTML=q.pron?(escapeHtml(`(${q.pron})`)+(q.sentence?ttsBtnHTML(q.sentence):'')):''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
   const autoVocab=buildAutoHint(q);
   document.getElementById('hint-vocab').textContent=autoVocab;
   const hintConcept=q.concepto||conceptFor(q);
@@ -3095,7 +3143,7 @@ function loadQuestion(){
 function sentenceRefBlock(q){
   const wrap=document.createElement('div'); wrap.className='mt-4 pt-2 border-t border-slate-100';
   const ph=phonHTML(q.sentence)||escapeHtml(q.pron||'');
-  if(ph){ const pr=document.createElement('div'); pr.className='text-sm text-purple-700 italic'; pr.innerHTML='🗣️ '+ph; wrap.appendChild(pr); }
+  if(ph){ const pr=document.createElement('div'); pr.className='text-sm text-purple-700 italic'; pr.innerHTML='🗣️ '+ph; const tb=ttsBtnEl(q.sentence); if(tb)pr.appendChild(tb); wrap.appendChild(pr); }
   if(q.trad){ const btn=document.createElement('button'); btn.className='mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline'; btn.textContent='📖 Ver traducción';
     const div=document.createElement('div'); div.className='hidden text-sm text-blue-800 mt-0.5'; div.textContent='📖 '+q.trad;
     btn.onclick=()=>{ div.classList.toggle('hidden'); btn.textContent=div.classList.contains('hidden')?'📖 Ver traducción':'👀 Ocultar'; };
@@ -3525,7 +3573,7 @@ function renderLectura(q){
       h+='<div class="text-base md:text-lg font-medium text-slate-800 leading-snug">'+wordSpanify(l.en)+'</div>';
       // pronunciación: la que dio la IA o, si falta, la generamos con enlaces (nunca queda sin pronunciación)
       const lpron = l.pron || phon(l.en);
-      if(lpron){ const ph=phonHTML(l.en); h+='<div class="text-sm text-purple-700 italic">🗣️ '+(ph||escapeHtml(lpron))+'</div>'; }
+      if(lpron){ const ph=phonHTML(l.en); h+='<div class="text-sm text-purple-700 italic">🗣️ '+(ph||escapeHtml(lpron))+ttsBtnHTML(l.en)+'</div>'; }
       row.innerHTML=h;
       // traducción: la que dio la IA o, si falta, aproximada con la biblioteca (nunca queda sin traducción)
       const st = l.es ? {es:l.es, src:''} : sentenceTrans(l.en, q.sentMap);
@@ -3605,7 +3653,7 @@ function finalize(ok, explanation, q){
   if(ok){ score++; streak++; if(streak>maxStreak)maxStreak=streak; updateStreak(true); ui.feedback.className='mt-4 p-4 rounded-xl border bg-green-50 border-green-200 fade-in'; ui.fTitle.textContent=streak>=3?('¡Excelente! 🔥 Racha de '+streak):'¡Excelente!'; ui.fTitle.className='font-bold text-green-700'; }
   else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
-  ui.learnSent.innerHTML=q.sentence?wordSpanify(q.sentence):''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
+  ui.learnSent.innerHTML=q.sentence?(wordSpanify(q.sentence)+ttsBtnHTML(q.sentence)):''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
   // SIN REDUNDANCIA con la pista y con la explicación:
   const hintOpened=!ui.hint.classList.contains('hidden'); // ¿el jugador ya vio la pista?
   const learnVocab=hintOpened?'':buildAutoHint(q); document.getElementById('learn-vocab').textContent=learnVocab;

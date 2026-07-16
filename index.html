@@ -1086,6 +1086,8 @@ EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estruct
 /* De una "seed" gramatical {q,a,o,s,t,p,f,dato,tema,est} arma UNA pregunta del formato pedido (o null) */
 function composeGrammar(seed, fmt){
   const base={ kind:'grammar', sentence:seed.s||'', trad:seed.t||'', pron:seed.p||'', form:seed.f||'', cat:seed.cat||'', extra:seed.dato||'', tema:seed.tema||'', estructura:seed.est||'', concepto:conceptFor(seed) };
+  // PISTA/contexto embebido en el enunciado del seed, ej "... ___ ... (al lado de)" o "(build)". Se conserva para que la respuesta sea determinable.
+  const hint = (String(seed.q).match(/\(([^)]+)\)\s*$/)||[])[1]; const hintTxt = hint? ' ('+hint+')' : '';
   if(fmt==='opcion'){
     if(!seed.o||!seed.o.length) return null;
     return Object.assign({formato:'opcion', q:seed.q, opts:makeOptions(seed.a, [seed.a].concat(seed.o), '¡Correcto! '+(seed.dato||seed.f||''), seed.f||('La forma correcta es "'+seed.a+'".'))}, base);
@@ -1095,12 +1097,12 @@ function composeGrammar(seed, fmt){
   }
   if(fmt==='completar'){
     if(!seed.s || seed.s.indexOf(seed.a)<0) return null;
-    return Object.assign({formato:'completar', q:'Complete the sentence:', template:seed.s.replace(seed.a,'___'), answers:[seed.a]}, base, {estructura:seed.est||'Complete the blank'});
+    return Object.assign({formato:'completar', q:'Complete the sentence:', template:seed.s.replace(seed.a,'___')+hintTxt, answers:[seed.a]}, base, {estructura:seed.est||'Complete the blank'});
   }
   if(fmt==='huecos'){
     if(!seed.s || seed.s.indexOf(seed.a)<0 || !seed.o||!seed.o.length) return null;
     const bank=shuffle([seed.a].concat(seed.o.slice(0,3)));
-    return Object.assign({formato:'huecos', q:'Complete by tapping the correct word:', template:seed.s.replace(seed.a,'___'), answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Tap the correct chip'});
+    return Object.assign({formato:'huecos', q:'Complete by tapping the correct word:', template:seed.s.replace(seed.a,'___')+hintTxt, answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Tap the correct chip'});
   }
   if(fmt==='ordenar'){
     const words=String(seed.s||'').replace(/[.?!]$/,'').split(/\s+/).filter(Boolean);
@@ -1310,8 +1312,8 @@ const TOPIC_CONCEPT={
  'Imperatives':`<span class="c-title">📊 Imperativo (órdenes)</span><ul><li>Afirmativo: verbo base → <b>Open</b> the door.</li><li>Negativo: <span class="c-key">Don't</span> + verbo → <b>Don't</b> run.</li></ul>No lleva sujeto (se sobreentiende "you").`,
  'Have got':`<span class="c-title">📊 Have got / Has got (tener)</span><table><tr><td>I/You/We/They</td><td class="c-key">have got</td></tr><tr><td>He/She/It</td><td class="c-key">has got</td></tr></table>= posesión. "I have got two cats."`,
  'There is/are':`<span class="c-title">📊 There is / There are (hay)</span><table><tr><td class="c-key">There is</td><td>+ singular / incontable</td></tr><tr><td class="c-key">There are</td><td>+ plural</td></tr></table>"There is a table" · "There are two dogs".`,
- 'Prepositions of Place':`<span class="c-title">📊 Preposiciones de lugar</span><ul><li><span class="c-key">in</span> = dentro (in the box)</li><li><span class="c-key">on</span> = sobre (on the table)</li><li><span class="c-key">under</span> = debajo (under the chair)</li><li><span class="c-key">at</span> = en un punto (at home, at work)</li></ul>`,
- 'Prepositions of Time':`<span class="c-title">📊 Preposiciones de tiempo</span><table><tr><td class="c-key">at</td><td>hora: at six</td></tr><tr><td class="c-key">on</td><td>día: on Monday</td></tr><tr><td class="c-key">in</td><td>mes/año/parte del día: in July, in the morning</td></tr></table>Excepción: <b>at night</b>.`,
+ 'Prepositions of Place':`<span class="c-title">📊 Preposiciones de lugar</span><table><tr><th>Preposición</th><th>Significa</th><th>Ejemplo</th></tr><tr><td class="c-key">in</td><td>dentro de</td><td>in the box</td></tr><tr><td class="c-key">on</td><td>sobre</td><td>on the table</td></tr><tr><td class="c-key">under</td><td>debajo de</td><td>under the chair</td></tr><tr><td class="c-key">next to</td><td>al lado de</td><td>next to the door</td></tr><tr><td class="c-key">behind</td><td>detrás de</td><td>behind the car</td></tr><tr><td class="c-key">in front of</td><td>enfrente de</td><td>in front of the house</td></tr><tr><td class="c-key">at</td><td>en (un punto)</td><td>at home, at work</td></tr></table>`,
+ 'Prepositions of Time':`<span class="c-title">📊 Preposiciones de tiempo</span><table><tr><th>Prep.</th><th>Se usa con</th><th>Ejemplo</th></tr><tr><td class="c-key">at</td><td>hora</td><td>at six, at noon</td></tr><tr><td class="c-key">on</td><td>día / fecha</td><td>on Monday, on my birthday</td></tr><tr><td class="c-key">in</td><td>mes / año / parte del día</td><td>in July, in the morning</td></tr></table><b>Excepción:</b> at night (en la noche).`,
  'Telling the Time':`<span class="c-title">📊 La hora</span><table><tr><td>3:00</td><td>three <span class="c-key">o'clock</span></td></tr><tr><td>3:15</td><td>a quarter <span class="c-key">past</span> three</td></tr><tr><td>3:30</td><td><span class="c-key">half</span> past three</td></tr><tr><td>2:45</td><td>a quarter <span class="c-key">to</span> three</td></tr></table>past = pasada · to = para la siguiente.`,
  'Connectors':`<span class="c-title">📊 Conectores básicos</span><ul><li><span class="c-key">and</span> = y (suma)</li><li><span class="c-key">but</span> = pero (contraste)</li><li><span class="c-key">or</span> = o (opción)</li></ul>`,
  'Question Order':`<span class="c-title">📊 Orden de la pregunta</span><ul><li>Con TO BE: <span class="c-key">Am/Is/Are</span> + sujeto? → "Are you ready?"</li><li>Con otros verbos: <span class="c-key">Do/Does</span> + sujeto + verbo base? → "Does she work?"</li></ul>`,
@@ -1344,6 +1346,19 @@ function autoConceptFrom(q){
   return '<span class="c-title">📊 Palabras de esta frase</span><table><tr><th>English</th><th>Español</th><th>Suena</th></tr>'+rows.slice(0,6).join('')+'</table>';
 }
 function conceptFor(q){ return (q&&q.tema&&TOPIC_CONCEPT[q.tema]) || autoConceptFrom(q) || ''; }
+/* Traducción del ENUNCIADO (instrucción) para que el alumno sepa qué hacer */
+function instructionEs(q){
+  const s=String(q&&q.q||'');
+  const map={'Complete the sentence:':'Completa la oración','Complete by tapping the correct word:':'Completa tocando la palabra correcta','Put the words in the correct order:':'Ordena las palabras para formar la frase','Mark ALL the correct sentences:':'Marca TODAS las oraciones correctas','Mark ALL the correct translations:':'Marca TODAS las traducciones correctas','Match each sentence with its translation:':'Une cada frase con su traducción','Match each English word with its meaning:':'Une cada palabra con su significado','Complete in English:':'Completa en inglés'};
+  if(map[s]) return map[s];
+  if(/^Choose the English word for/.test(s)) return 'Elige la palabra correcta en inglés';
+  if(/^Write in English:/.test(s)) return 'Escríbela en inglés';
+  if(/^Write the correct word:/.test(s)) return 'Escribe la palabra correcta';
+  if(/ is called ___\.$/.test(s)) return '¿Cómo se llama esa letra en inglés?';
+  if(/ is correct\.$/.test(s)) return '¿Es correcta esta oración? (Verdadero / Falso)';
+  if(/ means ".*"\.$/.test(s)) return '¿Es correcta esta traducción? (Verdadero / Falso)';
+  return '';
+}
 /* ---- PACKS CURADOS (a fondo, con contexto de Diego). El resto de temas usa safeTopicPack ---- */
 /* ============ GENERADORES POR PIEZAS (arman cientos de frases ÚNICAS y CORRECTAS) ============ */
 const BE_PRON_M={am:'am',is:'is',are:'ar'};
@@ -2882,6 +2897,7 @@ function loadQuestion(){
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+(q.emoji?'<span class="text-3xl align-middle mr-1" title="pista visual">'+q.emoji+'</span> ':'')+wordSpanify(q.q);
+  const instrEs=instructionEs(q); if(instrEs){ ui.qText.innerHTML+='<div class="text-xs font-normal text-slate-400 mt-0.5">🇪🇸 '+escapeHtml(instrEs)+'</div>'; }
   // ARRIBA (bajo el enunciado): solo en opción/VF, donde el enunciado ES una frase en inglés (el hueco ___ no revela).
   // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');

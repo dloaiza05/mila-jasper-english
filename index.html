@@ -21,10 +21,16 @@
   .slide-down { animation: slideDown .3s ease-out; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
-  .btn-option { transition: all .15s; }
-  .btn-option:hover:not(:disabled){ transform: scale(1.01); border-color:#93c5fd; }
-  .btn-selected-correct { background:#22c55e!important; color:#fff!important; border-color:#16a34a!important; }
-  .btn-selected-incorrect { background:#ef4444!important; color:#fff!important; border-color:#dc2626!important; }
+  .btn-option { transition: all .18s ease; box-shadow: 0 1px 3px rgba(15,23,42,.06); }
+  .btn-option:hover:not(:disabled){ transform: translateY(-2px); border-color:#818cf8; box-shadow: 0 6px 16px rgba(79,70,229,.14); }
+  .btn-option:active:not(:disabled){ transform: translateY(0) scale(.99); }
+  .btn-selected-correct { background:linear-gradient(135deg,#22c55e,#16a34a)!important; color:#fff!important; border-color:#16a34a!important; box-shadow:0 6px 18px rgba(34,197,94,.35)!important; animation:pop-ok .3s ease; }
+  .btn-selected-incorrect { background:linear-gradient(135deg,#ef4444,#dc2626)!important; color:#fff!important; border-color:#dc2626!important; animation:shake-no .35s ease; }
+  .btn-selected-correct .wtap, .btn-selected-incorrect .wtap { color:#fff!important; }
+  .btn-selected-correct .text-purple-600, .btn-selected-incorrect .text-purple-600 { color:#f3e8ff!important; }
+  @keyframes pop-ok { 0%{transform:scale(1)} 45%{transform:scale(1.04)} 100%{transform:scale(1)} }
+  @keyframes shake-no { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 60%{transform:translateX(5px)} }
+  .match-col-head { font-size:.65rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; text-align:center; padding:.2rem .5rem; border-radius:9999px; }
   .btn-disabled { opacity:.6; cursor:not-allowed; }
   .chip { transition: all .12s; }
   /* Tarjeta de CONCEPTO (mini-tabla/resumen del tema) */
@@ -639,6 +645,7 @@
   <div id="wp-es" class="mt-0.5"></div>
   <div id="wp-tipo" class="text-indigo-300 text-xs font-bold mt-0.5"></div>
   <div id="wp-pron" class="text-purple-300 italic text-xs mt-0.5"></div>
+  <div id="wp-fon" class="text-pink-200 text-[11px] mt-1 leading-snug"></div>
   <div id="wp-phrase" class="text-emerald-300 text-xs font-bold mt-1 border-t border-slate-700 pt-1"></div>
   <div id="wp-src" class="text-slate-400 text-[10px] mt-1"></div>
 </div>
@@ -1441,6 +1448,21 @@ function autoConceptFrom(q){
   return '<span class="c-title">📊 Palabras de esta frase</span><table><tr><th>English</th><th>Español</th><th>Suena</th></tr>'+rows.slice(0,6).join('')+'</table>';
 }
 function conceptFor(q){ return (q&&q.tema&&TOPIC_CONCEPT[q.tema]) || autoConceptFrom(q) || ''; }
+/* Traducción de las ESTRUCTURAS en inglés (la línea ⚙️): para mostrar pron + traducción */
+const ESTRUCTURA_ES={
+ 'Write the correct form':'Escribe la forma correcta',
+ 'Complete the blank':'Completa el espacio',
+ 'Tap the correct chip':'Toca la ficha correcta',
+ 'Subject + verb + complement':'Sujeto + verbo + complemento',
+ 'Choose the correct English word':'Elige la palabra correcta en inglés',
+ 'Write the English word':'Escribe la palabra en inglés',
+ 'True or False':'Verdadero o falso',
+ 'Match the word with its meaning':'Une la palabra con su significado',
+ 'Mark all the correct translations':'Marca todas las traducciones correctas',
+ 'Mark all the correct sentences':'Marca todas las oraciones correctas',
+ 'Match the sentence with its meaning':'Une la frase con su significado',
+ 'Put the words in the correct order':'Pon las palabras en el orden correcto'
+};
 /* Traducción del ENUNCIADO (instrucción) para que el alumno sepa qué hacer */
 function instructionEs(q){
   const s=String(q&&q.q||'');
@@ -2388,6 +2410,8 @@ function autoRegisterGlossary(){
     if(typeof LETTER_Q!=='undefined') LETTER_Q.forEach(x=>addG(x.name,'nombre de la letra '+x.L,'letra',(typeof LETTER_PRON!=='undefined'&&LETTER_PRON[x.L.toLowerCase()])||x.name));
     // palabras con SU PRONUNCIACIÓN (3er campo). Se fuerza el pron aunque la palabra ya exista sin él.
     [['after','después','áfter'],['afternoon','tarde','afternún'],['morning','mañana','mórning'],['before','antes','bifór'],['behind','detrás de','bijáind'],['please','por favor','plis'],['up','arriba','ap'],['each','cada','ich'],['means','significa','mins'],['meaning','significado','míning'],['later','después','léiter'],['half','media / mitad','jaf'],['past','pasada (la hora)','past'],['quarter','cuarto','cuórter'],["o'clock",'en punto','oclók'],['noon','mediodía','nun'],['outside','afuera','áutsaid'],['room','cuarto / habitación','rum'],['words','palabras','uérds'],['word','palabra','uérd'],['order','orden','órder'],['called','se llama','cold'],['front','frente','front'],['next','siguiente / próximo','nekst'],['double','doble','dábol'],['back','de vuelta / atrás','bak'],['breakfast','desayuno','brékfast'],['lunch','almuerzo','lanch'],['dinner','cena','díner'],['shower','ducha','sháuer'],['police','policía','polís'],['officer','oficial','ófiser'],['together','juntos','tuguéder'],['learning','aprendiendo','lérning'],['little','poco','lítol'],['very','muy','véri'],['too','también','tú'],['name','nombre','néim'],['pet','mascota','pet'],['pets','mascotas','pets'],['big','grande','big'],['small','pequeño','smol'],['friendly','amable','fréndli'],['beautiful','hermoso','biútiful'],['their','su (de ellos)','der'],['names','nombres','néims'],['number','número','námber'],['phone','teléfono','fóun'],['zero','cero','síro'],['sofa','sofá','sóufa'],['night','noche','náit'],['every','cada / todos','évri'],['here','aquí','jíar'],['home','casa','jóum'],['work','trabajo / trabajar','uérk'],['from','de / desde','from'],['call','llamar','col'],['can','poder','can'],["can't",'no poder','cant'],['clock','reloj','clok'],['close','cerrar','clóus'],["doesn't",'no (con he/she/it)','dásent'],["don't",'no','dóunt'],['listen','escuchar','lísen'],['movies','películas','múvis'],['music','música','miúsic'],['office','oficina','ófis'],['open','abrir','óupen'],['tea','té','ti'],['wake','despertar','uéik'],['wash','lavar','uósh'],['weekends','fines de semana','uíkends'],['brush','cepillar','brash'],['come','venir','kam'],['cook','cocinar / cocinero','cuk'],['fish','pez / pescado','fish'],['chicken','pollo / gallina','chíken'],['hot','caliente / caluroso','jot'],['thirsty','con sed','zérsti'],['hungry','con hambre','jángri'],['all','todo','ol'],['any','algún / nada','éni'],['apples','manzanas','ápols'],['best','mejor','best'],['children','niños','chíldren'],['date','fecha','déit'],['else','más','els'],['family','familia','fámili'],['families','familias','fámilis'],['kilo','kilo','kílo'],['kilos','kilos','kílos'],['much','mucho','mach'],['per','por','per'],['person','persona','pérson'],['some','algo de','sam'],['thank','gracias','zénk'],['thousand','mil','záusand'],['fresh','fresco','fresh'],['hair','cabello','jéer'],['eyes','ojos','áis'],['shirt','camisa','shert'],['brown','marrón','bráun'],['long','largo','long'],['tall','alto','tol'],['box','caja','box'],['city','ciudad','síti'],['foot','pie','fut'],['knife','cuchillo','náif'],['man','hombre','man'],['tomato','tomate','toméito'],['tooth','diente','tuz'],['woman','mujer','uúman'],['leaf','hoja','lif'],['mouse','ratón','máus'],['pesos','pesos','pésos'],['dog','perro','dog'],['cat','gato','cat'],
+    // vocabulario de INSTRUCCIONES (para que tocar "Match", "sentence", etc. sí explique)
+    ['match','une / empareja','mach'],['sentence','frase / oración','séntens'],['sentences','frases / oraciones','séntenses'],['translation','traducción','transléishon'],['its','su (de eso)','its'],['with','con','uíd'],['mark','marca','marc'],['choose','elige','chus'],['complete','completa','complít'],['blank','espacio en blanco','blanc'],['true','verdadero','tru'],['false','falso','fols'],['spell','deletrear','spel'],['put','pon','put'],['tap','toca','tap'],['correct','correcto(a)','corréct'],['english','inglés','ínglish'],['letter','letra','léter'],['letters','letras','léters'],['decide','decide','disáid'],['write','escribe','ráit'],['blanks','espacios','blancs'],
     // palabras A2 detectadas sin pronunciación por la auditoría
     ['than','que (comparando)','dan'],['more','más','mor'],['most','el/la más','móust'],['better','mejor','béter'],['bigger','más grande','bíguer'],['biggest','el más grande','bíguest'],['many','muchos','méni'],['gone','ido (participio de go)','gon'],['opened','abrió / abierto','óupend'],['stopped','paró','stopt'],['middle','medio / mitad','mídel'],['hours','horas','áuers'],['times','veces','táims'],['last','último / pasado','last'],['shop','tienda','shop'],['loves','ama (he/she)','lavs'],['washing','lavando','uóshing'],['opens','abre','óupens'],['opening','abriendo','óupening'],['calls','llama','cols'],['calling','llamando','cóling'],['closes','cierra','clóuses'],
     // nombres propios (para que el toque-palabra también los explique)
@@ -2900,6 +2924,8 @@ function showWordPopup(el){
   document.getElementById('wp-es').textContent = esMsg;
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
   document.getElementById('wp-pron').textContent = (g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
+  // 🔊 fonética contextual de ESTA palabra (por qué suena así)
+  document.getElementById('wp-fon').innerHTML = (g&&/^[a-zA-Z']+$/.test(word)) ? fonTipsFor(word) : '';
   // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
   const kSrc=norm(word); const realG=extraGlossary[kSrc]||LEARNED[kSrc]||GLOSSARY[kSrc]; let srcMsg='';
   if(realG){ if(extraGlossary[kSrc]) srcMsg='🤖 traducción generada por la IA (contexto de este quiz)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes (generada por IA)'; else srcMsg='📚 biblioteca del código'; }
@@ -3009,7 +3035,15 @@ function loadQuestion(){
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
   ui.qText.innerHTML=(idx+1)+'. '+(q.emoji?'<span class="text-3xl align-middle mr-1" title="pista visual">'+q.emoji+'</span> ':'')+wordSpanify(q.q);
-  const instrEs=instructionEs(q); if(instrEs){ ui.qText.innerHTML+='<div class="text-xs font-normal text-slate-400 mt-0.5">🇪🇸 '+escapeHtml(instrEs)+'</div>'; }
+  // La instrucción en inglés lleva SU pronunciación visible + traducción oculta tras "Ver traducción" (pedido de Diego)
+  const instrEs=instructionEs(q);
+  if(instrEs){
+    const ipron=phon(String(q.q));
+    ui.qText.innerHTML+='<div class="text-xs font-normal mt-1 space-y-0.5">'
+      +(ipron?'<div class="text-purple-600 italic">🗣️ '+escapeHtml(ipron)+'</div>':'')
+      +'<div><button class="text-blue-500 font-bold underline decoration-dotted" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">📖 Ver traducción</button><span class="hidden text-blue-700 ml-1">'+escapeHtml(instrEs)+'</span></div>'
+      +'</div>';
+  }
   // ARRIBA (bajo el enunciado): solo en opción/VF, donde el enunciado ES una frase en inglés (el hueco ___ no revela).
   // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
   const qt=document.getElementById('q-trad'), qtWrap=document.getElementById('q-trad-wrap'), qtBtn=document.getElementById('q-trad-btn');
@@ -3026,7 +3060,15 @@ function loadQuestion(){
   } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
   // estructura GENÉRICA (no revela la respuesta)
   const stLine=document.getElementById('structure-line');
-  if(q.estructura){ stLine.textContent='⚙️ Estructura: '+q.estructura; stLine.classList.remove('hidden'); } else stLine.classList.add('hidden');
+  if(q.estructura){
+    // Si la estructura está en inglés: pron visible + traducción tras "Ver"
+    const estEs=ESTRUCTURA_ES[q.estructura]||'';
+    const estPron=estEs?phon(q.estructura):''; // solo tiene sentido si es inglés (tiene traducción registrada)
+    let html='⚙️ Estructura: '+escapeHtml(q.estructura);
+    if(estPron) html+='<span class="block font-normal not-italic text-purple-600 italic text-[11px] mt-0.5">🗣️ '+escapeHtml(estPron)+'</span>';
+    if(estEs) html+='<span class="block text-[11px] mt-0.5 font-normal"><button class="text-blue-500 font-bold underline decoration-dotted" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">📖 Ver traducción</button><span class="hidden text-blue-700 ml-1">'+escapeHtml(estEs)+'</span></span>';
+    stLine.innerHTML=html; stLine.classList.remove('hidden');
+  } else stLine.classList.add('hidden');
   // pista global (las lecturas tienen su propia pista por sub-pregunta)
   ui.hTrad.textContent=q.trad||''; ui.hPron.textContent=q.pron?`(${q.pron})`:''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
   const autoVocab=buildAutoHint(q);
@@ -3441,6 +3483,9 @@ function renderMatch(q,ctx){
   const left=shuffle(q.pairs.map((p,i)=>({t:p.a,id:i}))), right=shuffle(q.pairs.map((p,i)=>({t:p.b,id:i})));
   let selBtn=null, selId=null, matched=0, errors=0;
   const grid=document.createElement('div'); grid.className='grid grid-cols-2 gap-3'; const colL=document.createElement('div'); colL.className='space-y-2'; const colR=document.createElement('div'); colR.className='space-y-2';
+  // encabezados: izquierda inglés, derecha español (guían el ojo)
+  const hL=document.createElement('div'); hL.className='match-col-head bg-teal-100 text-teal-700'; hL.textContent='English'; colL.appendChild(hL);
+  const hR=document.createElement('div'); hR.className='match-col-head bg-blue-100 text-blue-700'; hR.textContent='Español'; colR.appendChild(hR);
   function mk(item,side){ const b=document.createElement('button'); const ph=phonHTML(item.t); b.innerHTML='<span class="match-t block">'+wordSpanify(item.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal mt-0.5">🗣️ '+ph+'</span>':''); b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
     b.onclick=()=>{ if(ctx.answered||b.disabled)return;
       if(side==='L'){ if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=b; selId=item.id; b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }

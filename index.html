@@ -730,7 +730,9 @@ function sentenceTrans(sent, sentMap){
 }
 function fillBlanks(tpl, answers){ let i=0; return String(tpl).replace(/_{2,}/g, ()=>{ const a=answers[i++]; return a!=null?(Array.isArray(a)?a[0]:a):'___'; }); }
 function makeOptions(correct, pool, rGood, rBad){
-  const wrongs=shuffle(pool.filter(x=>x.toLowerCase()!==correct.toLowerCase())).slice(0,3);
+  const seen=new Set([String(correct).toLowerCase()]); const uniq=[];
+  shuffle(pool).forEach(x=>{ const k=String(x).toLowerCase(); if(!seen.has(k)){ seen.add(k); uniq.push(x); } });
+  const wrongs=uniq.slice(0,3);
   return shuffle([{t:correct,c:1,r:rGood||'¡Correcto!'}].concat(wrongs.map(w=>({t:w,c:0,r:rBad||'Revisa la regla.'}))));
 }
 function buildQuiz(factory,n){ const out=[],seen=new Set(); let tries=0; while(out.length<n&&tries<n*40){const it=factory();tries++;if(!it||seen.has(it.q))continue;seen.add(it.q);out.push(it);} while(out.length<n)out.push(factory()); return out; }
@@ -1083,6 +1085,14 @@ EXTRA_FORMATS.forEach(q=>{ if(!q.estructura && DEFAULT_EST[q.formato]) q.estruct
    - safeTopicFactory: para todo tema sin pack, usa el GLOSARIO (siempre correcto)
    Cada entrada baraja y varía (pick/shuffle), así el orden cambia cada vez.
 ============================================================ */
+/* Reemplaza la PRIMERA aparición de "w" como PALABRA COMPLETA (evita meterla dentro de otra, ej "have"→"htheve") */
+function replaceWord(s, w, rep){
+  const esc=String(w).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re=new RegExp('(^|[^A-Za-z])'+esc+'(?![A-Za-z])');
+  return String(s).replace(re, (m,a)=>a+rep);
+}
+/* Pista disambiguadora embebida en el enunciado del seed, ej "... (al lado de)" / "(de él)". Vacío si no hay. */
+function seedHint(seed){ const h=(String(seed&&seed.q||'').match(/\(([^)]+)\)\s*$/)||[])[1]; return h?' ('+h+')':''; }
 /* De una "seed" gramatical {q,a,o,s,t,p,f,dato,tema,est} arma UNA pregunta del formato pedido (o null) */
 function composeGrammar(seed, fmt){
   const base={ kind:'grammar', sentence:seed.s||'', trad:seed.t||'', pron:seed.p||'', form:seed.f||'', cat:seed.cat||'', extra:seed.dato||'', tema:seed.tema||'', estructura:seed.est||'', concepto:conceptFor(seed) };
@@ -1097,12 +1107,12 @@ function composeGrammar(seed, fmt){
   }
   if(fmt==='completar'){
     if(!seed.s || seed.s.indexOf(seed.a)<0) return null;
-    return Object.assign({formato:'completar', q:'Complete the sentence:', template:seed.s.replace(seed.a,'___')+hintTxt, answers:[seed.a]}, base, {estructura:seed.est||'Complete the blank'});
+    return Object.assign({formato:'completar', q:'Complete the sentence:', template:replaceWord(seed.s,seed.a,'___')+hintTxt, answers:[seed.a]}, base, {estructura:seed.est||'Complete the blank'});
   }
   if(fmt==='huecos'){
     if(!seed.s || seed.s.indexOf(seed.a)<0 || !seed.o||!seed.o.length) return null;
     const bank=shuffle([seed.a].concat(seed.o.slice(0,3)));
-    return Object.assign({formato:'huecos', q:'Complete by tapping the correct word:', template:seed.s.replace(seed.a,'___')+hintTxt, answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Tap the correct chip'});
+    return Object.assign({formato:'huecos', q:'Complete by tapping the correct word:', template:replaceWord(seed.s,seed.a,'___')+hintTxt, answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Tap the correct chip'});
   }
   if(fmt==='ordenar'){
     const words=String(seed.s||'').replace(/[.?!]$/,'').split(/\s+/).filter(Boolean);
@@ -1110,12 +1120,13 @@ function composeGrammar(seed, fmt){
     return Object.assign({formato:'ordenar', q:'Put the words in the correct order:', order:words}, base, {estructura:seed.est||'Subject + verb + complement'});
   }
   if(fmt==='vf'){
-    // 50% frase correcta (True) / 50% frase con un error usando un distractor (False)
+    // 50% frase correcta (True) / 50% frase con un error usando un distractor (False).
+    // hintTxt (ej "(de él)") hace la respuesta DETERMINABLE en temas semánticos (posesivos, preposiciones, conectores, demostrativos).
     if(Math.random()<0.5 || !seed.o||!seed.o.length){
-      return Object.assign({formato:'vf', q:'"'+seed.s+'" is correct.', answer:true, r:'✅ Verdadero. '+(seed.dato||seed.f||'')}, base, {estructura:'Decide si la oración está bien o mal'});
+      return Object.assign({formato:'vf', q:'"'+seed.s+'" is correct.'+hintTxt, answer:true, r:'✅ Verdadero. '+(seed.dato||seed.f||'')}, base, {estructura:'Decide si la oración está bien o mal'});
     } else {
-      const wrong=pick(seed.o); const wrongSent=seed.s.indexOf(seed.a)>=0?seed.s.replace(seed.a,wrong):seed.s;
-      return Object.assign({formato:'vf', q:'"'+wrongSent+'" is correct.', answer:false, r:'❌ Falso. Lo correcto es "'+seed.s+'". '+(seed.f||'')}, base, {estructura:'Decide si la oración está bien o mal'});
+      const wrong=pick(seed.o); const wrongSent=seed.s.indexOf(seed.a)>=0?replaceWord(seed.s,seed.a,wrong):seed.s;
+      return Object.assign({formato:'vf', q:'"'+wrongSent+'" is correct.'+hintTxt, answer:false, r:'❌ Falso. Lo correcto es "'+seed.s+'". '+(seed.f||'')}, base, {estructura:'Decide si la oración está bien o mal'});
     }
   }
   return null;
@@ -1211,12 +1222,21 @@ function vocabMultiple(list, tema){
 /* VARIAS CORRECTAS (multiple) para gramática: marca todas las ORACIONES correctas */
 function grammarMultiple(pool){
   if(!pool||pool.length<3) return null;
-  const seeds=shuffle(pool).slice(0,4);
-  const opts=seeds.map(sd=>{ const canWrong=sd.o&&sd.o.length&&sd.s&&sd.s.indexOf(sd.a)>=0; const correct=!canWrong||Math.random()<0.5;
-    if(correct) return {t:sd.s, c:1, r:'✅ Correcta. '+(sd.t||'')};
-    const ws=sd.s.replace(sd.a, pick(sd.o)); return {t:ws, c:0, r:'❌ Mal: lo correcto es "'+sd.s+'".'}; });
-  if(!opts.some(o=>o.c)) opts[0]={t:seeds[0].s,c:1,r:'✅ Correcta. '+(seeds[0].t||'')};
-  if(!opts.some(o=>!o.c)){ const sd=seeds[1]; if(sd.o&&sd.o.length&&sd.s.indexOf(sd.a)>=0){ opts[1]={t:sd.s.replace(sd.a,pick(sd.o)),c:0,r:'❌ Mal: lo correcto es "'+sd.s+'".'}; } }
+  // seeds ÚNICOS por oración (evita opciones duplicadas como "We are not popular."×2)
+  const uniqSeeds=[]; const seenS=new Set();
+  shuffle(pool).forEach(sd=>{ if(sd&&sd.s&&!seenS.has(sd.s)){ seenS.add(sd.s); uniqSeeds.push(sd); } });
+  const seeds=uniqSeeds.slice(0,4);
+  if(seeds.length<3) return null;
+  const seenTxt=new Set(); const opts=[];
+  seeds.forEach(sd=>{ const h=seedHint(sd); const canWrong=sd.o&&sd.o.length&&sd.s&&sd.s.indexOf(sd.a)>=0; const correct=!canWrong||Math.random()<0.5;
+    if(correct){ if(!seenTxt.has(sd.s)){ seenTxt.add(sd.s); opts.push({t:sd.s+h, c:1, r:'✅ Correcta. '+(sd.t||'')}); } return; }
+    // opción MALA: reemplaza la respuesta por palabra completa y prueba varios distractores hasta obtener un texto único y distinto del correcto
+    let ws=''; for(const w of shuffle(sd.o.slice())){ const cand=replaceWord(sd.s, sd.a, w); if(cand!==sd.s && !seenTxt.has(cand)){ ws=cand; break; } }
+    if(ws){ seenTxt.add(ws); opts.push({t:ws+h, c:0, r:'❌ Mal: lo correcto es "'+sd.s+'".'}); }
+    else if(!seenTxt.has(sd.s)){ seenTxt.add(sd.s); opts.push({t:sd.s+h, c:1, r:'✅ Correcta. '+(sd.t||'')}); } });
+  if(opts.length<2) return null;
+  if(!opts.some(o=>o.c)) opts[0]={t:seeds[0].s+seedHint(seeds[0]),c:1,r:'✅ Correcta. '+(seeds[0].t||'')};
+  if(!opts.some(o=>!o.c)){ for(const sd of seeds){ const h=seedHint(sd); if(sd.o&&sd.o.length&&sd.s.indexOf(sd.a)>=0){ let ws=''; for(const w of shuffle(sd.o.slice())){ const cand=replaceWord(sd.s,sd.a,w); if(cand!==sd.s && !seenTxt.has(cand)){ ws=cand; break; } } if(ws){ const idx=opts.findIndex(o=>o.t===sd.s+h); if(idx>=0){ opts[idx]={t:ws+h,c:0,r:'❌ Mal: lo correcto es "'+sd.s+'".'}; break; } } } } }
   return {formato:'multiple', kind:'grammar', q:'Mark ALL the correct sentences:', opts:shuffle(opts), sentence:'', trad:'', pron:'', form:'Puede haber varias correctas.', cat:'', extra:'', tema:seeds[0].tema||'', estructura:'Mark all the correct sentences', concepto:conceptFor(seeds[0])};
 }
 /* EMPAREJAR para gramática: une la frase en inglés con su traducción (siempre correcto) */
@@ -1461,8 +1481,10 @@ const PS_COMP=[
  {en:'at home',es:'en casa',pr:'at jóum'},
  {en:'here',es:'aquí',pr:'jíar'}
 ];
+// Evita "Leidy plays with Leidy": si el sujeto ES Leidy, no uses el complemento "with Leidy".
+function psComp(su){ return pick(PS_COMP.filter(x=>!(/Leidy/i.test(x.en)&&/Leidy/i.test(su.en||'')))); }
 function presentSimpleGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP);
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su);
   const form = su.s3 ? v.s : v.b;
   const sentence = su.en+' '+form+' '+c.en+'.';
   const q = su.en+' ___ '+c.en+'. ('+v.b+')';
@@ -1507,7 +1529,7 @@ function toBeNegQuestGen(){
 }
 // 3) Present Simple — negativos y preguntas (do/does)
 function psNegQuestGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP);
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su);
   if(Math.random()<0.5){
     const aux=su.s3?"doesn't":"don't"; const sentence=su.en+' '+aux+' '+v.b+' '+c.en+'.'; const q=su.en+' ___ '+v.b+' '+c.en+'. (no)';
     const trad=su.es+' no '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+AUX_PRON[aux]+' '+v.pb+' '+c.pr;
@@ -1520,14 +1542,14 @@ function psNegQuestGen(){
 }
 // 4) Tercera persona -s (solo he/she/it)
 function thirdPersonSGen(){
-  const su=pick(V_SUBJ.filter(s=>s.s3)), v=pick(PS_VERB), c=pick(PS_COMP);
+  const su=pick(V_SUBJ.filter(s=>s.s3)), v=pick(PS_VERB), c=psComp(su);
   const sentence=su.en+' '+v.s+' '+c.en+'.'; const q=su.en+' ___ '+c.en+'. ('+v.b+')';
   const trad=su.es+' '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+v.ps+' '+c.pr;
   return gseed(q, v.s, [v.b,v.ing,v.past], sentence, trad, pron, 'he/she/it: + s (go→goes, watch→watches, study→studies)', '-o/-ch/-sh/-x → +es · consonante+y → ies.', 'Third person -s', 'Sujeto (he/she/it) + verbo + s');
 }
 // 5) Can / Can't
 function canGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP); const m=Math.random(); let sentence,q,trad,answer,wrong;
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const m=Math.random(); let sentence,q,trad,answer,wrong;
   const poder=CONJ_PODER[su.pers], inf=V_INF[v.b];
   if(m<0.34){ sentence=su.en+' can '+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. ('+poder+')'; trad=su.es+' '+poder+' '+inf+' '+c.es+'.'; answer='can'; wrong=['cans','is','does']; }
   else if(m<0.67){ sentence=su.en+" can't "+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. (no '+poder+')'; trad=su.es+' no '+poder+' '+inf+' '+c.es+'.'; answer="can't"; wrong=['cans',"doesn't",'not']; }
@@ -1537,7 +1559,7 @@ function canGen(){
 }
 // 6) Present Continuous (-ing)
 function presentContinuousGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP); const be=beOf(su);
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const be=beOf(su);
   const sentence=su.en+' '+be+' '+v.ing+' '+c.en+'.'; const q=su.en+' '+be+' ___ '+c.en+'. ('+v.b+' → -ing)';
   const trad=su.es+' '+CONJ_ESTAR[su.pers]+' '+V_GER[v.b]+' '+c.es+'.'; const pron=su.pron+' '+BE_PRON_M[be]+' '+v.pb+'ing '+c.pr;
   return gseed(q, v.ing, [v.b,v.s,v.past], sentence, trad, pron, 'am/is/are + verbo-ing (acción ahora)', '-e: quita e (make→making) · vocal+cons: doble (run→running).', 'Present Continuous', 'Sujeto + am/is/are + verbo-ing');
@@ -1609,7 +1631,7 @@ function demonstrativesGen(){
 const PREP_PLACE=[{en:'on',es:'sobre',pr:'on'},{en:'in',es:'dentro de',pr:'in'},{en:'under',es:'debajo de',pr:'ánder'},{en:'next to',es:'al lado de',pr:'nékst tu'},{en:'behind',es:'detrás de',pr:'bijáind'},{en:'in front of',es:'enfrente de',pr:'in front ov'}];
 const PLACE_N=SIMPLE_NOUN.filter(n=>['table','house','car','chair','bag'].indexOf(n.en)>=0);
 function prepPlaceGen(){
-  const n1=pick(SIMPLE_NOUN); let n2=pick(PLACE_N); if(n2.en===n1.en)n2=pick(PLACE_N); const p=pick(PREP_PLACE);
+  const n1=pick(SIMPLE_NOUN); const n2opts=PLACE_N.filter(x=>x.en!==n1.en); const n2=pick(n2opts.length?n2opts:PLACE_N); const p=pick(PREP_PLACE);
   const sentence='The '+n1.en+' is '+p.en+' the '+n2.en+'.'; const q='The '+n1.en+' is ___ the '+n2.en+'. ('+p.es+')';
   let trad=(n1.g==='f'?'La ':'El ')+n1.es+' está '+p.es+' '+(n2.g==='f'?'la ':'el ')+n2.es+'.'; trad=trad.replace(/ de el /g,' del ').replace(/ a el /g,' al ');
   const pron='de '+n1.pr+' is '+p.pr+' de '+n2.pr;
@@ -1618,7 +1640,7 @@ function prepPlaceGen(){
 // THERE IS / THERE ARE
 const THERE_PLACE=[{en:'here',es:'aquí'},{en:'in the room',es:'en el cuarto'},{en:'in the garden',es:'en el jardín'},{en:'on the table',es:'sobre la mesa'}];
 function thereIsAreGen(){
-  const n=pick(SIMPLE_NOUN), pl=pick(THERE_PLACE);
+  const pl=pick(THERE_PLACE); const nOpts=SIMPLE_NOUN.filter(x=>pl.en.indexOf(x.en)<0); const n=pick(nOpts.length?nOpts:SIMPLE_NOUN);
   if(Math.random()<0.5){ const sentence='There are two '+n.pl+' '+pl.en+'.'; const q='There ___ two '+n.pl+' '+pl.en+'. (hay)';
     return gseed(q,'are',['is','am','be'],sentence,'Hay dos '+n.plEs+' '+pl.es+'.','der ar tu '+n.pr+'s '+pl.en,'plural → There are','','There is/are','There is/are + sustantivo + lugar'); }
   const sentence='There is a '+n.en+' '+pl.en+'.'; const q='There ___ a '+n.en+' '+pl.en+'. (hay)';
@@ -1639,7 +1661,8 @@ function articlesGen(){
   const car=pick(ART_CARRIER), n=pick(NOUNS_ART);
   const sentence=car.en+' '+n.art+' '+n.en+'.'; const q=car.en+' ___ '+n.en+'.';
   const trad=car.es+' '+(n.g==='f'?'una ':'un ')+n.es+'.'; const pron=car.pr+' '+n.art+' '+n.pr;
-  return gseed(q, n.art, [n.art==='a'?'an':'a','the'], sentence, trad, pron, 'an + sonido de VOCAL (a,e,i,o,u) · a + sonido de CONSONANTE', 'Mira la palabra que SIGUE: an hour (h muda), a university (suena "yu").', 'Articles', 'Sujeto + a/an + sustantivo');
+  // Solo el artículo OPUESTO como distractor: a↔an crea un error real ("a apple"✗). "the" NO se usa porque también sería correcto ("I have the apple").
+  return gseed(q, n.art, [n.art==='a'?'an':'a'], sentence, trad, pron, 'an + sonido de VOCAL (a,e,i,o,u) · a + sonido de CONSONANTE', 'Mira la palabra que SIGUE: an hour (h muda), a university (suena "yu").', 'Articles', 'Sujeto + a/an + sustantivo');
 }
 // NÚMEROS (reusa numToWords/numPron)
 function numbersGen(){
@@ -1693,7 +1716,7 @@ function questionOrderGen(){
     const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (¿?)';
     return gseed(q, s.be, ['am','is','are','do'].filter(x=>x!==s.be).slice(0,3), sentence, '¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+s.es.toLowerCase()+' '+esC+'?', BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
   }
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=pick(PS_COMP); const aux=su.s3?'Does':'Do';
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const aux=su.s3?'Does':'Do';
   const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿?)';
   return gseed(q, aux, [su.s3?'Do':'Does','Is','Are'], sentence, '¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?', AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr, 'con otros verbos: Do/Does + sujeto + verbo base', '', 'Question Order', 'Do/Does + sujeto + verbo base?');
 }

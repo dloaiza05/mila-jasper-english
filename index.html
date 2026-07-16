@@ -36,6 +36,16 @@
   .tts-btn:active { transform:scale(.95); }
   #progress-bar { background-size:200% 100%!important; animation:flow 3s linear infinite; }
   @keyframes flow { 0%{background-position:0% 0}100%{background-position:200% 0} }
+  /* ===== rediseño premium del área de pregunta/respuesta ===== */
+  #question-text { padding-left:.7rem; border-left:5px solid #8b5cf6; border-radius:4px; }
+  .opt-letter { font-weight:800; border-radius:.65rem; padding:.15rem .6rem; font-size:.9rem; border:1px solid; min-width:1.9rem; text-align:center; }
+  .lc0 { color:#0f766e; background:#f0fdfa; border-color:#99f6e4; }
+  .lc1 { color:#6d28d9; background:#f5f3ff; border-color:#ddd6fe; }
+  .lc2 { color:#b45309; background:#fffbeb; border-color:#fde68a; }
+  .lc3 { color:#be123c; background:#fff1f2; border-color:#fecdd3; }
+  .tts-mini { width:1.45rem!important; height:1.45rem!important; font-size:.72rem!important; margin-left:.3rem!important; }
+  #next-btn { background-image:linear-gradient(90deg,#6366f1,#8b5cf6,#a855f7); box-shadow:0 6px 18px rgba(139,92,246,.35); }
+  #next-btn:hover { transform:translateY(-1px); }
   .btn-disabled { opacity:.6; cursor:not-allowed; }
   .chip { transition: all .12s; }
   /* Tarjeta de CONCEPTO (mini-tabla/resumen del tema) */
@@ -273,7 +283,8 @@
         <p class="mb-2 font-bold text-slate-800">Sonidos que NO existen en español (los verás mucho):</p>
         <div class="overflow-x-auto"><table class="w-full text-xs border-collapse">
           <tr class="bg-purple-50"><th class="border border-purple-100 p-1.5 text-left">Letras</th><th class="border border-purple-100 p-1.5 text-left">Cómo se hace</th><th class="border border-purple-100 p-1.5 text-left">Ejemplo</th></tr>
-          <tr><td class="border border-purple-100 p-1.5 font-bold">th</td><td class="border border-purple-100 p-1.5">lengua entre los dientes, sopla suave → "d/z" suavecita</td><td class="border border-purple-100 p-1.5">the → <i class="text-purple-700">de</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">th</td><td class="border border-purple-100 p-1.5">lengua entre los dientes, sopla suave → "d/z" suavecita</td><td class="border border-purple-100 p-1.5">the → <i class="text-purple-700">da</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">vocal floja</td><td class="border border-purple-100 p-1.5">las vocales SIN fuerza suenan como una "a" perezosa y cortica (por eso "the" suena <b>da</b>, no "de"). Antes de vocal, "the" suena <b>di</b></td><td class="border border-purple-100 p-1.5">the book → <i class="text-purple-700">da buk</i> · the apple → <i class="text-purple-700">di ápol</i></td></tr>
           <tr><td class="border border-purple-100 p-1.5 font-bold">h</td><td class="border border-purple-100 p-1.5">SÍ suena: como la "j" suave de "jamón"</td><td class="border border-purple-100 p-1.5">home → <i class="text-purple-700">jóum</i></td></tr>
           <tr><td class="border border-purple-100 p-1.5 font-bold">w</td><td class="border border-purple-100 p-1.5">labios redondos como para decir "u"</td><td class="border border-purple-100 p-1.5">work → <i class="text-purple-700">uérk</i></td></tr>
           <tr><td class="border border-purple-100 p-1.5 font-bold">v</td><td class="border border-purple-100 p-1.5">dientes sobre el labio de abajo, con vibración (≠ b)</td><td class="border border-purple-100 p-1.5">very → <i class="text-purple-700">véri</i></td></tr>
@@ -317,7 +328,7 @@
       ],
       "frase":"The dog is busy.",
       "traduccion":"El perro está ocupado.",
-      "pronunciacion":"de dog is bísi",
+      "pronunciacion":"da dog is bísi",
       "regla":"He/She/It -> is", "dato":"To be = ser y estar.",
       "estructura":"Sujeto + verbo to be + adjetivo",
       "glosario":[
@@ -840,7 +851,7 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
  ['do','hacer / auxiliar de pregunta','verbo','du'],['does','hace / auxiliar (he-she-it)','verbo','das'],['did','hizo / auxiliar pasado','verbo','did'],
  ['have','tener / haber','verbo','jav'],['has','tiene (he-she-it)','verbo','jas'],['had','tuvo / tenía','verbo (pasado)','jad'],
  // artículos
- ['a','un / una','artículo','a'],['an','un / una (antes de vocal)','artículo','an'],['the','el / la / los / las','artículo','de'],
+ ['a','un / una','artículo','a'],['an','un / una (antes de vocal)','artículo','an'],['the','el / la / los / las','artículo','da'],
  // conectores
  ['and','y','conector','and'],['but','pero','conector','bat'],['or','o','conector','or'],['because','porque','conector','bicós'],
  ['so','así que','conector','sóu'],['if','si (condición)','conector','if'],['when','cuando / cuándo','conector','uén'],
@@ -1078,7 +1089,7 @@ const EXTRA_FORMATS=[
   {formato:'completar', q:'Completa con el presente simple:', template:'He ___ (work) with wood and she ___ (cook) dinner.', answers:['works','cooks'], sentence:'He works with wood and she cooks dinner.', trad:'Él trabaja con madera y ella cocina la cena.', pron:'ji uérks uíd uúd and shi cuks díner', form:'He/She/It + verbo + -s', cat:'', extra:'"cook" = cocinar, "dinner" = cena.'},
   {formato:'opcion', q:'Elige el artículo correcto: "She is ___ engineer."', tema:'Articles', opts:shuffle([{t:'an',c:1,r:'✅ "an" porque "engineer" empieza con sonido de VOCAL (e-n-gineer).'},{t:'a',c:0,r:'❌ "a" no: va antes de sonido de CONSONANTE (a dog, a table). "engineer" empieza en vocal.'},{t:'the',c:0,r:'❌ "the" es "el/la" (algo específico), no sirve para presentar una profesión.'}]), sentence:'She is an engineer.', trad:'Ella es ingeniera.', pron:'shi is an enyiníar', form:'an + sonido de vocal · a + sonido de consonante', estructura:'Sujeto + to be + a/an + profesión', cat:'', extra:'Se usa "an" antes de a, e, i, o, u (por el sonido).'},
   {formato:'opcion', q:'Elige el artículo correcto: "He is ___ driver."', tema:'Articles', opts:shuffle([{t:'a',c:1,r:'✅ "a" porque "driver" empieza con sonido de CONSONANTE (d).'},{t:'an',c:0,r:'❌ "an" solo va antes de sonido de vocal (an apple, an egg). "driver" empieza en consonante.'},{t:'the',c:0,r:'❌ "the" = el/la; aquí presentamos una profesión, va "a".'}]), sentence:'He is a driver.', trad:'Él es conductor.', pron:'ji is a dráiver', form:'a + sonido de consonante · an + sonido de vocal', estructura:'Sujeto + to be + a/an + profesión', cat:'', extra:'"driver" = conductor.'},
-  {formato:'huecos', q:'Complete by tapping the words:', template:'The ___ is ___.', answers:[['dog','cat'],['busy','happy']], bank:['dog','cat','busy','happy'], sentence:'The dog is busy.', trad:'El perro está ocupado (también vale: el gato está feliz, etc.).', pron:'de dog is bísi', form:'Sujeto (sustantivo) + is + adjetivo', cat:'', extra:'Cualquier combinación válida cuenta: dog/cat en el primer espacio, busy/happy en el segundo.'},
+  {formato:'huecos', q:'Complete by tapping the words:', template:'The ___ is ___.', answers:[['dog','cat'],['busy','happy']], bank:['dog','cat','busy','happy'], sentence:'The dog is busy.', trad:'El perro está ocupado (también vale: el gato está feliz, etc.).', pron:'da dog is bísi', form:'Sujeto (sustantivo) + is + adjetivo', cat:'', extra:'Cualquier combinación válida cuenta: dog/cat en el primer espacio, busy/happy en el segundo.'},
   {formato:'ordenar', q:'Ordena las palabras para formar la frase:', order:['I','am','a','carpenter'], sentence:'I am a carpenter.', trad:'Yo soy carpintero.', pron:'ái am a cárpenter', form:'Sujeto + to be + complemento', cat:'', extra:'"carpenter" = carpintero.'},
   {formato:'emparejar', q:'Une cada palabra en inglés con su significado:', pairs:[{a:'dog',b:'perro'},{a:'wood',b:'madera'},{a:'table',b:'mesa'},{a:'water',b:'agua'}], trad:'dog=perro · wood=madera · table=mesa · water=agua', pron:'', form:'Vocabulario básico.', cat:'', extra:''},
   {formato:'lectura', q:'Read this text about Diego:',
@@ -1166,11 +1177,13 @@ function speak(text, slow){
     speechSynthesis.speak(u);
   }catch(e){}
 }
-/* Botón parlante como string HTML (dos toques: normal y lento 🐢) */
+/* Botón parlante como string HTML (dos toques: normal y lento 🐢).
+   Es un <span role="button">, NUNCA <button>: puede ir DENTRO de los botones de opción
+   sin romper los manejadores que recorren querySelectorAll('button'). */
 function ttsBtnHTML(text, extraCls){
   if(!('speechSynthesis' in window)) return '';
   const t=escapeHtml(String(text));
-  return '<button type="button" class="tts-btn '+(extraCls||'')+'" data-say="'+t+'" onclick="event.stopPropagation();speak(this.dataset.say, this.dataset.slow===\'1\');this.dataset.slow=this.dataset.slow===\'1\'?\'0\':\'1\';" title="Toca para escuchar (2º toque: lento 🐢)">🔊</button>';
+  return '<span role="button" tabindex="0" class="tts-btn '+(extraCls||'')+'" data-say="'+t+'" onclick="event.stopPropagation();speak(this.dataset.say, this.dataset.slow===\'1\');this.dataset.slow=this.dataset.slow===\'1\'?\'0\':\'1\';" title="Toca para escuchar (2º toque: lento 🐢)">🔊</span>';
 }
 /* Botón parlante como elemento DOM */
 function ttsBtnEl(text){
@@ -1885,7 +1898,7 @@ function connectorsGen(){
 const LETTER_Q=[{L:'H',name:'aitch',w:['hache','ache','eich']},{L:'W',name:'double-u',w:['doble-u','uve doble','ve']},{L:'Y',name:'why',w:['ye','yi','i griega']},{L:'J',name:'jay',w:['jota','yi','ja']},{L:'G',name:'gee',w:['ge','yi','gue']},{L:'I',name:'eye',w:['i','e','ei']},{L:'R',name:'ar',w:['ere','er','or']},{L:'Q',name:'cue',w:['cu','ku','qu']},{L:'X',name:'ex',w:['equis','ix','eks']},{L:'Z',name:'zee',w:['zeta','zi','zed']},{L:'C',name:'cee',w:['ce','si','ci']},{L:'V',name:'vee',w:['uve','ve','bi']},{L:'A',name:'ay',w:['a','ah','e']},{L:'K',name:'kay',w:['ka','ke','ki']}];
 function alphabetGen(){ const x=pick(LETTER_Q);
   const lp=LETTER_PRON[x.L.toLowerCase()]||x.name;
-  return gseed('The letter '+x.L+' is called ___.', x.name, x.w.slice(0,3), 'The letter '+x.L+' is called "'+x.name+'".', 'La letra '+x.L+' se dice "'+x.name+'".', 'de léter '+lp+' is cold "'+lp+'"', 'cada letra tiene su nombre en inglés', 'Deletrear: How do you spell...?', 'Alphabet', 'La letra ___ se llama ___');
+  return gseed('The letter '+x.L+' is called ___.', x.name, x.w.slice(0,3), 'The letter '+x.L+' is called "'+x.name+'".', 'La letra '+x.L+' se dice "'+x.name+'".', 'da léter '+lp+' is cold "'+lp+'"', 'cada letra tiene su nombre en inglés', 'Deletrear: How do you spell...?', 'Alphabet', 'La letra ___ se llama ___');
 }
 const TOPIC_PACKS={
   'Verb To Be — am/is/are (A1)':{ kind:'grammar', gen:toBeGen, _seeds_old:[
@@ -2478,7 +2491,7 @@ Cada pregunta lleva un campo "formato". Formatos disponibles:
   "opciones":[{"texto":"is","correcta":true,"razon":"He/She/It usa is."},
               {"texto":"are","correcta":false,"razon":"are es plural."},
               {"texto":"am","correcta":false,"razon":"am solo con I."}],
-  "frase":"The dog is busy.","traduccion":"El perro está ocupado.","pronunciacion":"de dog is bísi","regla":"He/She/It -> is","dato":"..." }
+  "frase":"The dog is busy.","traduccion":"El perro está ocupado.","pronunciacion":"da dog is bísi","regla":"He/She/It -> is","dato":"..." }
 
 2) "multiple" (VARIAS correctas): igual que opcion pero con varias "correcta":true.
 
@@ -2531,7 +2544,7 @@ El código debe venir COMPLETO. NINGÚN campo es opcional. Si una pregunta no tr
 
 A) EN TODAS LAS PREGUNTAS (los 9 formatos, sin excepción):
 1. "traduccion": la traducción REAL y completa de la frase u oración al español (no la regla, no un resumen).
-2. "pronunciacion": cómo suena TODA la frase en español latino, ej "de dog is bísi". Nunca símbolos fonéticos.
+2. "pronunciacion": cómo suena TODA la frase en español latino, ej "da dog is bísi". Nunca símbolos fonéticos.
 3. "regla": la regla gramatical en una línea.
 4. "dato": OBLIGATORIO y GENEROSO (2 a 4 frases). Enséñale de verdad: por qué se usa, con qué palabras se combina, el error típico de un hispanohablante, un ejemplo extra de uso en la vida real y, si aplica, de dónde viene o cómo distinguirlo de algo parecido. Que el alumno salga sabiendo más, no solo la respuesta. NUNCA lo dejes vacío ni de una sola línea corta.
 5. "glosario": TODAS las palabras importantes de la pregunta Y de sus respuestas (sustantivos, verbos, adjetivos, conectores, posesivos, pronombres, preposiciones, adverbios), cada una con:
@@ -2973,7 +2986,9 @@ function showWordPopup(el){
   const sayWord=g?word:(sp?sp.en:'');
   document.getElementById('wp-pron').innerHTML = escapeHtml(wpPron)+(sayWord&&/^[a-zA-Z' ]+$/.test(sayWord)?ttsBtnHTML(sayWord):'');
   // 🔊 fonética contextual de ESTA palabra (por qué suena así)
-  document.getElementById('wp-fon').innerHTML = (g&&/^[a-zA-Z']+$/.test(word)) ? fonTipsFor(word) : '';
+  let fonHtml=(g&&/^[a-zA-Z']+$/.test(word)) ? fonTipsFor(word) : '';
+  if(word.toLowerCase()==='the') fonHtml='<div class="mb-1">• Dentro de la frase suena <b>da</b> (the book → da buk). Antes de vocal suena <b>di</b> (the apple → di ápol). Sola, el audio la dice <b>di</b>.</div>'+fonHtml;
+  document.getElementById('wp-fon').innerHTML = fonHtml;
   // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
   const kSrc=norm(word); const realG=extraGlossary[kSrc]||LEARNED[kSrc]||GLOSSARY[kSrc]; let srcMsg='';
   if(realG){ if(extraGlossary[kSrc]) srcMsg='🤖 traducción generada por la IA (contexto de este quiz)'; else if(LEARNED[kSrc]) srcMsg='🧠 aprendida de tus quizzes (generada por IA)'; else srcMsg='📚 biblioteca del código'; }
@@ -3118,7 +3133,9 @@ function loadQuestion(){
     stLine.innerHTML=html; stLine.classList.remove('hidden');
   } else stLine.classList.add('hidden');
   // pista global (las lecturas tienen su propia pista por sub-pregunta)
-  ui.hTrad.textContent=q.trad||''; ui.hPron.innerHTML=q.pron?(escapeHtml(`(${q.pron})`)+(q.sentence?ttsBtnHTML(q.sentence):'')):''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
+  ui.hTrad.textContent=q.trad||'';
+  const hpron=(q.sentence&&phonHTML(q.sentence))||escapeHtml(q.pron||'');
+  ui.hPron.innerHTML=hpron?('('+hpron+')'+(q.sentence?ttsBtnHTML(q.sentence):'')):''; ui.hExtra.textContent=q.extra||''; ui.hForm.textContent=q.form||'';
   const autoVocab=buildAutoHint(q);
   document.getElementById('hint-vocab').textContent=autoVocab;
   const hintConcept=q.concepto||conceptFor(q);
@@ -3441,7 +3458,7 @@ function renderChoice(q,ctx){
   opts.forEach((opt,i)=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
     const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
-    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="hidden icon-status text-lg"></span>';
+    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+ttsBtnHTML(opt.t,'tts-mini')+'</span>':'')+'</span></span><span class="hidden icon-status text-lg"></span>';
     btn.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
@@ -3457,7 +3474,7 @@ function renderMultiple(q,ctx){
   const opts=shuffle(q.opts.slice()); // re-baraja posiciones a/b/c/d
   opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
     const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
-    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter font-extrabold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 text-sm">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+'</span>':'')+'</span></span><span class="check-box text-lg">⬜</span>';
+    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+ttsBtnHTML(opt.t,'tts-mini')+'</span>':'')+'</span></span><span class="check-box text-lg">⬜</span>';
     b.onclick=()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });
@@ -3480,8 +3497,8 @@ function renderMultiple(q,ctx){
 function renderVF(q,ctx){
   const box=document.createElement('div'); ctx.area.appendChild(box);
   [['True',true,'verdadero · tru'],['False',false,'falso · fols']].forEach((pair,i)=>{
-    const b=document.createElement('button'); b.className='w-full p-4 rounded-xl border-2 border-slate-200 bg-white font-bold btn-option text-base '+(i>0?'mt-2':''); b.dataset.val=String(pair[1]);
-    b.innerHTML=(pair[1]?'✅ ':'❌ ')+pair[0]+' <span class="text-xs text-slate-400 font-normal">('+pair[2]+')</span>';
+    const b=document.createElement('button'); b.className='w-full p-4 rounded-2xl border-2 font-bold btn-option text-lg '+(pair[1]?'border-emerald-200 bg-emerald-50/70 text-emerald-800':'border-rose-200 bg-rose-50/70 text-rose-800')+(i>0?' mt-3':''); b.dataset.val=String(pair[1]);
+    b.innerHTML=(pair[1]?'✅ ':'❌ ')+pair[0]+' <span class="text-xs text-slate-500 font-normal">('+pair[2]+')</span>';
     b.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(x=>{x.disabled=true;x.classList.add('btn-disabled');});
       const ok=(pair[1]===q.answer); b.classList.add(ok?'btn-selected-correct':'btn-selected-incorrect');
       if(!ok){ buttons.forEach(x=>{ if((x.dataset.val==='true')===q.answer) x.classList.add('bg-green-100','border-green-400'); }); }
@@ -3650,10 +3667,13 @@ function renderLectura(q){
 /* cierre común */
 function finalize(ok, explanation, q){
   answered=true; // la pista sigue disponible después de responder (no se oculta)
-  if(ok){ score++; streak++; if(streak>maxStreak)maxStreak=streak; updateStreak(true); ui.feedback.className='mt-4 p-4 rounded-xl border bg-green-50 border-green-200 fade-in'; ui.fTitle.textContent=streak>=3?('¡Excelente! 🔥 Racha de '+streak):'¡Excelente!'; ui.fTitle.className='font-bold text-green-700'; }
-  else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
+  if(ok){ score++; streak++; if(streak>maxStreak)maxStreak=streak; updateStreak(true); ui.feedback.className='mt-4 p-4 md:p-5 rounded-2xl border-2 bg-green-50 border-green-300 fade-in shadow-lg'; ui.fTitle.textContent=streak>=3?('🎉 ¡Excelente! 🔥 Racha de '+streak):'🎉 ¡Excelente!'; ui.fTitle.className='font-extrabold text-green-700 text-lg'; }
+  else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 md:p-5 rounded-2xl border-2 bg-red-50 border-red-300 fade-in shadow-lg'; ui.fTitle.textContent='🧐 Revisa:'; ui.fTitle.className='font-extrabold text-red-700 text-lg'; }
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
-  ui.learnSent.innerHTML=q.sentence?(wordSpanify(q.sentence)+ttsBtnHTML(q.sentence)):''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
+  ui.learnSent.innerHTML=q.sentence?(wordSpanify(q.sentence)+ttsBtnHTML(q.sentence)):''; ui.learnTrad.textContent=q.trad||'';
+  // pron SIEMPRE desde el glosario (una sola fuente de verdad: coincide con el audio); el texto curado es respaldo
+  const lp=(q.sentence&&phonHTML(q.sentence))||escapeHtml(q.pron||'');
+  ui.learnPron.innerHTML=lp?('('+lp+')'):''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
   // SIN REDUNDANCIA con la pista y con la explicación:
   const hintOpened=!ui.hint.classList.contains('hidden'); // ¿el jugador ya vio la pista?
   const learnVocab=hintOpened?'':buildAutoHint(q); document.getElementById('learn-vocab').textContent=learnVocab;

@@ -254,6 +254,29 @@
       </div>
     </div>
 
+    <!-- ===== GUÍA: cómo leer las pronunciaciones (fonética sin tecnicismos) ===== -->
+    <details class="order-1 bg-white rounded-2xl shadow-lg mb-5 border-2 border-purple-200 overflow-hidden">
+      <summary class="cursor-pointer p-4 font-extrabold text-purple-700 text-base select-none hover:bg-purple-50">🔊 ¿Cómo leo las pronunciaciones? (toca aquí)</summary>
+      <div class="px-4 pb-4 text-sm text-slate-700 leading-relaxed">
+        <p class="mb-2">Las pronunciaciones moradas (ej. <i class="text-purple-700">téibol</i>) están escritas <b>tal como se leen en español</b>. La sílaba con <b>tilde</b> es la fuerte: <i class="text-purple-700">té-i-bol</i>. Léelas de corrido y sonarás natural, como en Estados Unidos 🇺🇸.</p>
+        <p class="mb-2 font-bold text-slate-800">Sonidos que NO existen en español (los verás mucho):</p>
+        <div class="overflow-x-auto"><table class="w-full text-xs border-collapse">
+          <tr class="bg-purple-50"><th class="border border-purple-100 p-1.5 text-left">Letras</th><th class="border border-purple-100 p-1.5 text-left">Cómo se hace</th><th class="border border-purple-100 p-1.5 text-left">Ejemplo</th></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">th</td><td class="border border-purple-100 p-1.5">lengua entre los dientes, sopla suave → "d/z" suavecita</td><td class="border border-purple-100 p-1.5">the → <i class="text-purple-700">de</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">h</td><td class="border border-purple-100 p-1.5">SÍ suena: como la "j" suave de "jamón"</td><td class="border border-purple-100 p-1.5">home → <i class="text-purple-700">jóum</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">w</td><td class="border border-purple-100 p-1.5">labios redondos como para decir "u"</td><td class="border border-purple-100 p-1.5">work → <i class="text-purple-700">uérk</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">v</td><td class="border border-purple-100 p-1.5">dientes sobre el labio de abajo, con vibración (≠ b)</td><td class="border border-purple-100 p-1.5">very → <i class="text-purple-700">véri</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">-ed</td><td class="border border-purple-100 p-1.5">el pasado suena "t" o "d" pegada, no "ed"</td><td class="border border-purple-100 p-1.5">worked → <i class="text-purple-700">uérkt</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">ee</td><td class="border border-purple-100 p-1.5">"i" larga, sonriendo</td><td class="border border-purple-100 p-1.5">sleep → <i class="text-purple-700">slip</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">oo</td><td class="border border-purple-100 p-1.5">suena "u", nunca "o-o"</td><td class="border border-purple-100 p-1.5">book → <i class="text-purple-700">buk</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">sh</td><td class="border border-purple-100 p-1.5">como pedir silencio: "shhh"</td><td class="border border-purple-100 p-1.5">she → <i class="text-purple-700">shi</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">r</td><td class="border border-purple-100 p-1.5">lengua doblada hacia atrás, sin tocar el paladar</td><td class="border border-purple-100 p-1.5">car → <i class="text-purple-700">car</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">e final</td><td class="border border-purple-100 p-1.5">es muda, pero la vocal de antes "dice su nombre"</td><td class="border border-purple-100 p-1.5">make → <i class="text-purple-700">méik</i></td></tr>
+        </table></div>
+        <p class="mt-2 text-xs text-slate-500">💡 Además, al responder cada pregunta te mostramos <b>🔊 ¿Por qué suena así?</b> con las palabras de esa misma frase.</p>
+      </div>
+    </details>
+
     <!-- ===== 1) JUGAR: quiz listo (derecha) o pegar código (izquierda) ===== -->
     <div class="order-1 bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-5 border-2 border-emerald-200">
       <h3 class="font-extrabold text-emerald-700 text-lg mb-1">🎮 1) Juega ya</h3>
@@ -563,6 +586,7 @@
           <div id="learn-sentence-wrap"><span class="font-bold text-slate-700">✅ Frase correcta:</span> <span id="learn-sentence" class="text-slate-900 font-bold"></span></div>
           <div id="learn-trad-wrap"><span class="font-bold text-slate-700">📖 Significa:</span> <span id="learn-trad" class="text-blue-700"></span></div>
           <div id="learn-pron-wrap"><span class="font-bold text-slate-700">🗣️ Se pronuncia:</span> <span id="learn-pron" class="text-purple-700 italic"></span></div>
+          <div id="learn-fon-wrap" class="bg-purple-50 border border-purple-100 rounded-lg p-2 mt-1" style="display:none"><div class="font-bold text-purple-800 mb-1">🔊 ¿Por qué suena así?</div><div id="learn-fon" class="text-slate-700 text-xs leading-relaxed"></div></div>
           <div id="learn-cat-wrap"><span class="font-bold text-slate-700">🏷️ Tipo:</span> <span id="learn-cat" class="text-indigo-700"></span></div>
           <div id="learn-vocab-wrap"><span class="font-bold text-slate-700">📚 Palabras:</span> <span id="learn-vocab" class="text-teal-700"></span></div>
           <div id="learn-extra-wrap"><span class="font-bold text-slate-700">💡 Dato:</span> <span id="learn-extra" class="text-emerald-700"></span></div>
@@ -1093,6 +1117,54 @@ function replaceWord(s, w, rep){
 }
 /* Pista disambiguadora embebida en el enunciado del seed, ej "... (al lado de)" / "(de él)". Vacío si no hay. */
 function seedHint(seed){ const h=(String(seed&&seed.q||'').match(/\(([^)]+)\)\s*$/)||[])[1]; return h?' ('+h+')':''; }
+/* ¿El texto "small" ya está dicho (en esencia) dentro de "big"? Para NO repetir dato/regla/tabla entre pista y tarjeta */
+function isRedundant(small, big){
+  if(!small||!big) return false;
+  const clean=s=>String(s).toLowerCase().replace(/<[^>]*>/g,' ');
+  const stop=new Set(['the','and','los','las','solo','sólo','una','del','que','con','para','este','esta','pero','más']);
+  const ws=clean(small).replace(/[^a-záéíóúñü'\s]/g,' ').split(/\s+/).filter(w=>w.length>2&&!stop.has(w));
+  if(!ws.length) return false;
+  const B=clean(big);
+  let hit=0; ws.forEach(w=>{ if(B.indexOf(w)>=0)hit++; });
+  return hit/ws.length>=0.7; // si ~70% de sus palabras clave ya están en el otro texto, es repetido
+}
+/* ============ FONÉTICA CONTEXTUAL (español latino, sin tecnicismos) ============
+   Detecta los sonidos "difíciles" presentes en la frase y explica POR QUÉ suenan así,
+   con la palabra REAL de la frase como ejemplo. Estilo natural americano. */
+const FON_RULES=[
+ {k:'th', test:w=>/th/.test(w), es:'la <b>th</b> se hace con la punta de la lengua ENTRE los dientes, soplando suave. Por eso suena como "d" o "z" suavecita, nunca "t".'},
+ {k:'h',  test:w=>/^h[aeiou]/.test(w)&&!/^hour|^honest/.test(w), es:'la <b>h</b> en inglés SÍ suena: es como la "j" suave de "jamón".'},
+ {k:'w',  test:w=>/(^|[^aeiousc])w[aeiouh]/.test(w)||/^w/.test(w), es:'la <b>w</b> se hace poniendo los labios redonditos como para decir "u".'},
+ {k:'ed', test:w=>/[bcdfghjklmnpqrstvwxz]ed$/.test(w), es:'el <b>-ed</b> del pasado casi nunca suena "ed": suena "t" o "d" pegada al final. Así hablan rápido los gringos.'},
+ {k:'ee', test:w=>/ee|ea[a-z]?$/.test(w), es:'la <b>ee/ea</b> es una "i" LARGA, como sonriendo.'},
+ {k:'oo', test:w=>/oo/.test(w), es:'la <b>oo</b> suena "u" (corta o larga), nunca "o-o".'},
+ {k:'v',  test:w=>/v/.test(w), es:'la <b>v</b> inglesa muerde suavecito el labio de abajo con los dientes y vibra: es distinta de la "b".'},
+ {k:'j',  test:w=>/j/.test(w), es:'la <b>j</b> inglesa suena como "ch" con vibración, casi una "y" fuerte.'},
+ {k:'emuda', test:w=>/[aeiou][bcdfghjklmnpqrstvz]e$/.test(w)&&w.length>3, es:'la <b>e final es muda</b>, pero hace que la vocal de antes "diga su nombre" (a→éi, i→ái, o→óu).'},
+ {k:'kn', test:w=>/^kn/.test(w), es:'en <b>kn</b> la "k" es muda: se lee solo la n.'},
+ {k:'sh', test:w=>/sh/.test(w), es:'la <b>sh</b> es como pedir silencio: "shhh".'},
+ {k:'r',  test:w=>/[aeiou]r$|[aeiou]r[bcdfgkmnpstv]/.test(w), es:'la <b>r</b> americana se hace doblando la lengua hacia atrás SIN que toque el paladar.'},
+ {k:'i',  test:w=>/^(it|is|in|his|this|big|sit|six|fish|milk)$/.test(w), es:'esta <b>i</b> es CORTA y relajada, entre "i" y "e": no la alargues.'},
+ {k:'a',  test:w=>/^(cat|man|bag|hat|black|happy|family|have)$/.test(w), es:'esta <b>a</b> americana se hace abriendo la boca para "a" pero diciendo "e" a la vez.'}
+];
+function fonTipsFor(text){
+  if(!text) return '';
+  const seen=new Set(); const tips=[];
+  const words=String(text).toLowerCase().replace(/[^a-z'\s]/g,' ').split(/\s+/).filter(w=>w.length>1);
+  for(const w of words){
+    for(const r of FON_RULES){
+      if(seen.has(r.k)) continue;
+      if(r.test(w)){
+        const p=phon(w);
+        if(p&&p!==w){ seen.add(r.k); tips.push('<div class="mb-1">• <b>'+escapeHtml(w)+'</b> → <i class="text-purple-700">'+escapeHtml(p)+'</i>: '+r.es+'</div>'); }
+        else if(p){ seen.add(r.k); tips.push('<div class="mb-1">• <b>'+escapeHtml(w)+'</b>: '+r.es+'</div>'); }
+        break; // una regla por palabra (la más importante)
+      }
+    }
+    if(tips.length>=3) break;
+  }
+  return tips.join('');
+}
 /* De una "seed" gramatical {q,a,o,s,t,p,f,dato,tema,est} arma UNA pregunta del formato pedido (o null) */
 function composeGrammar(seed, fmt){
   // DEFENSA: un distractor jamás puede ser igual a la respuesta (rompería vf/huecos)
@@ -1485,9 +1557,15 @@ const PS_COMP=[
  {en:'here',es:'aquí',pr:'jíar'}
 ];
 // Evita "Leidy plays with Leidy": si el sujeto ES Leidy, no uses el complemento "with Leidy".
-function psComp(su){ return pick(PS_COMP.filter(x=>!(/Leidy/i.test(x.en)&&/Leidy/i.test(su.en||'')))); }
+// Y evita frases raras: "live" (vivir) solo va con LUGAR/compañía, no con tiempo ("She lives at night" ✗).
+const PS_COMP_PLACE=['in Soacha','at home','here','with Leidy'];
+function psComp(su, v){
+  let pool=PS_COMP.filter(x=>!(/Leidy/i.test(x.en)&&/Leidy/i.test(su.en||'')));
+  if(v&&v.b==='live') pool=pool.filter(x=>PS_COMP_PLACE.indexOf(x.en)>=0);
+  return pick(pool);
+}
 function presentSimpleGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su);
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v);
   const form = su.s3 ? v.s : v.b;
   const sentence = su.en+' '+form+' '+c.en+'.';
   const q = su.en+' ___ '+c.en+'. ('+v.b+')';
@@ -1535,7 +1613,7 @@ function toBeNegQuestGen(){
 }
 // 3) Present Simple — negativos y preguntas (do/does)
 function psNegQuestGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su);
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v);
   if(Math.random()<0.5){
     const aux=su.s3?"doesn't":"don't"; const sentence=su.en+' '+aux+' '+v.b+' '+c.en+'.'; const q=su.en+' ___ '+v.b+' '+c.en+'. (no)';
     const trad=su.es+' no '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+AUX_PRON[aux]+' '+v.pb+' '+c.pr;
@@ -1548,14 +1626,14 @@ function psNegQuestGen(){
 }
 // 4) Tercera persona -s (solo he/she/it)
 function thirdPersonSGen(){
-  const su=pick(V_SUBJ.filter(s=>s.s3)), v=pick(PS_VERB), c=psComp(su);
+  const su=pick(V_SUBJ.filter(s=>s.s3)), v=pick(PS_VERB), c=psComp(su,v);
   const sentence=su.en+' '+v.s+' '+c.en+'.'; const q=su.en+' ___ '+c.en+'. ('+v.b+')';
   const trad=su.es+' '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+v.ps+' '+c.pr;
   return gseed(q, v.s, [v.b,v.ing,v.past], sentence, trad, pron, 'he/she/it: + s (go→goes, watch→watches, study→studies)', '-o/-ch/-sh/-x → +es · consonante+y → ies.', 'Third person -s', 'Sujeto (he/she/it) + verbo + s');
 }
 // 5) Can / Can't
 function canGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const m=Math.random(); let sentence,q,trad,answer,wrong;
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v); const m=Math.random(); let sentence,q,trad,answer,wrong;
   const poder=CONJ_PODER[su.pers], inf=V_INF[v.b];
   if(m<0.34){ sentence=su.en+' can '+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. ('+poder+')'; trad=su.es+' '+poder+' '+inf+' '+c.es+'.'; answer='can'; wrong=['cans','is','does']; }
   else if(m<0.67){ sentence=su.en+" can't "+v.b+' '+c.en+'.'; q=su.en+' ___ '+v.b+' '+c.en+'. (no '+poder+')'; trad=su.es+' no '+poder+' '+inf+' '+c.es+'.'; answer="can't"; wrong=['cans',"doesn't",'not']; }
@@ -1565,7 +1643,7 @@ function canGen(){
 }
 // 6) Present Continuous (-ing)
 function presentContinuousGen(){
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const be=beOf(su);
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v); const be=beOf(su);
   const sentence=su.en+' '+be+' '+v.ing+' '+c.en+'.'; const q=su.en+' '+be+' ___ '+c.en+'. ('+v.b+' → -ing)';
   const trad=su.es+' '+CONJ_ESTAR[su.pers]+' '+V_GER[v.b]+' '+c.es+'.'; const pron=su.pron+' '+BE_PRON_M[be]+' '+v.pb+'ing '+c.pr;
   return gseed(q, v.ing, [v.b,v.s,v.past], sentence, trad, pron, 'am/is/are + verbo-ing (acción ahora)', '-e: quita e (make→making) · vocal+cons: doble (run→running).', 'Present Continuous', 'Sujeto + am/is/are + verbo-ing');
@@ -1722,7 +1800,7 @@ function questionOrderGen(){
     const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (¿?)';
     return gseed(q, beCap, ['Am','Is','Are','Do'].filter(x=>x!==beCap).slice(0,3), sentence, '¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?', BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
   }
-  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const aux=su.s3?'Does':'Do';
+  const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v); const aux=su.s3?'Does':'Do';
   const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿?)';
   return gseed(q, aux, [su.s3?'Do':'Does','Is','Are'], sentence, '¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?', AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr, 'con otros verbos: Do/Does + sujeto + verbo base', '', 'Question Order', 'Do/Does + sujeto + verbo base?');
 }
@@ -2954,7 +3032,10 @@ function loadQuestion(){
   document.getElementById('hint-vocab').textContent=autoVocab;
   const hintConcept=q.concepto||conceptFor(q);
   document.getElementById('hint-concept').innerHTML=hintConcept||'';
-  show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-vocab-wrap'),!!autoVocab); show(document.getElementById('hint-extra-wrap'),!!q.extra); show(document.getElementById('hint-form-wrap'),!!q.form); show(document.getElementById('hint-concept-wrap'),!!hintConcept);
+  // SIN REDUNDANCIA: si la tabla-concepto ya explica el dato o la regla, no se repiten en la pista
+  const showForm=!!q.form && !isRedundant(q.form, hintConcept);
+  const showExtra=!!q.extra && !isRedundant(q.extra, hintConcept) && !isRedundant(q.extra, q.form);
+  show(document.getElementById('hint-trad-wrap'),!!q.trad); show(document.getElementById('hint-pron-wrap'),!!q.pron); show(document.getElementById('hint-vocab-wrap'),!!autoVocab); show(document.getElementById('hint-extra-wrap'),showExtra); show(document.getElementById('hint-form-wrap'),showForm); show(document.getElementById('hint-concept-wrap'),!!hintConcept);
   ui.hint.classList.add('hidden'); ui.hintBtn.innerHTML='💡 Ver Pista';
   const hayPista = fmt!=='lectura' && fmt!=='dialogo' && (q.trad||q.pron||q.extra||q.form||autoVocab||hintConcept);
   if(hayPista) ui.hintBtn.classList.remove('hidden'); else ui.hintBtn.classList.add('hidden');
@@ -3479,9 +3560,15 @@ function finalize(ok, explanation, q){
   else { streak=0; updateStreak(false); ui.feedback.className='mt-4 p-4 rounded-xl border bg-red-50 border-red-200 fade-in'; ui.fTitle.textContent='Revisa:'; ui.fTitle.className='font-bold text-red-700'; }
   ui.score.textContent=`Puntaje: ${score}`; ui.fRat.textContent=explanation||'';
   ui.learnSent.innerHTML=q.sentence?wordSpanify(q.sentence):''; ui.learnTrad.textContent=q.trad||''; ui.learnPron.textContent=q.pron?`(${q.pron})`:''; ui.learnCat.textContent=q.cat||''; ui.learnExtra.textContent=q.extra||'';
-  const learnVocab=buildAutoHint(q); document.getElementById('learn-vocab').textContent=learnVocab;
-  const concept=q.concepto||conceptFor(q); ui.learnConcept.innerHTML=concept||''; show(document.getElementById('learn-concept-wrap'),!!concept);
-  show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-vocab-wrap'),!!learnVocab); show(document.getElementById('learn-extra-wrap'),!!q.extra);
+  // SIN REDUNDANCIA con la pista y con la explicación:
+  const hintOpened=!ui.hint.classList.contains('hidden'); // ¿el jugador ya vio la pista?
+  const learnVocab=hintOpened?'':buildAutoHint(q); document.getElementById('learn-vocab').textContent=learnVocab;
+  const concept=hintOpened?'':(q.concepto||conceptFor(q)); ui.learnConcept.innerHTML=concept||''; show(document.getElementById('learn-concept-wrap'),!!concept);
+  const showLearnExtra=!!q.extra && !isRedundant(q.extra, explanation||'') && !(concept&&isRedundant(q.extra,concept));
+  // 🔊 fonética contextual: por qué suena así (con palabras de ESTA frase)
+  const fon=fonTipsFor(q.sentence||'');
+  document.getElementById('learn-fon').innerHTML=fon; show(document.getElementById('learn-fon-wrap'),!!fon);
+  show(document.getElementById('learn-sentence-wrap'),!!q.sentence); show(document.getElementById('learn-trad-wrap'),!!q.trad); show(document.getElementById('learn-pron-wrap'),!!q.pron); show(document.getElementById('learn-cat-wrap'),!!q.cat); show(document.getElementById('learn-vocab-wrap'),!!learnVocab); show(document.getElementById('learn-extra-wrap'),showLearnExtra);
   saveProgress(idx+1);
   ui.feedback.classList.remove('hidden'); ui.nextBtn.textContent=idx<quiz.length-1?'Siguiente ➡️':'Ver resultados 🏆'; ui.nextBtn.classList.remove('hidden');
   if(multi.active) markMineAnswered(ui.nextBtn); // en dúo: espera al otro antes de avanzar

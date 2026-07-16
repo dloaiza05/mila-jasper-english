@@ -669,7 +669,7 @@ function tokenInfo(tok){
 function phon(text){
   const toks=String(text).split(/(\s+)/); let hits=0, engWords=0; const out=[];
   toks.forEach(tok=>{
-    const w=tok.replace(/[^A-Za-z']/g,'');
+    const w=tok.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ']/g,''); // incluye tildes (Bogotá)
     if(!w){ // no tiene letras: ¿es número/símbolo con pronunciación?
       const ti=tokenInfo(tok.trim());
       if(ti&&ti.pron){ engWords++; hits++; out.push(ti.pron); } else out.push(tok);
@@ -690,7 +690,7 @@ function phonHTML(text){
   const toks=String(text).split(/(\s+)/); let hits=0, eng=0; const parts=[];
   toks.forEach(tok=>{
     if(/^\s+$/.test(tok)){ parts.push({sp:tok}); return; }
-    const w=tok.replace(/[^A-Za-z']/g,'');
+    const w=tok.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ']/g,''); // incluye tildes (Bogotá)
     if(!w){ const ti=tokenInfo(tok.trim()); if(ti&&ti.pron){ eng++; hits++; parts.push({txt:ti.pron}); } else parts.push({txt:tok}); return; }
     eng++;
     const kk=norm(w); const g=extraGlossary[kk]||LEARNED[kk]||GLOSSARY[kk];
@@ -725,7 +725,7 @@ function sentenceTrans(sent, sentMap){
   const k=norm(sent);
   if(sentMap && sentMap[k]) return {es:sentMap[k].es, pron:sentMap[k].pron||'', src:'🤖 traducción de la IA'};
   const parts=[];
-  String(sent).split(/\s+/).forEach(t=>{ const w=t.replace(/[^A-Za-z']/g,''); if(!w) return; const g=lookupWord(w); if(g) parts.push(w.toLowerCase()+'='+String(g.es).split('/')[0].trim()); });
+  String(sent).split(/\s+/).forEach(t=>{ const w=t.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ']/g,''); if(!w) return; const g=lookupWord(w); if(g) parts.push(w.toLowerCase()+'='+String(g.es).split('/')[0].trim()); });
   return {es: parts.length? parts.join(' · ') : 'Sin traducción disponible para esta frase.', pron:'', src: parts.length?'≈ palabra por palabra (biblioteca)':''};
 }
 function fillBlanks(tpl, answers){ let i=0; return String(tpl).replace(/_{2,}/g, ()=>{ const a=answers[i++]; return a!=null?(Array.isArray(a)?a[0]:a):'___'; }); }
@@ -1095,6 +1095,8 @@ function replaceWord(s, w, rep){
 function seedHint(seed){ const h=(String(seed&&seed.q||'').match(/\(([^)]+)\)\s*$/)||[])[1]; return h?' ('+h+')':''; }
 /* De una "seed" gramatical {q,a,o,s,t,p,f,dato,tema,est} arma UNA pregunta del formato pedido (o null) */
 function composeGrammar(seed, fmt){
+  // DEFENSA: un distractor jamás puede ser igual a la respuesta (rompería vf/huecos)
+  if(seed&&seed.o&&seed.o.length){ const aLow=String(seed.a).toLowerCase(); const oc=seed.o.filter(x=>String(x).toLowerCase()!==aLow); if(oc.length!==seed.o.length) seed=Object.assign({},seed,{o:oc}); }
   const base={ kind:'grammar', sentence:seed.s||'', trad:seed.t||'', pron:seed.p||'', form:seed.f||'', cat:seed.cat||'', extra:seed.dato||'', tema:seed.tema||'', estructura:seed.est||'', concepto:conceptFor(seed) };
   // PISTA/contexto embebido en el enunciado del seed, ej "... ___ ... (al lado de)" o "(build)". Se conserva para que la respuesta sea determinable.
   const hint = (String(seed.q).match(/\(([^)]+)\)\s*$/)||[])[1]; const hintTxt = hint? ' ('+hint+')' : '';
@@ -1111,7 +1113,8 @@ function composeGrammar(seed, fmt){
   }
   if(fmt==='huecos'){
     if(!seed.s || seed.s.indexOf(seed.a)<0 || !seed.o||!seed.o.length) return null;
-    const bank=shuffle([seed.a].concat(seed.o.slice(0,3)));
+    // banco SIN duplicados (ej. verbo "read": pasado también es "read")
+    const seenB=new Set(); const bank=shuffle([seed.a].concat(seed.o.slice(0,3))).filter(w=>{ const k=String(w).toLowerCase(); if(seenB.has(k))return false; seenB.add(k); return true; });
     return Object.assign({formato:'huecos', q:'Complete by tapping the correct word:', template:replaceWord(seed.s,seed.a,'___')+hintTxt, answers:[seed.a], bank:bank}, base, {estructura:seed.est||'Tap the correct chip'});
   }
   if(fmt==='ordenar'){
@@ -1502,7 +1505,9 @@ const AUX_PRON={"don't":'dóunt',"doesn't":'dásent','Do':'du','Does':'das','not
 function beOf(su){ return su.pers==='yo'?'am':(su.s3?'is':'are'); }
 const PRONOUNS7=['I','You','He','She','It','We','They'];
 // en preguntas, el pronombre va en minúscula después del auxiliar (Do they? · Is he?) — "I" y los nombres NO cambian
-function lcSub(en){ return ['You','He','She','It','We','They'].indexOf(en)>=0 ? en.toLowerCase() : en; }
+function lcSub(en){ if(['You','He','She','It','We','They'].indexOf(en)>=0) return en.toLowerCase(); if(/^My /.test(en)) return 'my'+en.slice(2); return en; }
+// En español, tras "¿Es/Son..." el sujeto va en minúscula SALVO nombres propios: "¿Es Diego...?" pero "¿Es mi esposa...?"
+function esLcSub(es){ return /^(Diego|Leidy|Mila)/.test(es) ? es : es.toLowerCase(); }
 // 1) Subject Pronouns
 function subjectPronounGen(){
   const pr=pick(TB_SUBJ.filter(s=>PRONOUNS7.includes(s.en))), c=pick(TB_COMP);
@@ -1521,10 +1526,11 @@ function toBeNegQuestGen(){
     const trad=s.es+' no '+verb+' '+esC+'.'; const pron=s.pron+' '+BE_PRON_M[s.be]+' not '+c.pr;
     return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'negativo: sujeto + am/is/are + not', 'La negación solo agrega "not".', 'Verb To Be neg/quest', 'Sujeto + to be + not + complemento');
   } else {
+    // answer CAPITALIZADO (va al inicio de la pregunta): así vf/completar/huecos/multiple lo encuentran en la oración
     const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1);
     const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (pregunta)';
-    const trad='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+s.es.toLowerCase()+' '+esC+'?'; const pron=BE_PRON_M[s.be]+' '+s.pron+' '+c.pr;
-    return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'pregunta: am/is/are + sujeto + ...?', 'En preguntas el verbo va primero.', 'Verb To Be neg/quest', 'Am/Is/Are + sujeto + complemento?');
+    const trad='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?'; const pron=BE_PRON_M[s.be]+' '+s.pron+' '+c.pr;
+    return gseed(q, beCap, ['Am','Is','Are','Be'].filter(x=>x!==beCap), sentence, trad, pron, 'pregunta: am/is/are + sujeto + ...?', 'En preguntas el verbo va primero.', 'Verb To Be neg/quest', 'Am/Is/Are + sujeto + complemento?');
   }
 }
 // 3) Present Simple — negativos y preguntas (do/does)
@@ -1714,7 +1720,7 @@ function questionOrderGen(){
   if(Math.random()<0.5){
     const s=pick(TB_SUBJ), c=pick(TB_COMP); const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1); const verb=c.v==='ser'?s.ser:s.estar; const esC=s.pl?c.p:c.s;
     const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (¿?)';
-    return gseed(q, s.be, ['am','is','are','do'].filter(x=>x!==s.be).slice(0,3), sentence, '¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+s.es.toLowerCase()+' '+esC+'?', BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
+    return gseed(q, beCap, ['Am','Is','Are','Do'].filter(x=>x!==beCap).slice(0,3), sentence, '¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?', BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
   }
   const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su); const aux=su.s3?'Does':'Do';
   const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿?)';
@@ -1922,10 +1928,10 @@ const TOPIC_PACKS={
     gseed('___ they at home? (¿están?)','Are',['Do','Is','Does'],'Are they at home?','¿Están en casa?','ar déi at jóum','to be plural → Are','','Question Order','Are + sujeto + lugar?')
   ]},
   'Past Simple — regular verbs -ed (A2)':{ kind:'grammar', seeds:[
-    gseed('Yesterday I ___ with wood. (work)','worked',['worked','work','working'],'Yesterday I worked with wood.','Ayer trabajé con madera.','iésterdei ái uérkt uíd wud','regular → +ed','La mayoría del pasado añade -ed.','Past Simple','Sujeto + verbo-ed'),
-    gseed('She ___ the door. (open)','opened',['openned','opend','opened'],'She opened the door.','Ella abrió la puerta.','shi óupend de dor','+ed','','Past Simple','Sujeto + verbo-ed'),
-    gseed('We ___ English last night. (study)','studied',['studyed','studied','studed'],'We studied English last night.','Estudiamos inglés anoche.','uí stádid ínglish last náit','consonante+y → ied','study → studied.','Past Simple','Sujeto + verbo-ied'),
-    gseed('He ___ the bus. (stop)','stopped',['stoped','stopped','stopd'],'He stopped the bus.','Él paró el bus.','ji stopt de bas','una vocal + consonante → doble consonante + ed','stop → stopped (doble p).','Past Simple','Sujeto + verbo-ed')
+    gseed('Yesterday I ___ with wood. (work)','worked',['work','working','works'],'Yesterday I worked with wood.','Ayer trabajé con madera.','iésterdei ái uérkt uíd wud','regular → +ed','La mayoría del pasado añade -ed.','Past Simple','Sujeto + verbo-ed'),
+    gseed('She ___ the door. (open)','opened',['openned','opend','open'],'She opened the door.','Ella abrió la puerta.','shi óupend de dor','+ed','','Past Simple','Sujeto + verbo-ed'),
+    gseed('We ___ English last night. (study)','studied',['studyed','studed','study'],'We studied English last night.','Estudiamos inglés anoche.','uí stádid ínglish last náit','consonante+y → ied','study → studied.','Past Simple','Sujeto + verbo-ied'),
+    gseed('He ___ the bus. (stop)','stopped',['stoped','stopd','stop'],'He stopped the bus.','Él paró el bus.','ji stopt de bas','una vocal + consonante → doble consonante + ed','stop → stopped (doble p).','Past Simple','Sujeto + verbo-ed')
   ]},
   'Past Simple — irregular verbs (A2)':{ kind:'grammar', seeds:[
     gseed('Yesterday I ___ to work. (go)','went',['goed','gone','goned'],'Yesterday I went to work.','Ayer fui a trabajar.','iésterdei ái uént tu uérk','go → went','Los irregulares NO usan -ed.','Past Simple irregular','Sujeto + verbo irregular'),
@@ -2302,7 +2308,11 @@ function autoRegisterGlossary(){
     for(let n=0;n<=100;n++){ const w=numToWords(n); if(w&&w.en){ addG(w.en,w.es,'número',numPron(w.en)); if(w.en.indexOf('-')>=0) addG(w.en.replace(/-/g,''),w.es,'número',numPron(w.en)); } }
     if(typeof LETTER_Q!=='undefined') LETTER_Q.forEach(x=>addG(x.name,'nombre de la letra '+x.L,'letra',x.name));
     // palabras con SU PRONUNCIACIÓN (3er campo). Se fuerza el pron aunque la palabra ya exista sin él.
-    [['after','después','áfter'],['afternoon','tarde','afternún'],['morning','mañana','mórning'],['before','antes','bifór'],['behind','detrás de','bijáind'],['please','por favor','plis'],['up','arriba','ap'],['each','cada','ich'],['means','significa','mins'],['meaning','significado','míning'],['later','después','léiter'],['half','media / mitad','jaf'],['past','pasada (la hora)','past'],['quarter','cuarto','cuórter'],["o'clock",'en punto','oclók'],['noon','mediodía','nun'],['outside','afuera','áutsaid'],['room','cuarto / habitación','rum'],['words','palabras','uérds'],['word','palabra','uérd'],['order','orden','órder'],['called','se llama','cold'],['front','frente','front'],['next','siguiente / próximo','nekst'],['double','doble','dábol'],['back','de vuelta / atrás','bak'],['breakfast','desayuno','brékfast'],['lunch','almuerzo','lanch'],['dinner','cena','díner'],['shower','ducha','sháuer'],['police','policía','polís'],['officer','oficial','ófiser'],['together','juntos','tuguéder'],['learning','aprendiendo','lérning'],['little','poco','lítol'],['very','muy','véri'],['too','también','tú'],['name','nombre','néim'],['pet','mascota','pet'],['pets','mascotas','pets'],['big','grande','big'],['small','pequeño','smol'],['friendly','amable','fréndli'],['beautiful','hermoso','biútiful'],['their','su (de ellos)','der'],['names','nombres','néims'],['number','número','námber'],['phone','teléfono','fóun'],['zero','cero','síro'],['sofa','sofá','sóufa'],['night','noche','náit'],['every','cada / todos','évri'],['here','aquí','jíar'],['home','casa','jóum'],['work','trabajo / trabajar','uérk'],['from','de / desde','from'],['call','llamar','col'],['can','poder','can'],["can't",'no poder','cant'],['clock','reloj','clok'],['close','cerrar','clóus'],["doesn't",'no (con he/she/it)','dásent'],["don't",'no','dóunt'],['listen','escuchar','lísen'],['movies','películas','múvis'],['music','música','miúsic'],['office','oficina','ófis'],['open','abrir','óupen'],['tea','té','ti'],['wake','despertar','uéik'],['wash','lavar','uósh'],['weekends','fines de semana','uíkends'],['brush','cepillar','brash'],['come','venir','kam'],['cook','cocinar / cocinero','cuk'],['fish','pez / pescado','fish'],['chicken','pollo / gallina','chíken'],['hot','caliente / caluroso','jot'],['thirsty','con sed','zérsti'],['hungry','con hambre','jángri'],['all','todo','ol'],['any','algún / nada','éni'],['apples','manzanas','ápols'],['best','mejor','best'],['children','niños','chíldren'],['date','fecha','déit'],['else','más','els'],['family','familia','fámili'],['families','familias','fámilis'],['kilo','kilo','kílo'],['kilos','kilos','kílos'],['much','mucho','mach'],['per','por','per'],['person','persona','pérson'],['some','algo de','sam'],['thank','gracias','zénk'],['thousand','mil','záusand'],['fresh','fresco','fresh'],['hair','cabello','jéer'],['eyes','ojos','áis'],['shirt','camisa','shert'],['brown','marrón','bráun'],['long','largo','long'],['tall','alto','tol'],['box','caja','box'],['city','ciudad','síti'],['foot','pie','fut'],['knife','cuchillo','náif'],['man','hombre','man'],['tomato','tomate','toméito'],['tooth','diente','tuz'],['woman','mujer','uúman'],['leaf','hoja','lif'],['mouse','ratón','máus'],['pesos','pesos','pésos'],['dog','perro','dog'],['cat','gato','cat']].forEach(p=>{ addG(p[0],p[1],'',p[2]); const k=norm(p[0]); if(GLOSSARY[k] && !GLOSSARY[k].pron && p[2]) GLOSSARY[k].pron=p[2]; });
+    [['after','después','áfter'],['afternoon','tarde','afternún'],['morning','mañana','mórning'],['before','antes','bifór'],['behind','detrás de','bijáind'],['please','por favor','plis'],['up','arriba','ap'],['each','cada','ich'],['means','significa','mins'],['meaning','significado','míning'],['later','después','léiter'],['half','media / mitad','jaf'],['past','pasada (la hora)','past'],['quarter','cuarto','cuórter'],["o'clock",'en punto','oclók'],['noon','mediodía','nun'],['outside','afuera','áutsaid'],['room','cuarto / habitación','rum'],['words','palabras','uérds'],['word','palabra','uérd'],['order','orden','órder'],['called','se llama','cold'],['front','frente','front'],['next','siguiente / próximo','nekst'],['double','doble','dábol'],['back','de vuelta / atrás','bak'],['breakfast','desayuno','brékfast'],['lunch','almuerzo','lanch'],['dinner','cena','díner'],['shower','ducha','sháuer'],['police','policía','polís'],['officer','oficial','ófiser'],['together','juntos','tuguéder'],['learning','aprendiendo','lérning'],['little','poco','lítol'],['very','muy','véri'],['too','también','tú'],['name','nombre','néim'],['pet','mascota','pet'],['pets','mascotas','pets'],['big','grande','big'],['small','pequeño','smol'],['friendly','amable','fréndli'],['beautiful','hermoso','biútiful'],['their','su (de ellos)','der'],['names','nombres','néims'],['number','número','námber'],['phone','teléfono','fóun'],['zero','cero','síro'],['sofa','sofá','sóufa'],['night','noche','náit'],['every','cada / todos','évri'],['here','aquí','jíar'],['home','casa','jóum'],['work','trabajo / trabajar','uérk'],['from','de / desde','from'],['call','llamar','col'],['can','poder','can'],["can't",'no poder','cant'],['clock','reloj','clok'],['close','cerrar','clóus'],["doesn't",'no (con he/she/it)','dásent'],["don't",'no','dóunt'],['listen','escuchar','lísen'],['movies','películas','múvis'],['music','música','miúsic'],['office','oficina','ófis'],['open','abrir','óupen'],['tea','té','ti'],['wake','despertar','uéik'],['wash','lavar','uósh'],['weekends','fines de semana','uíkends'],['brush','cepillar','brash'],['come','venir','kam'],['cook','cocinar / cocinero','cuk'],['fish','pez / pescado','fish'],['chicken','pollo / gallina','chíken'],['hot','caliente / caluroso','jot'],['thirsty','con sed','zérsti'],['hungry','con hambre','jángri'],['all','todo','ol'],['any','algún / nada','éni'],['apples','manzanas','ápols'],['best','mejor','best'],['children','niños','chíldren'],['date','fecha','déit'],['else','más','els'],['family','familia','fámili'],['families','familias','fámilis'],['kilo','kilo','kílo'],['kilos','kilos','kílos'],['much','mucho','mach'],['per','por','per'],['person','persona','pérson'],['some','algo de','sam'],['thank','gracias','zénk'],['thousand','mil','záusand'],['fresh','fresco','fresh'],['hair','cabello','jéer'],['eyes','ojos','áis'],['shirt','camisa','shert'],['brown','marrón','bráun'],['long','largo','long'],['tall','alto','tol'],['box','caja','box'],['city','ciudad','síti'],['foot','pie','fut'],['knife','cuchillo','náif'],['man','hombre','man'],['tomato','tomate','toméito'],['tooth','diente','tuz'],['woman','mujer','uúman'],['leaf','hoja','lif'],['mouse','ratón','máus'],['pesos','pesos','pésos'],['dog','perro','dog'],['cat','gato','cat'],
+    // palabras A2 detectadas sin pronunciación por la auditoría
+    ['than','que (comparando)','dan'],['more','más','mor'],['most','el/la más','móust'],['better','mejor','béter'],['bigger','más grande','bíguer'],['biggest','el más grande','bíguest'],['many','muchos','méni'],['gone','ido (participio de go)','gon'],['opened','abrió / abierto','óupend'],['stopped','paró','stopt'],['middle','medio / mitad','mídel'],['hours','horas','áuers'],['times','veces','táims'],['last','último / pasado','last'],['shop','tienda','shop'],['loves','ama (he/she)','lavs'],['washing','lavando','uóshing'],['opens','abre','óupens'],['opening','abriendo','óupening'],['calls','llama','cols'],['calling','llamando','cóling'],['closes','cierra','clóuses'],
+    // nombres propios (para que el toque-palabra también los explique)
+    ['Mila','Mila (tu gata 🐈)','Míla'],['Jasper','Jasper (tu gato 🐈)','Yásper'],['Diego','Diego (tú 👤)','Diégo'],['Leidy','Leidy (tu esposa 💑)','Léidi'],['Soacha','Soacha (tu ciudad 🏙️)','Soácha'],['Bogotá','Bogotá (capital 🇨🇴)','Bogotá'],['Mosquera','Mosquera (ciudad 🏙️)','Mosquéra'],['Colombia','Colombia (tu país 🇨🇴)','Colómbia'],['Tolima','Tolima (departamento 🌄)','Tolíma']].forEach(p=>{ addG(p[0],p[1],'',p[2]); const k=norm(p[0]); if(GLOSSARY[k] && !GLOSSARY[k].pron && p[2]) GLOSSARY[k].pron=p[2]; });
   }catch(e){}
 }
 autoRegisterGlossary();

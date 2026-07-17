@@ -3681,15 +3681,16 @@ function finalizeSub(ok, exp, sq, fb){
 
 /* Un TOQUE en una palabra = oír + traducir. Para ELEGIR: mantener presionado (barra que se llena). */
 const HOLD_MS=900;
-function attachHoldSelect(btn, onSelect){
+function attachHoldSelect(btn, onSelect, ms){
+  ms=ms||HOLD_MS;
   btn.classList.add('hold-select');
   const fill=document.createElement('div'); fill.className='hold-fill'; btn.insertBefore(fill, btn.firstChild);
   btn.style.position='relative';
   let timer=null;
   const reset=()=>{ clearTimeout(timer); timer=null; fill.style.transition='width .18s ease'; fill.style.width='0%'; };
   const start=e=>{ if(btn.disabled) return; if(e.target.closest('.tts-btn')) return; // el parlante hace lo suyo
-    fill.style.transition='none'; fill.style.width='0%'; void fill.offsetWidth; fill.style.transition='width '+HOLD_MS+'ms linear'; fill.style.width='100%';
-    timer=setTimeout(()=>{ window._holdCommitted=true; onSelect(); reset(); }, HOLD_MS); };
+    fill.style.transition='none'; fill.style.width='0%'; void fill.offsetWidth; fill.style.transition='width '+ms+'ms linear'; fill.style.width='100%';
+    timer=setTimeout(()=>{ window._holdCommitted=true; onSelect(); reset(); }, ms); };
   btn.addEventListener('pointerdown', start);
   btn.addEventListener('pointerup', reset);
   btn.addEventListener('pointerleave', reset);
@@ -3776,8 +3777,8 @@ function renderHuecos(q,ctx){
   const bank=(q.bank&&q.bank.length?q.bank:q.answers.map(a=>Array.isArray(a)?a[0]:a)).map((w,i)=>({w:String(w),used:false,id:i}));
   const sentWrap=document.createElement('div'); sentWrap.className='text-base md:text-lg leading-loose mb-3'; const bankWrap=document.createElement('div'); bankWrap.className='flex flex-wrap gap-2 mb-3';
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; slot.onclick=()=>{ if(ctx.answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }; sentWrap.appendChild(slot); } }); }
-  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; b.onclick=()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }; bankWrap.appendChild(b); }); }
+  function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; attachHoldSelect(slot, ()=>{ if(ctx.answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }, 600); sentWrap.appendChild(slot); } }); }
+  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; attachHoldSelect(b, ()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }, 600); bankWrap.appendChild(b); }); }
   ctx.area.appendChild(sentWrap); ctx.area.appendChild(bankWrap); ctx.area.appendChild(chk);
   chk.onclick=()=>{ if(ctx.answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const valid=[].concat(q.answers[i]||[]); const good=valid.some(v=>norm(s.w)===norm(v)); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, valía: '+valid.join(' / ')); } }); chk.disabled=true; chk.classList.add('btn-disabled'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Ejemplo correcto: "'+q.sentence+'".'), q); };
   drawSentence(); drawBank();
@@ -3788,10 +3789,10 @@ function renderOrder(q,ctx){
   const ansRow=document.createElement('div'); ansRow.className='min-h-[52px] flex flex-wrap gap-2 p-2 mb-3 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50';
   const bankRow=document.createElement('div'); bankRow.className='flex flex-wrap gap-2 mb-3';
   const checkBtn=document.createElement('button'); checkBtn.textContent='Comprobar ✅'; checkBtn.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
-  const hint=document.createElement('p'); hint.className='text-xs text-slate-500 mb-1'; hint.textContent='Toca las palabras en orden:';
+  const hint=document.createElement('p'); hint.className='text-xs text-slate-500 mb-1'; hint.textContent='👆 toca una palabra para oírla · ✋ mantén presionado para ponerla en orden';
   ctx.area.appendChild(hint); ctx.area.appendChild(ansRow); ctx.area.appendChild(bankRow); ctx.area.appendChild(checkBtn);
   function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML=wordSpanify(w); return b; }
-  function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); c.onclick=()=>{ if(ctx.answered)return; ans.splice(pos,1); bank.push(it); draw(); }; ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); c.onclick=()=>{ if(ctx.answered)return; bank.splice(pos,1); ans.push(it); draw(); }; bankRow.appendChild(c); }); }
+  function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); attachHoldSelect(c, ()=>{ if(ctx.answered)return; ans.splice(pos,1); bank.push(it); draw(); }, 600); ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); attachHoldSelect(c, ()=>{ if(ctx.answered)return; bank.splice(pos,1); ans.push(it); draw(); }, 600); bankRow.appendChild(c); }); }
   checkBtn.onclick=()=>{ if(ctx.answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const userOrder=ans.map(a=>a.w).join(' '); const ok=userOrder.toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true; ctx.done(ok, ok?'¡Excelente orden!':('Tu orden: "'+userOrder+'" → está mal. El correcto es: "'+correct.join(' ')+'".'), q); };
   draw();
 }
@@ -3809,13 +3810,15 @@ function renderMatch(q,ctx){
       const kb=karaokeBtnEl(()=>b); if(kb){ kb.classList.add('tts-mini','align-middle'); const mt=b.querySelector('.match-en'); if(mt)mt.appendChild(kb); }
     } else { b.innerHTML='<span class="match-t block">'+escapeHtml(item.t)+'</span>'; }
     b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
-    b.onclick=()=>{ if(ctx.answered||b.disabled)return;
+    b.insertAdjacentHTML('beforeend','<span class="block opt-hint">'+(side==='L'?'👆 toca una palabra para oírla · ':'')+'✋ mantén presionado para unir</span>');
+    // ELEGIR/UNIR = mantener presionado (tocar una palabra abre su burbuja + audio)
+    attachHoldSelect(b, ()=>{ if(ctx.answered||b.disabled)return;
       if(side==='L'){ if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=b; selId=item.id; b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }
       else { if(selId===null)return;
         if(item.id===selId){ b.classList.add('btn-selected-correct'); b.disabled=true; selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn.classList.add('btn-selected-correct'); selBtn.disabled=true; selBtn=null; selId=null; matched++; if(matched===q.pairs.length){ ctx.answered=true; ctx.done(errors===0, errors===0?'¡Perfecto! Uniste todo bien.':'¡Completado! Repite para hacerlo sin errores.', q); } }
         else { errors++; b.classList.add('btn-selected-incorrect'); const bad=b; setTimeout(()=>bad.classList.remove('btn-selected-incorrect'),450); if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=null; selId=null; }
       }
-    };
+    });
     return b;
   }
   left.forEach(it=>colL.appendChild(mk(it,'L'))); right.forEach(it=>colR.appendChild(mk(it,'R'))); grid.appendChild(colL); grid.appendChild(colR); ctx.area.appendChild(grid);

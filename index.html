@@ -39,9 +39,13 @@
   @keyframes pop-ok { 0%{transform:scale(1)} 45%{transform:scale(1.04)} 100%{transform:scale(1)} }
   @keyframes shake-no { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 60%{transform:translateX(5px)} }
   .match-col-head { font-size:.65rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; text-align:center; padding:.2rem .5rem; border-radius:9999px; }
-  .tts-btn { display:inline-flex; align-items:center; justify-content:center; width:1.9rem; height:1.9rem; border-radius:9999px; background:#ede9fe; border:1px solid #ddd6fe; font-size:.95rem; margin-left:.35rem; vertical-align:middle; transition:all .15s; cursor:pointer; }
+  .tts-btn { display:inline-flex; align-items:center; justify-content:center; width:1.9rem; height:1.9rem; border-radius:9999px; background:#ede9fe; border:1px solid #ddd6fe; font-size:.95rem; margin-left:.3rem; vertical-align:middle; transition:all .15s; cursor:pointer; }
   .tts-btn:hover { background:#c4b5fd; transform:scale(1.12); }
   .tts-btn:active { transform:scale(.95); }
+  .tts-btn.tts-slow { background:#fef3c7; border-color:#fde68a; } /* 🐢 lento = ámbar, distinto del normal */
+  .tts-btn.tts-slow:hover { background:#fcd34d; }
+  .audio-ctl { display:inline-flex; align-items:center; gap:.15rem; vertical-align:middle; white-space:nowrap; }
+  .tts-mini .tts-btn, .tts-btn.tts-mini { width:1.5rem; height:1.5rem; font-size:.75rem; }
   #progress-bar { background-size:200% 100%!important; animation:flow 3s linear infinite; }
   @keyframes flow { 0%{background-position:0% 0}100%{background-position:200% 0} }
   /* ===== rediseño premium del área de pregunta/respuesta ===== */
@@ -1225,46 +1229,48 @@ function speak(text, slow){
    <span class="pk" data-ki="N"> (pronunciación). Resalta ambos por el mismo índice. Usa onboundary. */
 let _kaClear=null;
 function clearKaraoke(){ if(_kaClear){ try{_kaClear();}catch(e){} _kaClear=null; } }
-/* Núcleo: enSpans (inglés, en orden) + prSpans (pronunciación, en orden y misma cantidad, opcional).
-   Resalta la palabra i y su pronunciación i en verde a medida que el audio la va diciendo. */
-function _kaCore(enSpans, prSpans, slow){
+/* Núcleo universal: habla `text` (inglés) y resalta en VERDE, palabra por palabra, TODOS los
+   conjuntos de spans en `spanSets` a la vez (inglés y/o pronunciación). Usa onboundary. */
+function _kaCore(text, spanSets, slow){
   try{
     if(!('speechSynthesis' in window)) return;
     speechSynthesis.cancel(); clearKaraoke();
-    enSpans=Array.prototype.slice.call(enSpans||[]).filter(s=>s&&s.textContent.trim());
-    prSpans=Array.prototype.slice.call(prSpans||[]);
-    if(!enSpans.length) return;
-    const all=()=>{ const a=enSpans.slice(); prSpans.forEach(s=>a.push(s)); return a; };
-    _kaClear=()=>all().forEach(s=>s.classList.remove('ka-on','ka-done'));
-    let text=''; const starts=[];
-    enSpans.forEach(s=>{ starts.push(text.length); text+=s.textContent+' '; });
-    const u=new SpeechSynthesisUtterance(text.trim());
+    spanSets=(spanSets||[]).map(s=>Array.prototype.slice.call(s||[])).filter(a=>a.length);
+    const words=String(text).trim().split(/\s+/).filter(Boolean);
+    if(!words.length) return;
+    let t=''; const starts=[]; words.forEach(w=>{ starts.push(t.length); t+=w+' '; });
+    _kaClear=()=>spanSets.forEach(a=>a.forEach(s=>s.classList.remove('ka-on','ka-done')));
+    const u=new SpeechSynthesisUtterance(t.trim());
     if(TTS_VOICE) u.voice=TTS_VOICE; u.lang=(TTS_VOICE&&TTS_VOICE.lang)||'en-US';
-    u.rate=slow?0.55:0.8; u.pitch=1;
-    const on=i=>{ if(enSpans[i])enSpans[i].classList.add('ka-on'); if(prSpans[i])prSpans[i].classList.add('ka-on'); };
-    const done=i=>{ if(enSpans[i]){enSpans[i].classList.remove('ka-on');enSpans[i].classList.add('ka-done');} if(prSpans[i]){prSpans[i].classList.remove('ka-on');prSpans[i].classList.add('ka-done');} };
+    u.rate=slow?0.6:0.85; u.pitch=1; // normal moderado / lento fluido
+    const on=i=>spanSets.forEach(a=>{ if(a[i])a[i].classList.add('ka-on'); });
+    const off=i=>spanSets.forEach(a=>{ if(a[i]){a[i].classList.remove('ka-on');a[i].classList.add('ka-done');} });
     let last=-1;
     u.onboundary=e=>{ if(e.name&&e.name!=='word') return; const ci=e.charIndex; let pos=0;
       for(let i=0;i<starts.length;i++){ if(starts[i]<=ci) pos=i; else break; }
-      if(pos!==last){ if(last>=0)done(last); on(pos); last=pos; } };
-    u.onend=u.onerror=()=>{ all().forEach(s=>s.classList.remove('ka-on')); const snap=all(); setTimeout(()=>snap.forEach(s=>s.classList.remove('ka-done')),1400); _kaClear=null; };
+      if(pos!==last){ if(last>=0)off(last); on(pos); last=pos; } };
+    u.onend=u.onerror=()=>{ spanSets.forEach(a=>a.forEach(s=>s.classList.remove('ka-on'))); const snap=spanSets; setTimeout(()=>snap.forEach(a=>a.forEach(s=>s.classList.remove('ka-done'))),1400); _kaClear=null; };
     speechSynthesis.speak(u);
   }catch(e){}
 }
-// karaoke sobre un ROOT que contiene .wtap (inglés) y opcional .pk (pron) — para diálogos y tarjeta
-function speakKaraokeRoot(root, slow){ if(!root) return; _kaCore(root.querySelectorAll('.wtap'), root.querySelectorAll('.pk'), slow); }
-// compat con llamadas antiguas
-function speakKaraoke(spans, slow){ _kaCore(spans, [], slow); }
-/* Botón 🔊 que KARAOKEA (inglés + pronunciación) dentro de un contenedor. */
-function karaokeBtnEl(getEl){
-  if(!('speechSynthesis' in window)) return null;
-  const b=document.createElement('button'); b.type='button'; b.className='tts-btn'; b.textContent='🔊'; b.title='Escuchar señalando cada palabra (2º toque: lento 🐢)';
-  let slow=false;
-  b.onclick=e=>{ e.stopPropagation(); const el=getEl(); if(el) speakKaraokeRoot(el, slow); slow=!slow; };
-  return b;
+// karaoke sobre un ROOT con .wtap (inglés) y opcional .pk (pron): habla el inglés visible y resalta ambos
+function speakKaraokeRoot(root, slow){ if(!root) return; const en=root.querySelectorAll('.wtap'); const txt=Array.prototype.map.call(en,s=>s.textContent).join(' '); _kaCore(txt||root.textContent, [en, root.querySelectorAll('.pk')], slow); }
+// karaoke hablando un texto dado (inglés real, ej. sin el hueco ___) y resaltando los conjuntos dados
+function speakKaraokeText(text, spanSets, slow){ _kaCore(text, spanSets, slow); }
+// compat
+function speakKaraoke(spans, slow){ const a=Array.prototype.slice.call(spans||[]); _kaCore(a.map(s=>s.textContent).join(' '), [a], slow); }
+/* DOS PARLANTES juntos: 🔊 normal (moderado) y 🐢 lento (fluido). onPlay(slow) reproduce. */
+function audioBtns(onPlay, cls){
+  const w=document.createElement('span'); w.className='audio-ctl '+(cls||'');
+  if(!('speechSynthesis' in window)) return w;
+  const n=document.createElement('button'); n.type='button'; n.className='tts-btn'; n.textContent='🔊'; n.title='Escuchar (velocidad normal)';
+  const s=document.createElement('button'); s.type='button'; s.className='tts-btn tts-slow'; s.textContent='🐢'; s.title='Escuchar lento (fluido)';
+  n.onclick=e=>{ e.stopPropagation(); onPlay(false); };
+  s.onclick=e=>{ e.stopPropagation(); onPlay(true); };
+  w.appendChild(n); w.appendChild(s); return w;
 }
-/* Botón 🔊 que KARAOKEA un par explícito de elementos (inglés + pron en distintos contenedores). */
-function karaokePairBtnHTML(){ return ''; }
+/* Parlantes que KARAOKEAN el contenedor (inglés + pron). getEl devuelve el root. */
+function karaokeBtnEl(getEl){ return audioBtns(slow=>{ const el=getEl(); if(el) speakKaraokeRoot(el, slow); }); }
 /* Genera las DOS líneas emparejadas: inglés (.wtap) + pronunciación (.pk), con el MISMO data-ki,
    para que el karaoke resalte ambas en verde sincronizadas. Devuelve {enHTML, pronHTML}. */
 function readAlongLines(text){
@@ -1287,15 +1293,12 @@ function readAlongLines(text){
 function ttsBtnHTML(text, extraCls){
   if(!('speechSynthesis' in window)) return '';
   const t=escapeHtml(String(text));
-  return '<span role="button" tabindex="0" class="tts-btn '+(extraCls||'')+'" data-say="'+t+'" onclick="event.stopPropagation();speak(this.dataset.say, this.dataset.slow===\'1\');this.dataset.slow=this.dataset.slow===\'1\'?\'0\':\'1\';" title="Toca para escuchar (2º toque: lento 🐢)">🔊</span>';
+  return '<span class="audio-ctl '+(extraCls||'')+'">'+
+    '<span role="button" tabindex="0" class="tts-btn" data-say="'+t+'" onclick="event.stopPropagation();speak(this.dataset.say,false)" title="Escuchar (normal)">🔊</span>'+
+    '<span role="button" tabindex="0" class="tts-btn tts-slow" data-say="'+t+'" onclick="event.stopPropagation();speak(this.dataset.say,true)" title="Escuchar lento (fluido)">🐢</span></span>';
 }
-/* Botón parlante como elemento DOM */
-function ttsBtnEl(text){
-  if(!('speechSynthesis' in window)) return null;
-  const b=document.createElement('button'); b.type='button'; b.className='tts-btn'; b.textContent='🔊'; b.title='Toca para escuchar (2º toque: lento 🐢)';
-  let slow=false;
-  b.onclick=e=>{ e.stopPropagation(); speak(text, slow); slow=!slow; };
-  return b;
+/* Parlantes como elemento DOM (dos velocidades) */
+function ttsBtnEl(text){ return audioBtns(slow=>speak(text, slow));
 }
 /* ============ FONÉTICA CONTEXTUAL (español latino, sin tecnicismos) ============
    Detecta los sonidos "difíciles" presentes en la frase y explica POR QUÉ suenan así,
@@ -2607,7 +2610,9 @@ function autoRegisterGlossary(){
     // palabras A2 detectadas sin pronunciación por la auditoría
     ['than','que (comparando)','dan'],['more','más','mor'],['most','el/la más','móust'],['better','mejor','béter'],['bigger','más grande','bíguer'],['biggest','el más grande','bíguest'],['many','muchos','méni'],['gone','ido (participio de go)','gon'],['opened','abrió / abierto','óupend'],['stopped','paró','stopt'],['middle','medio / mitad','mídel'],['hours','horas','áuers'],['times','veces','táims'],['last','último / pasado','last'],['shop','tienda','shop'],['loves','ama (he/she)','lavs'],['washing','lavando','uáshing'],['opens','abre','óupens'],['opening','abriendo','óupening'],['calls','llama','cols'],['calling','llamando','cóling'],['closes','cierra','clóuses'],
     // detectadas SIN pron por la auditoría de cobertura total (incluidas hello/hi de los saludos!)
-    ['hello','hola','jelóu'],['hi','hola (informal)','jái'],['great','genial / buenísimo','gréit'],['perfect','perfecto','pérfect'],['fruit','fruta','frut'],['wow','guau / ¡uy!','uáu'],['by','por / junto a','bái'],['once','una vez','uáns'],['twice','dos veces','tuáis'],['tapping','tocando (la pantalla)','táping'],['double-u','nombre de la letra W','dábliu'],['Alonso','Alonso (tu papá 👨)','Alónso'],['Tom','Tom (nombre)','Tam'],['united','unido(s)','iunáited'],['states','estados','stéits'],['sock','media / calcetín','sak'],['dollar','dólar','dálar'],['dollars','dólares','dálars'],['comma','coma (,)','cáma'],['colon','dos puntos (:)','cóulon'],['anything','algo / cualquier cosa','énizing'],['Ana','Ana (nombre)','Ána'],
+    ['hello','hola','jelóu'],['hi','hola (informal)','jái'],['great','genial / buenísimo','gréit'],['perfect','perfecto','pérfect'],['fruit','fruta','frut'],['wow','guau / ¡uy!','uáu'],['by','por / junto a','bái'],['once','una vez','uáns'],['twice','dos veces','tuáis'],['tapping','tocando (la pantalla)','táping'],['double-u','nombre de la letra W','dábliu'],['Alonso','Alonso (tu papá 👨)','Alónso'],['Tom','Tom (nombre)','Tam'],['united','unido(s)','iunáited'],['states','estados','stéits'],
+    // diptongos y palabras multi-sonido detectadas por la auditoría IPA
+    ['boy','niño / chico','bói'],['boys','niños','bóis'],['toy','juguete','tói'],['toys','juguetes','tóis'],['use','usar','iús'],['uses','usa','iúses'],['used','usó / usado','iúsd'],['enjoy','disfrutar','enyói'],['point','punto / señalar','póint'],['voice','voz','vóis'],['noise','ruido','nóis'],['coin','moneda','cóin'],['down','abajo','dáun'],['town','pueblo','táun'],['brown','marrón','bráun'],['flower','flor','fláuer'],['wind','viento','uínd'],['present','presente / regalo','présent'],['sock','media / calcetín','sak'],['dollar','dólar','dálar'],['dollars','dólares','dálars'],['comma','coma (,)','cáma'],['colon','dos puntos (:)','cóulon'],['anything','algo / cualquier cosa','énizing'],['Ana','Ana (nombre)','Ána'],
     // nombres propios (para que el toque-palabra también los explique)
     ['Mila','Mila (tu gata 🐈)','Míla'],['Jasper','Jasper (tu gato 🐈)','Yásper'],['Diego','Diego (tú 👤)','Diégo'],['Leidy','Leidy (tu esposa 💑)','Léidi'],['Soacha','Soacha (tu ciudad 🏙️)','Soácha'],['Bogotá','Bogotá (capital 🇨🇴)','Bogotá'],['Mosquera','Mosquera (ciudad 🏙️)','Mosquéra'],['Colombia','Colombia (tu país 🇨🇴)','Colómbia'],['Tolima','Tolima (departamento 🌄)','Tolíma']].forEach(p=>{ addG(p[0],p[1],'',p[2]); const k=norm(p[0]); if(GLOSSARY[k] && !GLOSSARY[k].pron && p[2]) GLOSSARY[k].pron=p[2]; });
     // ============ CORRECCIONES DE FONÉTICA AMERICANA REAL (auditoría 200%) ============
@@ -3217,7 +3222,9 @@ document.addEventListener('click', e=>{
   //  · opciones/match (elegir = mantener presionado) → burbuja
   //  · fichas de huecos/ordenar (tocar = colocar) → NO burbuja (el toque coloca la ficha)
   if(w && (!w.closest('button') || w.closest('.hold-select'))){ showWordPopup(w); e.stopPropagation(); e.preventDefault(); return; }
-  if(!e.target.closest('#word-popup')) hideWordPopup();
+  // burbuja abierta: tocar EN CUALQUIER LADO la cierra (menos sus parlantes 🔊🐢). Nada molesto.
+  const pop=document.getElementById('word-popup');
+  if(pop && !pop.classList.contains('hidden')){ if(!e.target.closest('.tts-btn')) hideWordPopup(); }
 }, true);
 
 /* ============================================================
@@ -3313,8 +3320,10 @@ function loadQuestion(){
   //  · emparejar / varias correctas: cada frase lleva su pronunciación debajo (en su botón).
   const topFmt = (fmt==='opcion'||fmt==='vf');
   if(topFmt && q.kind!=='vocab'){
-    let ph=phonHTML(q.q); if(!ph && q.pron) ph=escapeHtml(q.pron);
-    if(ph){ qp.innerHTML='🗣️ '+ph+ttsBtnHTML(q.q); qp.classList.remove('hidden'); } else qp.classList.add('hidden');
+    const raQ=readAlongLines(q.q); let pr=raQ.pronHTML; if(!pr && q.pron) pr=escapeHtml(q.pron);
+    if(pr){ qp.innerHTML='🗣️ '+pr; // parlantes que karaokean pregunta (#question-text) + esta pron
+      const kb=audioBtns(slow=>speakKaraokeText(Array.prototype.map.call(ui.qText.querySelectorAll('.wtap'),s=>s.textContent).join(' '), [ui.qText.querySelectorAll('.wtap'), qp.querySelectorAll('.pk')], slow));
+      qp.appendChild(kb); qp.classList.remove('hidden'); } else qp.classList.add('hidden');
     if(q.trad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
   } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
   // estructura GENÉRICA (no revela la respuesta)
@@ -3357,8 +3366,10 @@ function loadQuestion(){
 /* Bloque de referencia bajo la respuesta: 🗣️ pronunciación de la oración + 📖 Ver traducción (oculta) */
 function sentenceRefBlock(q){
   const wrap=document.createElement('div'); wrap.className='mt-4 pt-2 border-t border-slate-100';
-  const ph=phonHTML(q.sentence)||escapeHtml(q.pron||'');
-  if(ph){ const pr=document.createElement('div'); pr.className='text-sm text-purple-700 italic'; pr.innerHTML='🗣️ '+ph; const tb=ttsBtnEl(q.sentence); if(tb)pr.appendChild(tb); wrap.appendChild(pr); }
+  const ra=readAlongLines(q.sentence); const prHTML=ra.pronHTML||escapeHtml(q.pron||'');
+  if(prHTML){ const pr=document.createElement('div'); pr.className='text-sm text-purple-700 italic'; pr.innerHTML='🗣️ '+prHTML;
+    // parlantes que karaokean la pronunciación (habla la frase real, resalta la pron)
+    const kb=audioBtns(slow=>speakKaraokeText(q.sentence, [pr.querySelectorAll('.pk')], slow)); pr.appendChild(kb); wrap.appendChild(pr); }
   if(q.trad){ const btn=document.createElement('button'); btn.className='mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline'; btn.textContent='📖 Ver traducción';
     const div=document.createElement('div'); div.className='hidden text-sm text-blue-800 mt-0.5'; div.textContent='📖 '+q.trad;
     btn.onclick=()=>{ div.classList.toggle('hidden'); btn.textContent=div.classList.contains('hidden')?'📖 Ver traducción':'👀 Ocultar'; };
@@ -3692,8 +3703,11 @@ function renderChoice(q,ctx){
   const opts=shuffle(q.opts.slice()); // re-baraja: la correcta cae en cualquier posición a/b/c/d cada vez
   opts.forEach((opt,i)=>{
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
-    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+ttsBtnHTML(opt.t,'tts-mini')+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para elegir</span></span></span><span class="hidden icon-status text-lg"></span>';
+    const ra=readAlongLines(opt.t); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
+    const pr=ra.pronHTML||escapeHtml(opt.pron||'');
+    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para elegir</span></span></span><span class="hidden icon-status text-lg"></span>';
+    // parlantes (normal 🔊 + lento 🐢) que karaokean inglés + pron de ESTA opción
+    const kb=audioBtns(slow=>speakKaraokeText(opt.t, [btn.querySelectorAll('.opt-t .wtap'), btn.querySelectorAll('.opt-pron .pk')], slow), 'tts-mini'); const enBox=btn.querySelector('.opt-en'); if(enBox)enBox.appendChild(kb);
     const commit=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
@@ -3709,8 +3723,10 @@ function renderMultiple(q,ctx){
   const sel=new Set(); const box=document.createElement('div'); box.className='space-y-2';
   const opts=shuffle(q.opts.slice()); // re-baraja posiciones a/b/c/d
   opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
-    const ph=phonHTML(opt.t)||escapeHtml(opt.pron||''); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
-    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="block">'+em+'<span class="opt-t">'+wordSpanify(opt.t)+'</span></span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal">🗣️ '+ph+ttsBtnHTML(opt.t,'tts-mini')+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para marcar</span></span></span><span class="check-box text-lg">⬜</span>';
+    const ra=readAlongLines(opt.t); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
+    const pr=ra.pronHTML||escapeHtml(opt.pron||'');
+    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para marcar</span></span></span><span class="check-box text-lg">⬜</span>';
+    const kb=audioBtns(slow=>speakKaraokeText(opt.t, [b.querySelectorAll('.opt-t .wtap'), b.querySelectorAll('.opt-pron .pk')], slow), 'tts-mini'); const enBox=b.querySelector('.opt-en'); if(enBox)enBox.appendChild(kb);
     attachHoldSelect(b, ()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } });
     box.appendChild(b);
   });

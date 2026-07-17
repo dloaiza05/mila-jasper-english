@@ -1301,7 +1301,8 @@ function composeGrammar(seed, fmt){
     return Object.assign({formato:'opcion', q:seed.q, opts:makeOptions(seed.a, [seed.a].concat(seed.o), '¡Correcto! '+(seed.dato||seed.f||''), seed.f||('La forma correcta es "'+seed.a+'".'))}, base);
   }
   if(fmt==='escribir'){
-    return Object.assign({formato:'escribir', q:'Write the correct word: '+seed.q, answer:seed.a, respuestas:[seed.a]}, base, {estructura:seed.est||'Write the correct form'});
+    // acepta la palabra del ___ Y TAMBIÉN la frase completa correcta (si el alumno la escribe entera, sabe)
+    return Object.assign({formato:'escribir', q:'Write the missing word: '+seed.q, answer:seed.a, respuestas:[seed.a].concat(seed.s?[seed.s]:[])}, base, {estructura:seed.est||'Write the correct form'});
   }
   if(fmt==='completar'){
     if(!seed.s || seed.s.indexOf(seed.a)<0) return null;
@@ -1588,6 +1589,7 @@ function instructionEs(q){
   if(/^Choose the English word for/.test(s)) return 'Elige la palabra correcta en inglés';
   if(/^Write in English:/.test(s)) return 'Escríbela en inglés';
   if(/^Write the correct word:/.test(s)) return 'Escribe la palabra correcta';
+  if(/^Write the missing word:/.test(s)) return 'Escribe SOLO la palabra que falta en el espacio ___ (también vale la frase completa)';
   if(/ is called ___\.$/.test(s)) return '¿Cómo se llama esa letra en inglés?';
   if(/ is correct\.$/.test(s)) return '¿Es correcta esta oración? (Verdadero / Falso)';
   if(/ means ".*"\.$/.test(s)) return '¿Es correcta esta traducción? (Verdadero / Falso)';
@@ -1739,14 +1741,16 @@ function subjectPronounGen(){
 function toBeNegQuestGen(){
   const s=pick(TB_SUBJ), c=pick(TB_COMP); const esC=s.pl?c.p:c.s; const verb=c.v==='ser'?s.ser:s.estar;
   if(Math.random()<0.5){
-    const sentence=s.en+' '+s.be+' not '+c.en+'.'; const q=s.en+' ___ not '+c.en+'. (negativo)';
-    const trad=s.es+' no '+verb+' '+esC+'.'; const pron=s.pron+' '+BE_PRON_M[s.be]+' not '+c.pr;
+    const trad=s.es+' no '+verb+' '+esC+'.';
+    const sentence=s.en+' '+s.be+' not '+c.en+'.'; const q=s.en+' ___ not '+c.en+'. ('+trad.replace(/\.$/,'')+')';
+    const pron=s.pron+' '+BE_PRON_M[s.be]+' not '+c.pr;
     return gseed(q, s.be, ['am','is','are','be'].filter(x=>x!==s.be), sentence, trad, pron, 'negativo: sujeto + am/is/are + not', 'La negación solo agrega "not".', 'Verb To Be neg/quest', 'Sujeto + to be + not + complemento');
   } else {
     // answer CAPITALIZADO (va al inicio de la pregunta): así vf/completar/huecos/multiple lo encuentran en la oración
     const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1);
-    const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (pregunta)';
-    const trad='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?'; const pron=BE_PRON_M[s.be]+' '+s.pron+' '+c.pr;
+    const trad='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?';
+    const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? ('+trad+')';
+    const pron=BE_PRON_M[s.be]+' '+s.pron+' '+c.pr;
     return gseed(q, beCap, ['Am','Is','Are','Be'].filter(x=>x!==beCap), sentence, trad, pron, 'pregunta: am/is/are + sujeto + ...?', 'En preguntas el verbo va primero.', 'Verb To Be neg/quest', 'Am/Is/Are + sujeto + complemento?');
   }
 }
@@ -1754,12 +1758,16 @@ function toBeNegQuestGen(){
 function psNegQuestGen(){
   const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v);
   if(Math.random()<0.5){
-    const aux=su.s3?"doesn't":"don't"; const sentence=su.en+' '+aux+' '+v.b+' '+c.en+'.'; const q=su.en+' ___ '+v.b+' '+c.en+'. (no)';
-    const trad=su.es+' no '+v.es[su.pers]+' '+c.es+'.'; const pron=su.pron+' '+AUX_PRON[aux]+' '+v.pb+' '+c.pr;
+    // la pista lleva la TRADUCCIÓN completa: así queda claro que es negación (y no una pregunta negativa)
+    const aux=su.s3?"doesn't":"don't"; const trad=su.es+' no '+v.es[su.pers]+' '+c.es+'.';
+    const sentence=su.en+' '+aux+' '+v.b+' '+c.en+'.'; const q=su.en+' ___ '+v.b+' '+c.en+'. ('+trad.replace(/\.$/,'')+')';
+    const pron=su.pron+' '+AUX_PRON[aux]+' '+v.pb+' '+c.pr;
     return gseed(q, aux, [su.s3?"don't":"doesn't",'not','no'], sentence, trad, pron, "negativo: don't (I/you/we/they) · doesn't (he/she/it) + verbo base", 'Con don\'t/doesn\'t el verbo va en base (sin -s).', 'Present Simple neg/quest', 'Sujeto + don\'t/doesn\'t + verbo base');
   } else {
-    const aux=su.s3?'Does':'Do'; const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (pregunta)';
-    const trad='¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?'; const pron=AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr;
+    // la pista lleva la TRADUCCIÓN: "¿Diego duerme aquí?" deja claro que es Does (pregunta SIN negación)
+    const aux=su.s3?'Does':'Do'; const trad='¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?';
+    const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? ('+trad+')';
+    const pron=AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr;
     return gseed(q, aux, [su.s3?'Do':'Does','Are','Is'], sentence, trad, pron, 'pregunta: Do (I/you/we/they) · Does (he/she/it) + sujeto + verbo base', '', 'Present Simple neg/quest', 'Do/Does + sujeto + verbo base?');
   }
 }
@@ -1936,12 +1944,14 @@ function tellingTimeGen(){
 function questionOrderGen(){
   if(Math.random()<0.5){
     const s=pick(TB_SUBJ), c=pick(TB_COMP); const beCap=s.be.charAt(0).toUpperCase()+s.be.slice(1); const verb=c.v==='ser'?s.ser:s.estar; const esC=s.pl?c.p:c.s;
-    const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? (¿?)';
-    return gseed(q, beCap, ['Am','Is','Are','Do'].filter(x=>x!==beCap).slice(0,3), sentence, '¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?', BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
+    const tradQ='¿'+verb.charAt(0).toUpperCase()+verb.slice(1)+' '+esLcSub(s.es)+' '+esC+'?';
+    const sentence=beCap+' '+lcSub(s.en)+' '+c.en+'?'; const q='___ '+lcSub(s.en)+' '+c.en+'? ('+tradQ+')';
+    return gseed(q, beCap, ['Am','Is','Are','Do'].filter(x=>x!==beCap).slice(0,3), sentence, tradQ, BE_PRON_M[s.be]+' '+s.pron+' '+c.pr, 'con to be: am/is/are + sujeto + ...?', '', 'Question Order', 'To be + sujeto + complemento?');
   }
   const su=pick(V_SUBJ), v=pick(PS_VERB), c=psComp(su,v); const aux=su.s3?'Does':'Do';
-  const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? (¿?)';
-  return gseed(q, aux, [su.s3?'Do':'Does','Is','Are'], sentence, '¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?', AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr, 'con otros verbos: Do/Does + sujeto + verbo base', '', 'Question Order', 'Do/Does + sujeto + verbo base?');
+  const tradQ2='¿'+su.es+' '+v.es[su.pers]+' '+c.es+'?';
+  const sentence=aux+' '+lcSub(su.en)+' '+v.b+' '+c.en+'?'; const q='___ '+lcSub(su.en)+' '+v.b+' '+c.en+'? ('+tradQ2+')';
+  return gseed(q, aux, [su.s3?'Do':'Does','Is','Are'], sentence, tradQ2, AUX_PRON[aux]+' '+su.pron+' '+v.pb+' '+c.pr, 'con otros verbos: Do/Does + sujeto + verbo base', '', 'Question Order', 'Do/Does + sujeto + verbo base?');
 }
 // CONECTORES and/but/or
 const CONN_AND=[{x:'coffee',y:'tea',xe:'café',ye:'té'},{x:'Mila',y:'Jasper',xe:'Mila',ye:'Jasper'},{x:'bread',y:'milk',xe:'pan',ye:'leche'},{x:'Bogotá',y:'Mosquera',xe:'Bogotá',ye:'Mosquera'},{x:'dogs',y:'cats',xe:'perros',ye:'gatos'}];
@@ -3667,7 +3677,15 @@ function renderWrite(q,ctx){
   const inp=document.createElement('input'); inp.type='text'; inp.autocomplete='off'; inp.setAttribute('autocapitalize','off'); inp.spellcheck=false; inp.className='w-full p-3 md:p-4 rounded-xl border-2 border-slate-300 text-base focus:border-indigo-400 outline-none'; inp.placeholder='Escribe tu respuesta en inglés...';
   const btn=document.createElement('button'); btn.textContent='Comprobar ✅'; btn.className='mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   ctx.area.appendChild(inp); ctx.area.appendChild(btn);
-  function check(){ if(ctx.answered)return; const val=inp.value.trim(); if(!val){ inp.focus(); return; } const list=[q.answer].concat(q.respuestas||[]); const ok=list.some(a=>norm(a)===norm(val)); inp.disabled=true; btn.disabled=true; btn.classList.add('btn-disabled'); inp.classList.remove('border-slate-300'); inp.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto! Lo escribiste bien.':('Escribiste "'+val+'" → está mal. La forma correcta es "'+q.answer+'".'), q); }
+  function check(){ if(ctx.answered)return; const val=inp.value.trim(); if(!val){ inp.focus(); return; }
+    const list=[q.answer].concat(q.respuestas||[]); const ok=list.some(a=>a&&norm(a)===norm(val));
+    inp.disabled=true; btn.disabled=true; btn.classList.add('btn-disabled'); inp.classList.remove('border-slate-300'); inp.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true;
+    // feedback pedagógico: si escribió VARIAS palabras cuando se pedía UNA, explicarlo (no solo "está mal")
+    const multi=/\s/.test(val) && q.answer && !/\s/.test(String(q.answer));
+    const msgMal = multi
+      ? ('Ojo 👀: solo había que escribir UNA palabra (la del espacio ___): "'+q.answer+'".'+(q.sentence?' También se acepta la frase completa correcta: "'+q.sentence+'".':''))
+      : ('Escribiste "'+val+'" → está mal. La forma correcta es "'+q.answer+'".');
+    ctx.done(ok, ok?'¡Perfecto! Lo escribiste bien.':msgMal, q); }
   btn.onclick=check; inp.addEventListener('keydown',e=>{ if(e.key==='Enter')check(); }); setTimeout(()=>inp.focus(),50);
 }
 /* lectura: texto arriba + TODAS sus preguntas y respuestas en la misma hoja */

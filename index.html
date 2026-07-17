@@ -1303,7 +1303,9 @@ function composeGrammar(seed, fmt){
   const hint = (String(seed.q).match(/\(([^)]+)\)\s*$/)||[])[1]; const hintTxt = hint? ' ('+hint+')' : '';
   if(fmt==='opcion'){
     if(!seed.o||!seed.o.length) return null;
-    return Object.assign({formato:'opcion', q:seed.q, opts:makeOptions(seed.a, [seed.a].concat(seed.o), '¡Correcto! '+(seed.dato||seed.f||''), seed.f||('La forma correcta es "'+seed.a+'".'))}, base);
+    // el feedback de una opción MALA siempre dice la regla Y cuál era la correcta
+    const rBad=(seed.f?seed.f+' → ':'')+'La correcta es "'+seed.a+'".';
+    return Object.assign({formato:'opcion', q:seed.q, opts:makeOptions(seed.a, [seed.a].concat(seed.o), '¡Correcto! '+(seed.dato||seed.f||''), rBad)}, base);
   }
   if(fmt==='escribir'){
     // acepta la palabra del ___ Y TAMBIÉN la frase completa correcta (si el alumno la escribe entera, sabe)
@@ -2162,7 +2164,7 @@ const TOPIC_PACKS={
   ]},
   'Past Simple — regular verbs -ed (A2)':{ kind:'grammar', seeds:[
     gseed('Yesterday I ___ with wood. (work)','worked',['work','working','works'],'Yesterday I worked with wood.','Ayer trabajé con madera.','iésterdei ái uérkt uíd uúd','regular → +ed','La mayoría del pasado añade -ed.','Past Simple','Sujeto + verbo-ed'),
-    gseed('She ___ the door. (open)','opened',['openned','opend','open'],'She opened the door.','Ella abrió la puerta.','shi óupend de dor','+ed','','Past Simple','Sujeto + verbo-ed'),
+    gseed('She ___ the door. (open)','opened',['openned','opend','open'],'She opened the door.','Ella abrió la puerta.','shi óupend de dor','pasado regular: verbo + ed (open → opened)','No se dobla la n: opened, no "openned".','Past Simple','Sujeto + verbo-ed'),
     gseed('We ___ English last night. (study)','studied',['studyed','studed','study'],'We studied English last night.','Estudiamos inglés anoche.','uí stádid ínglish last náit','consonante+y → ied','study → studied.','Past Simple','Sujeto + verbo-ied'),
     gseed('He ___ the bus. (stop)','stopped',['stoped','stopd','stop'],'He stopped the bus.','Él paró el bus.','ji stopt de bas','una vocal + consonante → doble consonante + ed','stop → stopped (doble p).','Past Simple','Sujeto + verbo-ed')
   ]},

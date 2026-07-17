@@ -796,41 +796,19 @@ function phon(text){
   if(!engWords || hits/engWords < 0.5) return ''; // mayormente no-inglés → no mostrar
   return out.join('');
 }
-/* Igual que phon() pero en HTML y con ENLACES de pronunciación al estilo nativo:
-   cuando una palabra termina en consonante y la siguiente empieza en vocal,
-   se PEGAN sin espacio y cada parte va de un color: "can I" -> canái (can verde-azulado + ái rosa). */
+/* Igual que phon() pero en HTML: cada palabra con su pronunciación, SEPARADA por espacios
+   (palabra por palabra, EXACTO como lo dice la voz y como lo resalta el karaoke). Sin uniones. */
 function phonHTML(text){
-  const toks=String(text).split(/(\s+)/); let hits=0, eng=0; const parts=[];
+  const toks=String(text).split(/(\s+)/); let hits=0, eng=0; const out=[];
   toks.forEach(tok=>{
-    if(/^\s+$/.test(tok)){ parts.push({sp:tok}); return; }
+    if(/^\s+$/.test(tok)){ out.push(tok); return; }
     const w=tok.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ']/g,''); // incluye tildes (Bogotá)
-    if(!w){ const ti=tokenInfo(tok.trim()); if(ti&&ti.pron){ eng++; hits++; parts.push({txt:ti.pron}); } else parts.push({txt:tok}); return; }
+    if(!w){ const ti=tokenInfo(tok.trim()); if(ti&&ti.pron){ eng++; hits++; out.push(escapeHtml(ti.pron)); } else out.push(escapeHtml(tok)); return; }
     eng++;
     const kk=norm(w); const g=extraGlossary[kk]||LEARNED[kk]||GLOSSARY[kk];
-    if(g&&g.pron){ hits++; parts.push({txt:tok.replace(w,g.pron)}); } else parts.push({txt:tok});
-  });
+    if(g&&g.pron){ hits++; out.push(escapeHtml(tok.replace(w,g.pron))); } else out.push(escapeHtml(tok)); });
   if(!eng || hits/eng<0.5) return '';
-  const vocalIni=s=>/^[aeiouáéíóú]/i.test(String(s).replace(/^[^A-Za-zÀ-ÿ]+/,''));
-  const consFin=s=>/[bcdfghjklmnpqrstvwxyz]$/i.test(String(s).replace(/[^A-Za-zÀ-ÿ]+$/,''));
-  const words=[]; let spAcc='';
-  parts.forEach(p=>{ if(p.sp!==undefined){ spAcc+=p.sp; } else { words.push({t:p.txt, sp:spAcc}); spAcc=''; } });
-  let html='';
-  words.forEach((w,i)=>{
-    const linked = i>0 && consFin(words[i-1].t) && vocalIni(w.t);
-    const nextLinked = i+1<words.length && consFin(w.t) && vocalIni(words[i+1].t);
-    if(linked){
-      // se pega a la anterior SIN espacio, alternando color para que la unión se lea fluida (canái)
-      w.cls = words[i-1].cls==='ligA' ? 'ligB' : 'ligA';
-      html+='<span class="'+w.cls+'">'+escapeHtml(w.t)+'</span>';
-    } else if(nextLinked){
-      w.cls='ligA';
-      html+=(i?w.sp:'')+'<span class="ligA">'+escapeHtml(w.t)+'</span>';
-    } else {
-      w.cls='';
-      html+=(i?w.sp:'')+escapeHtml(w.t);
-    }
-  });
-  return html;
+  return out.join('');
 }
 /* Traducción de una ORACIÓN completa: 1º la que dio la IA (sentMap); si no hay,
    se arma palabra por palabra con la biblioteca (marcada como aproximada). */
@@ -3234,9 +3212,11 @@ document.addEventListener('click', e=>{
   if(window._holdCommitted){ window._holdCommitted=false; e.preventDefault(); e.stopPropagation(); return; } // acabó de elegir por presión: no abrir burbuja
   if(lpFired){ e.preventDefault(); e.stopPropagation(); lpFired=false; return; } // el long-press NO responde la pregunta
   const w=e.target.closest('.wtap');
-  // UN SOLO TOQUE en una palabra = oír + traducir. En las OPCIONES ahora también (elegir = mantener presionado).
-  // En fichas de "huecos/ordenar" el toque sí actúa (no llevan .wtap de contenido), así que quedan fuera.
-  if(w){ showWordPopup(w); e.stopPropagation(); e.preventDefault(); return; }
+  // UN SOLO TOQUE en una palabra = oír + traducir, SIEMPRE que no rompa una acción:
+  //  · texto normal (pregunta, diálogo, lectura) → burbuja
+  //  · opciones/match (elegir = mantener presionado) → burbuja
+  //  · fichas de huecos/ordenar (tocar = colocar) → NO burbuja (el toque coloca la ficha)
+  if(w && (!w.closest('button') || w.closest('.hold-select'))){ showWordPopup(w); e.stopPropagation(); e.preventDefault(); return; }
   if(!e.target.closest('#word-popup')) hideWordPopup();
 }, true);
 
@@ -3691,6 +3671,7 @@ function finalizeSub(ok, exp, sq, fb){
 /* Un TOQUE en una palabra = oír + traducir. Para ELEGIR: mantener presionado (barra que se llena). */
 const HOLD_MS=900;
 function attachHoldSelect(btn, onSelect){
+  btn.classList.add('hold-select');
   const fill=document.createElement('div'); fill.className='hold-fill'; btn.insertBefore(fill, btn.firstChild);
   btn.style.position='relative';
   let timer=null;
@@ -3806,7 +3787,12 @@ function renderMatch(q,ctx){
   // encabezados: izquierda inglés, derecha español (guían el ojo)
   const hL=document.createElement('div'); hL.className='match-col-head bg-teal-100 text-teal-700'; hL.textContent='English'; colL.appendChild(hL);
   const hR=document.createElement('div'); hR.className='match-col-head bg-blue-100 text-blue-700'; hR.textContent='Español'; colR.appendChild(hR);
-  function mk(item,side){ const b=document.createElement('button'); const ph=phonHTML(item.t); b.innerHTML='<span class="match-t block">'+wordSpanify(item.t)+'</span>'+(ph?'<span class="block text-xs text-purple-600 italic font-normal mt-0.5">🗣️ '+ph+'</span>':''); b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
+  function mk(item,side){ const b=document.createElement('button');
+    if(side==='L'){ const ra=readAlongLines(item.t);
+      b.innerHTML='<span class="match-t block match-en">'+ra.enHTML+'</span>'+(ra.pronHTML?'<span class="block text-xs text-purple-600 italic font-normal mt-0.5 match-pron">🗣️ '+ra.pronHTML+'</span>':'');
+      const kb=karaokeBtnEl(()=>b); if(kb){ kb.classList.add('tts-mini','align-middle'); const mt=b.querySelector('.match-en'); if(mt)mt.appendChild(kb); }
+    } else { b.innerHTML='<span class="match-t block">'+escapeHtml(item.t)+'</span>'; }
+    b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
     b.onclick=()=>{ if(ctx.answered||b.disabled)return;
       if(side==='L'){ if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=b; selId=item.id; b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }
       else { if(selId===null)return;

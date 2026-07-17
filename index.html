@@ -3088,15 +3088,28 @@ function showWordPopup(el){
   else esMsg='ℹ️ No hay traducción para este símbolo.';
   document.getElementById('wp-es').textContent = esMsg;
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
-  const wpPron=(g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
+  let wpPron=(g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
   // audio de la palabra: si es palabra en inglés habla la palabra; si buscó español→inglés habla el inglés
-  const sayWord=g?word:(sp?sp.en:'');
+  let sayWord=g?word:(sp?sp.en:'');
+  // ===== PALABRAS CON DOS FORMAS (débil en frase / fuerte sola): a, an, the =====
+  // El TTS dice la forma FUERTE si la palabra va sola ("a"→"éi"). Para que suene NATURAL,
+  // la decimos JUNTO A LA PALABRA SIGUIENTE de la frase ("a pen") → así oyes la forma débil real.
+  const lw=word.toLowerCase();
+  const DUAL={a:{frase:'a',sola:'éi'}, an:{frase:'an',sola:'an'}, the:{frase:'da',sola:'di'}};
+  let dualNote='';
+  if(DUAL[lw]&&g){
+    let nxt=''; try{ const all=[...el.parentElement.querySelectorAll('.wtap')]; const i=all.indexOf(el); if(i>=0&&all[i+1]) nxt=String(all[i+1].textContent).replace(/[^A-Za-z']/g,''); }catch(e){}
+    if(nxt){ sayWord=word+' '+nxt; }
+    wpPron='🗣️ suena: '+DUAL[lw].frase+' (dentro de la frase)'+(DUAL[lw].sola!==DUAL[lw].frase?(' · "'+DUAL[lw].sola+'" cuando va SOLA'):'');
+    if(lw==='a') dualNote='<div class="mb-1">• El artículo <b>a</b> en la frase suena "a" flojita (a pen → a pen). Cuando va SOLA se dice con su nombre: <b>éi</b> — por eso si el audio la dice sola, oyes "éi". Aquí te la decimos con la palabra siguiente para que suene natural.</div>';
+    if(lw==='the') dualNote='<div class="mb-1">• Dentro de la frase suena <b>da</b> (the book → da buk). Antes de vocal suena <b>di</b> (the apple → di ápol). Sola, el audio la dice <b>di</b>.</div>';
+  }
   document.getElementById('wp-pron').innerHTML = escapeHtml(wpPron)+(sayWord&&/^[a-zA-Z' ]+$/.test(sayWord)?ttsBtnHTML(sayWord):'');
   // 🔊 PREMIUM read-along: al tocar la palabra SUENA de una (como en las apps de pago)
   if(sayWord && /^[a-zA-Z' \-]+$/.test(sayWord)) speak(sayWord);
   // 🔊 fonética contextual de ESTA palabra (por qué suena así)
   let fonHtml=(g&&/^[a-zA-Z']+$/.test(word)) ? fonTipsFor(word) : '';
-  if(word.toLowerCase()==='the') fonHtml='<div class="mb-1">• Dentro de la frase suena <b>da</b> (the book → da buk). Antes de vocal suena <b>di</b> (the apple → di ápol). Sola, el audio la dice <b>di</b>.</div>'+fonHtml;
+  fonHtml=dualNote+fonHtml;
   document.getElementById('wp-fon').innerHTML = fonHtml;
   // fuente del significado: prioridad = quiz de la IA (contexto) > aprendido > biblioteca del código
   const kSrc=norm(word); const realG=extraGlossary[kSrc]||LEARNED[kSrc]||GLOSSARY[kSrc]; let srcMsg='';

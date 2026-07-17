@@ -294,6 +294,9 @@
           <tr><td class="border border-purple-100 p-1.5 font-bold">sh</td><td class="border border-purple-100 p-1.5">como pedir silencio: "shhh"</td><td class="border border-purple-100 p-1.5">she → <i class="text-purple-700">shi</i></td></tr>
           <tr><td class="border border-purple-100 p-1.5 font-bold">r</td><td class="border border-purple-100 p-1.5">lengua doblada hacia atrás, sin tocar el paladar</td><td class="border border-purple-100 p-1.5">car → <i class="text-purple-700">car</i></td></tr>
           <tr><td class="border border-purple-100 p-1.5 font-bold">e final</td><td class="border border-purple-100 p-1.5">es muda, pero la vocal de antes "dice su nombre"</td><td class="border border-purple-100 p-1.5">make → <i class="text-purple-700">méik</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">o corta</td><td class="border border-purple-100 p-1.5">en USA suena como "a" ABIERTA, no como "o"</td><td class="border border-purple-100 p-1.5">hot → <i class="text-purple-700">jat</i> · box → <i class="text-purple-700">baks</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">s sonora</td><td class="border border-purple-100 p-1.5">la s final tras sonido suave vibra: suena "z"</td><td class="border border-purple-100 p-1.5">is → <i class="text-purple-700">iz</i> · dogs → <i class="text-purple-700">dogz</i></td></tr>
+          <tr><td class="border border-purple-100 p-1.5 font-bold">o corta</td><td class="border border-purple-100 p-1.5">en EE.UU. la "o" de hot/box/clock suena como "a" abierta</td><td class="border border-purple-100 p-1.5">clock → <i class="text-purple-700">clak</i> · hot → <i class="text-purple-700">jat</i></td></tr>
         </table></div>
         <p class="mt-2 text-xs text-slate-500">💡 Además, al responder cada pregunta te mostramos <b>🔊 ¿Por qué suena así?</b> con las palabras de esa misma frase.</p>
         <p class="mt-1 text-xs text-slate-600 bg-purple-50 border border-purple-100 rounded-lg p-2">🔊 <b>NUEVO — Audio:</b> toca el botón del parlante junto a cualquier pronunciación para <b>escucharla con voz americana</b>. El segundo toque la dice <b>lenta 🐢</b>. También al tocar una palabra suelta. Funciona con la voz de tu propio celular o computador, gratis.</p>
@@ -699,7 +702,7 @@ function tokenInfo(tok){
   // hora 3:30, 10:15
   const hm=t.match(/^(\d{1,2}):(\d{2})$/);
   if(hm){ const h=numToWords(hm[1]), m=parseInt(hm[2],10); const mw=m===0?{en:"o'clock",es:'en punto'}:numToWords(m);
-    return {en:h.en+' '+mw.en, es:'las '+h.es+(m?' y '+mw.es:' en punto'), pron:numPron(h.en)+' '+(m===0?'oclók':numPron(mw.en)), tipo:'hora'}; }
+    return {en:h.en+' '+mw.en, es:'las '+h.es+(m?' y '+mw.es:' en punto'), pron:numPron(h.en)+' '+(m===0?'oclák':numPron(mw.en)), tipo:'hora'}; }
   // número entero (permite separador de miles con , o .)
   const clean=t.replace(/[.,](?=\d{3}(\D|$))/g,'');
   if(/^-?\d+$/.test(clean)){ const nw=numToWords(clean); if(nw) return {en:nw.en, es:nw.es, pron:numPron(nw.en), tipo:'número'}; }
@@ -847,7 +850,7 @@ function addG(w,es,tipo,pron){ const k=norm(w); if(k && !GLOSSARY[k]) GLOSSARY[k
  ['its','su (de eso)','posesivo','its'],['our','nuestro','posesivo','áur'],['their','su (de ellos)','posesivo','der'],['mine','mío','posesivo','máin'],
  // verbo to be y auxiliares
  ['am','soy / estoy (con I)','verbo to be','am'],['is','es / está','verbo to be','is'],['are','eres / son / están','verbo to be','ar'],
- ['be','ser / estar','verbo','bi'],['was','era / estaba','verbo to be (pasado)','uós'],['were','eran / estaban','verbo to be (pasado)','uér'],
+ ['be','ser / estar','verbo','bi'],['was','era / estaba','verbo to be (pasado)','uás'],['were','eran / estaban','verbo to be (pasado)','uér'],
  ['do','hacer / auxiliar de pregunta','verbo','du'],['does','hace / auxiliar (he-she-it)','verbo','das'],['did','hizo / auxiliar pasado','verbo','did'],
  ['have','tener / haber','verbo','jav'],['has','tiene (he-she-it)','verbo','jas'],['had','tuvo / tenía','verbo (pasado)','jad'],
  // artículos
@@ -1106,7 +1109,7 @@ const EXTRA_FORMATS=[
      {formato:'escribir', tema:'Reading Comprehension', q:'What vehicle does Diego drive? (one word in English)',
       answer:'truck', respuestas:['truck','a truck'], sentence:'Diego drives a truck.', trad:'Diego maneja un camión.', pron:'Diego dráivs a trak', estructura:'Escribe el sustantivo del texto', extra:'"truck" = camión.'},
      {formato:'vf', tema:'Reading Comprehension', q:'"Diego wakes up at five o\'clock" es correcto según el texto.',
-      answer:true, r:'Verdadero: el texto dice "Every morning I wake up at five o\'clock".', sentence:'Diego wakes up at five o\'clock.', trad:'Diego se despierta a las cinco.', pron:'Diego uéiks ap at fáiv oclók', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
+      answer:true, r:'Verdadero: el texto dice "Every morning I wake up at five o\'clock".', sentence:'Diego wakes up at five o\'clock.', trad:'Diego se despierta a las cinco.', pron:'Diego uéiks ap at fáiv oclák', estructura:'Verdadero o Falso según el texto', extra:'"wake up" = despertarse.'}
    ]},
   {formato:'dialogo', tema:'Conversation', q:'Read this conversation between two friends:',
    dialogue:[
@@ -1209,8 +1212,12 @@ const FON_RULES=[
  {k:'kn', test:w=>/^kn/.test(w), es:'en <b>kn</b> la "k" es muda: se lee solo la n.'},
  {k:'sh', test:w=>/sh/.test(w), es:'la <b>sh</b> es como pedir silencio: "shhh".'},
  {k:'r',  test:w=>/[aeiou]r$|[aeiou]r[bcdfgkmnpstv]/.test(w), es:'la <b>r</b> americana se hace doblando la lengua hacia atrás SIN que toque el paladar.'},
- {k:'i',  test:w=>/^(it|is|in|his|this|big|sit|six|fish|milk)$/.test(w), es:'esta <b>i</b> es CORTA y relajada, entre "i" y "e": no la alargues.'},
- {k:'a',  test:w=>/^(cat|man|bag|hat|black|happy|family|have)$/.test(w), es:'esta <b>a</b> americana se hace abriendo la boca para "a" pero diciendo "e" a la vez.'}
+ {k:'oc', test:w=>/^(hot|not|stop|box|clock|job|shop|socks?|doctor|body|sorry|on)$/.test(w), es:'la <b>o corta</b> americana suena como una "a" ABIERTA: hot → jat, box → baks. Así hablan en USA.'},
+ {k:'ow', test:w=>/^(from|of|was|does|front|mother|brother|son|love|money|month|nothing|one|some|come|other)$/.test(w), es:'esta vocal es FLOJA (sin fuerza): suena como una "a" cortica y perezosa.'},
+ {k:'sz', test:w=>/^(is|his|has|dogs|goes|plays|lives|reads|comes|runs|loves)$/.test(w), es:'esa <b>s final suena "z"</b> (con vibración en la garganta): is → iz, dogs → dogz.'},
+ {k:'i',  test:w=>/^(it|in|this|big|sit|six|fish|milk)$/.test(w), es:'esta <b>i</b> es CORTA y relajada, entre "i" y "e": no la alargues.'},
+ {k:'a',  test:w=>/^(cat|man|bag|hat|black|happy|family|have)$/.test(w), es:'esta <b>a</b> americana se hace abriendo la boca para "a" pero diciendo "e" a la vez.'},
+ {k:'oshort', test:w=>['hot','not','stop','box','clock','job','shop','socks','sock','doctor','on','got','pocket','problem','tomorrow','hospital','holiday','chocolate','closet','soccer','fox','dollar','dollars','bottle','laptop','robot'].indexOf(w)>=0, es:'la <b>o corta</b> americana suena como una "a" abierta (hot→jat, clock→clak). Así lo dicen en EE.UU., no "o".'}
 ];
 function fonTipsFor(text){
   if(!text) return '';
@@ -1659,7 +1666,7 @@ const V_INF={work:'trabajar',live:'vivir',study:'estudiar',drive:'manejar',eat:'
 const V_GER={work:'trabajando',live:'viviendo',study:'estudiando',drive:'manejando',eat:'comiendo',drink:'bebiendo',play:'jugando',read:'leyendo',cook:'cocinando',run:'corriendo',sleep:'durmiendo',walk:'caminando',travel:'viajando',rest:'descansando'};
 const CONJ_PODER={yo:'puedo',tu:'puedes',el:'puede',nos:'podemos',ellos:'pueden'};
 const CONJ_ESTAR={yo:'estoy',tu:'estás',el:'está',nos:'estamos',ellos:'están'};
-const AUX_PRON={"don't":'dóunt',"doesn't":'dásent','Do':'du','Does':'das','not':'not','can':'can',"can't":'cant','Can':'can'};
+const AUX_PRON={"don't":'dóunt',"doesn't":'dásent','Do':'du','Does':'daz','not':'nat','can':'can',"can't":'cant','Can':'can'};
 function beOf(su){ return su.pers==='yo'?'am':(su.s3?'is':'are'); }
 const PRONOUNS7=['I','You','He','She','It','We','They'];
 // en preguntas, el pronombre va en minúscula después del auxiliar (Do they? · Is he?) — "I" y los nombres NO cambian
@@ -1838,7 +1845,7 @@ function numbersGen(){
 }
 // PREPOSICIONES DE TIEMPO
 const TIME_ITEMS=[
- {en:"six o'clock",prep:'at',es:'a las seis',pr:'six oclók'},{en:"seven o'clock",prep:'at',es:'a las siete',pr:'séven oclók'},
+ {en:"six o'clock",prep:'at',es:'a las seis',pr:'six oclák'},{en:"seven o'clock",prep:'at',es:'a las siete',pr:'séven oclák'},
  {en:'noon',prep:'at',es:'al mediodía',pr:'nun'},{en:'night',prep:'at',es:'en la noche',pr:'náit'},
  {en:'Monday',prep:'on',es:'el lunes',pr:'mándei'},{en:'Friday',prep:'on',es:'el viernes',pr:'fráidei'},
  {en:'Sunday',prep:'on',es:'el domingo',pr:'sándei'},{en:'my birthday',prep:'on',es:'en mi cumpleaños',pr:'mái bérzdei'},
@@ -1853,7 +1860,7 @@ function prepTimeGen(){
   return gseed(q, t.prep, ['at','on','in'].filter(x=>x!==t.prep), sentence, car.es+' '+t.es+'.', car.pr+' '+t.prep+' '+t.pr, 'at + hora · on + día · in + mes/año/parte del día (pero AT night)', 'Excepción: at night.', 'Prepositions of Time', 'Sujeto + verbo + preposición + tiempo');
 }
 // IMPERATIVOS
-const IMP_ACT=[{v:'Open',es:'Abre',neg:'No abras',obj:'the door',objEs:'la puerta',pr:'óupen'},{v:'Close',es:'Cierra',neg:'No cierres',obj:'the window',objEs:'la ventana',pr:'clóus'},{v:'Read',es:'Lee',neg:'No leas',obj:'the book',objEs:'el libro',pr:'rid'},{v:'Eat',es:'Come',neg:'No comas',obj:'the apple',objEs:'la manzana',pr:'it'},{v:'Study',es:'Estudia',neg:'No estudies',obj:'English',objEs:'inglés',pr:'stádi'},{v:'Call',es:'Llama',neg:'No llames',obj:'Leidy',objEs:'a Leidy',pr:'col'},{v:'Drive',es:'Maneja',neg:'No manejes',obj:'the truck',objEs:'el camión',pr:'dráiv'},{v:'Wash',es:'Lava',neg:'No laves',obj:'the car',objEs:'el carro',pr:'uósh'}];
+const IMP_ACT=[{v:'Open',es:'Abre',neg:'No abras',obj:'the door',objEs:'la puerta',pr:'óupen'},{v:'Close',es:'Cierra',neg:'No cierres',obj:'the window',objEs:'la ventana',pr:'clóus'},{v:'Read',es:'Lee',neg:'No leas',obj:'the book',objEs:'el libro',pr:'rid'},{v:'Eat',es:'Come',neg:'No comas',obj:'the apple',objEs:'la manzana',pr:'it'},{v:'Study',es:'Estudia',neg:'No estudies',obj:'English',objEs:'inglés',pr:'stádi'},{v:'Call',es:'Llama',neg:'No llames',obj:'Leidy',objEs:'a Leidy',pr:'col'},{v:'Drive',es:'Maneja',neg:'No manejes',obj:'the truck',objEs:'el camión',pr:'dráiv'},{v:'Wash',es:'Lava',neg:'No laves',obj:'the car',objEs:'el carro',pr:'uásh'}];
 function imperativesGen(){
   const a=pick(IMP_ACT);
   if(Math.random()<0.5){
@@ -2065,13 +2072,13 @@ const TOPIC_PACKS={
     gseed('Diego ___ a workshop. (tiene)','has got',['have got','has','got'],'Diego has got a workshop.','Diego tiene un taller.','Diego jas got a uérkshop','él → has got','','Have got','Sujeto + has got + complemento')
   ]},
   'Prepositions of Time — in/on/at (tricky!) (A1)':{ kind:'grammar', gen:prepTimeGen, _seeds_old:[
-    gseed('I wake up ___ six o\'clock. (a las)','at',['in','on','to'],'I wake up at six o\'clock.','Me despierto a las seis.','ái uéik ap at six oclók','hora exacta → at','at + hora exacta.','Prepositions of Time','at + hora'),
+    gseed('I wake up ___ six o\'clock. (a las)','at',['in','on','to'],'I wake up at six o\'clock.','Me despierto a las seis.','ái uéik ap at six oclák','hora exacta → at','at + hora exacta.','Prepositions of Time','at + hora'),
     gseed('I work ___ Monday. (el)','on',['in','at','to'],'I work on Monday.','Trabajo el lunes.','ái uérk on mándei','día → on','on + día de la semana.','Prepositions of Time','on + día'),
     gseed('I study ___ the morning. (en)','in',['on','at','to'],'I study in the morning.','Estudio en la mañana.','ái stádi in de mórning','parte del día → in','in the morning/afternoon/evening (pero AT night).','Prepositions of Time','in + parte del día'),
     gseed('My birthday is ___ July. (en)','in',['on','at','to'],'My birthday is in July.','Mi cumpleaños es en julio.','mái bérzdei is in yulái','mes → in','in + mes o año.','Prepositions of Time','in + mes')
   ]},
   'Telling the Time (A1)':{ kind:'grammar', gen:tellingTimeGen, _seeds_old:[
-    gseed('3:00 — It\'s three ___','o\'clock',['hours','clock','times'],'It\'s three o\'clock.','Son las tres en punto.','its zrí oclók','hora en punto → o\'clock','','Telling the Time','It\'s + hora + o\'clock'),
+    gseed('3:00 — It\'s three ___','o\'clock',['hours','clock','times'],'It\'s three o\'clock.','Son las tres en punto.','its zrí oclák','hora en punto → o\'clock','','Telling the Time','It\'s + hora + o\'clock'),
     gseed('3:15 — It\'s a quarter ___ three','past',['to','after','over'],'It\'s a quarter past three.','Son las tres y cuarto.','its a cuórter past zrí','y cuarto → quarter past','past = pasada la hora.','Telling the Time','quarter past + hora'),
     gseed('3:30 — It\'s ___ past three','half',['middle','quarter','thirty'],'It\'s half past three.','Son las tres y media.','its jaf past zrí','y media → half past','half = media.','Telling the Time','half past + hora'),
     gseed('2:45 — It\'s a quarter ___ three','to',['past','before','of'],'It\'s a quarter to three.','Son las tres menos cuarto (2:45).','its a cuórter tu zrí','menos cuarto → quarter to','to = para/antes de la hora siguiente.','Telling the Time','quarter to + hora siguiente')
@@ -2100,9 +2107,9 @@ const TOPIC_PACKS={
     gseed('He ___ a new table. (buy)','bought',['buyed','buy','boughted'],'He bought a new table.','Él compró una mesa nueva.','ji bot a niú téibol','buy → bought','','Past Simple irregular','Sujeto + verbo irregular')
   ]},
   'Was / Were (A2)':{ kind:'grammar', seeds:[
-    gseed('I ___ at home yesterday. (estaba)','was',['were','am','is'],'I was at home yesterday.','Ayer estaba en casa.','ái uós at jóum iésterdei','I/He/She/It → was','was = pasado de am/is.','Was/Were','Sujeto + was/were + complemento'),
+    gseed('I ___ at home yesterday. (estaba)','was',['were','am','is'],'I was at home yesterday.','Ayer estaba en casa.','ái uás at jóum iésterdei','I/He/She/It → was','was = pasado de am/is.','Was/Were','Sujeto + was/were + complemento'),
     gseed('They ___ tired. (estaban)','were',['was','are','is'],'They were tired.','Ellos estaban cansados.','déi uér táierd','You/We/They → were','were = pasado de are.','Was/Were','Sujeto + was/were + complemento'),
-    gseed('She ___ happy. (estaba)','was',['were','is','are'],'She was happy.','Ella estaba feliz.','shi uós jápi','She → was','','Was/Were','Sujeto + was + complemento'),
+    gseed('She ___ happy. (estaba)','was',['were','is','are'],'She was happy.','Ella estaba feliz.','shi uás jápi','She → was','','Was/Were','Sujeto + was + complemento'),
     gseed('We ___ in Soacha. (estábamos)','were',['was','are','am'],'We were in Soacha.','Estábamos en Soacha.','uí uér in Sóacha','We → were','','Was/Were','Sujeto + were + lugar')
   ]},
   'Present Continuous — -ing spelling traps (A2)':{ kind:'grammar', gen:presentContinuousGen, _seeds_old:[
@@ -2455,8 +2462,9 @@ function autoRegisterGlossary(){
     EXTRA_VOCAB.forEach(v=>addG(v[0], v[1], '', v[2]||''));
     EXTRA_VOCAB2.forEach(v=>addG(v[0], v[1], '', v[2]||''));
     Object.keys(TOPIC_PACKS).forEach(k=>{ const p=TOPIC_PACKS[k]; if(p && p.kind==='vocab' && p.list){ p.list.forEach(it=>{ addG(it.en,it.es,it.c||'',it.p||''); }); } });
-    const IRREG_PLU_PRON={men:'men',feet:'fit',mice:'máis',teeth:'tiz',women:'uímen',knives:'náivs',leaves:'livs',children:'chíldren',people:'pípol',boxes:'bóxes',cities:'sítis',houses:'jáuses',parties:'pártis',buses:'báses',tomatoes:'toméitous',babies:'béibis'};
-    const plPron=(sgPron,pl)=> IRREG_PLU_PRON[pl] || (sgPron? (/(s|x|ch|sh)$/.test(pl.replace(/es$/,''))?sgPron+'es':sgPron+'s') : '');
+    const IRREG_PLU_PRON={men:'men',feet:'fit',mice:'máis',teeth:'tiz',women:'uímen',knives:'náivz',leaves:'livz',children:'chíldren',people:'pípol',boxes:'bákses',cities:'sítiz',houses:'jáuses',parties:'pártiz',buses:'báses',tomatoes:'toméitouz',babies:'béibiz'};
+    // s del plural: "es" tras sibilante · "z" tras vocal o consonante sonora (real GA: doors=dorz) · "s" tras sorda
+    const plPron=(sgPron,pl)=> IRREG_PLU_PRON[pl] || (sgPron? (/(s|x|ch|sh)$/.test(pl.replace(/es$/,''))?sgPron+'es':(/[aeiouáéíóúlmnrvbdgw]$/.test(sgPron)?sgPron+'z':sgPron+'s')) : '');
     if(typeof SIMPLE_NOUN!=='undefined') SIMPLE_NOUN.forEach(n=>{ addG(n.en,n.es,'sustantivo',n.pr); addG(n.pl,n.plEs,'sustantivo',plPron(n.pr,n.pl)); });
     if(typeof NOUNS_PL!=='undefined') NOUNS_PL.forEach(n=>{ const sp=(GLOSSARY[norm(n.sg)]||{}).pron||''; addG(n.sg,n.esS,'sustantivo',sp); addG(n.pl,n.esP,'sustantivo',plPron(sp,n.pl)); });
     if(typeof NOUNS_ART!=='undefined') NOUNS_ART.forEach(n=>addG(n.en,n.es,'sustantivo',n.pr));
@@ -2467,13 +2475,47 @@ function autoRegisterGlossary(){
     for(let n=0;n<=100;n++){ const w=numToWords(n); if(w&&w.en){ addG(w.en,w.es,'número',numPron(w.en)); if(w.en.indexOf('-')>=0) addG(w.en.replace(/-/g,''),w.es,'número',numPron(w.en)); } }
     if(typeof LETTER_Q!=='undefined') LETTER_Q.forEach(x=>addG(x.name,'nombre de la letra '+x.L,'letra',(typeof LETTER_PRON!=='undefined'&&LETTER_PRON[x.L.toLowerCase()])||x.name));
     // palabras con SU PRONUNCIACIÓN (3er campo). Se fuerza el pron aunque la palabra ya exista sin él.
-    [['after','después','áfter'],['afternoon','tarde','afternún'],['morning','mañana','mórning'],['before','antes','bifór'],['behind','detrás de','bijáind'],['please','por favor','plis'],['up','arriba','ap'],['each','cada','ich'],['means','significa','mins'],['meaning','significado','míning'],['later','después','léiter'],['half','media / mitad','jaf'],['past','pasada (la hora)','past'],['quarter','cuarto','cuórter'],["o'clock",'en punto','oclók'],['noon','mediodía','nun'],['outside','afuera','áutsaid'],['room','cuarto / habitación','rum'],['words','palabras','uérds'],['word','palabra','uérd'],['order','orden','órder'],['called','se llama','cold'],['front','frente','front'],['next','siguiente / próximo','nekst'],['double','doble','dábol'],['back','de vuelta / atrás','bak'],['breakfast','desayuno','brékfast'],['lunch','almuerzo','lanch'],['dinner','cena','díner'],['shower','ducha','sháuer'],['police','policía','polís'],['officer','oficial','ófiser'],['together','juntos','tuguéder'],['learning','aprendiendo','lérning'],['little','poco','lítol'],['very','muy','véri'],['too','también','tú'],['name','nombre','néim'],['pet','mascota','pet'],['pets','mascotas','pets'],['big','grande','big'],['small','pequeño','smol'],['friendly','amable','fréndli'],['beautiful','hermoso','biútiful'],['their','su (de ellos)','der'],['names','nombres','néims'],['number','número','námber'],['phone','teléfono','fóun'],['zero','cero','síro'],['sofa','sofá','sóufa'],['night','noche','náit'],['every','cada / todos','évri'],['here','aquí','jíar'],['home','casa','jóum'],['work','trabajo / trabajar','uérk'],['from','de / desde','from'],['call','llamar','col'],['can','poder','can'],["can't",'no poder','cant'],['clock','reloj','clok'],['close','cerrar','clóus'],["doesn't",'no (con he/she/it)','dásent'],["don't",'no','dóunt'],['listen','escuchar','lísen'],['movies','películas','múvis'],['music','música','miúsic'],['office','oficina','ófis'],['open','abrir','óupen'],['tea','té','ti'],['wake','despertar','uéik'],['wash','lavar','uósh'],['weekends','fines de semana','uíkends'],['brush','cepillar','brash'],['come','venir','kam'],['cook','cocinar / cocinero','cuk'],['fish','pez / pescado','fish'],['chicken','pollo / gallina','chíken'],['hot','caliente / caluroso','jot'],['thirsty','con sed','zérsti'],['hungry','con hambre','jángri'],['all','todo','ol'],['any','algún / nada','éni'],['apples','manzanas','ápols'],['best','mejor','best'],['children','niños','chíldren'],['date','fecha','déit'],['else','más','els'],['family','familia','fámili'],['families','familias','fámilis'],['kilo','kilo','kílo'],['kilos','kilos','kílos'],['much','mucho','mach'],['per','por','per'],['person','persona','pérson'],['some','algo de','sam'],['thank','gracias','zénk'],['thousand','mil','záusand'],['fresh','fresco','fresh'],['hair','cabello','jéer'],['eyes','ojos','áis'],['shirt','camisa','shert'],['brown','marrón','bráun'],['long','largo','long'],['tall','alto','tol'],['box','caja','box'],['city','ciudad','síti'],['foot','pie','fut'],['knife','cuchillo','náif'],['man','hombre','man'],['tomato','tomate','toméito'],['tooth','diente','tuz'],['woman','mujer','uúman'],['leaf','hoja','lif'],['mouse','ratón','máus'],['pesos','pesos','pésos'],['dog','perro','dog'],['cat','gato','cat'],
+    [['after','después','áfter'],['afternoon','tarde','afternún'],['morning','mañana','mórning'],['before','antes','bifór'],['behind','detrás de','bijáind'],['please','por favor','plis'],['up','arriba','ap'],['each','cada','ich'],['means','significa','mins'],['meaning','significado','míning'],['later','después','léiter'],['half','media / mitad','jaf'],['past','pasada (la hora)','past'],['quarter','cuarto','cuórter'],["o'clock",'en punto','oclák'],['noon','mediodía','nun'],['outside','afuera','áutsaid'],['room','cuarto / habitación','rum'],['words','palabras','uérds'],['word','palabra','uérd'],['order','orden','órder'],['called','se llama','cold'],['front','frente','front'],['next','siguiente / próximo','nekst'],['double','doble','dábol'],['back','de vuelta / atrás','bak'],['breakfast','desayuno','brékfast'],['lunch','almuerzo','lanch'],['dinner','cena','díner'],['shower','ducha','sháuer'],['police','policía','polís'],['officer','oficial','ófiser'],['together','juntos','tuguéder'],['learning','aprendiendo','lérning'],['little','poco','lítol'],['very','muy','véri'],['too','también','tú'],['name','nombre','néim'],['pet','mascota','pet'],['pets','mascotas','pets'],['big','grande','big'],['small','pequeño','smol'],['friendly','amable','fréndli'],['beautiful','hermoso','biútiful'],['their','su (de ellos)','der'],['names','nombres','néims'],['number','número','námber'],['phone','teléfono','fóun'],['zero','cero','síro'],['sofa','sofá','sóufa'],['night','noche','náit'],['every','cada / todos','évri'],['here','aquí','jíar'],['home','casa','jóum'],['work','trabajo / trabajar','uérk'],['from','de / desde','from'],['call','llamar','col'],['can','poder','can'],["can't",'no poder','cant'],['clock','reloj','clok'],['close','cerrar','clóus'],["doesn't",'no (con he/she/it)','dásent'],["don't",'no','dóunt'],['listen','escuchar','lísen'],['movies','películas','múvis'],['music','música','miúsic'],['office','oficina','ófis'],['open','abrir','óupen'],['tea','té','ti'],['wake','despertar','uéik'],['wash','lavar','uásh'],['weekends','fines de semana','uíkends'],['brush','cepillar','brash'],['come','venir','kam'],['cook','cocinar / cocinero','cuk'],['fish','pez / pescado','fish'],['chicken','pollo / gallina','chíken'],['hot','caliente / caluroso','jot'],['thirsty','con sed','zérsti'],['hungry','con hambre','jángri'],['all','todo','ol'],['any','algún / nada','éni'],['apples','manzanas','ápols'],['best','mejor','best'],['children','niños','chíldren'],['date','fecha','déit'],['else','más','els'],['family','familia','fámili'],['families','familias','fámilis'],['kilo','kilo','kílo'],['kilos','kilos','kílos'],['much','mucho','mach'],['per','por','per'],['person','persona','pérson'],['some','algo de','sam'],['thank','gracias','zénk'],['thousand','mil','záusand'],['fresh','fresco','fresh'],['hair','cabello','jéer'],['eyes','ojos','áis'],['shirt','camisa','shert'],['brown','marrón','bráun'],['long','largo','long'],['tall','alto','tol'],['box','caja','box'],['city','ciudad','síti'],['foot','pie','fut'],['knife','cuchillo','náif'],['man','hombre','man'],['tomato','tomate','toméito'],['tooth','diente','tuz'],['woman','mujer','uúman'],['leaf','hoja','lif'],['mouse','ratón','máus'],['pesos','pesos','pésos'],['dog','perro','dog'],['cat','gato','cat'],
     // vocabulario de INSTRUCCIONES (para que tocar "Match", "sentence", etc. sí explique)
     ['match','une / empareja','mach'],['sentence','frase / oración','séntens'],['sentences','frases / oraciones','séntenses'],['translation','traducción','transléishon'],['its','su (de eso)','its'],['with','con','uíd'],['mark','marca','marc'],['choose','elige','chus'],['complete','completa','complít'],['blank','espacio en blanco','blanc'],['true','verdadero','tru'],['false','falso','fols'],['spell','deletrear','spel'],['put','pon','put'],['tap','toca','tap'],['correct','correcto(a)','corréct'],['english','inglés','ínglish'],['letter','letra','léter'],['letters','letras','léters'],['decide','decide','disáid'],['write','escribe','ráit'],['blanks','espacios','blancs'],
     // palabras A2 detectadas sin pronunciación por la auditoría
-    ['than','que (comparando)','dan'],['more','más','mor'],['most','el/la más','móust'],['better','mejor','béter'],['bigger','más grande','bíguer'],['biggest','el más grande','bíguest'],['many','muchos','méni'],['gone','ido (participio de go)','gon'],['opened','abrió / abierto','óupend'],['stopped','paró','stopt'],['middle','medio / mitad','mídel'],['hours','horas','áuers'],['times','veces','táims'],['last','último / pasado','last'],['shop','tienda','shop'],['loves','ama (he/she)','lavs'],['washing','lavando','uóshing'],['opens','abre','óupens'],['opening','abriendo','óupening'],['calls','llama','cols'],['calling','llamando','cóling'],['closes','cierra','clóuses'],
+    ['than','que (comparando)','dan'],['more','más','mor'],['most','el/la más','móust'],['better','mejor','béter'],['bigger','más grande','bíguer'],['biggest','el más grande','bíguest'],['many','muchos','méni'],['gone','ido (participio de go)','gon'],['opened','abrió / abierto','óupend'],['stopped','paró','stopt'],['middle','medio / mitad','mídel'],['hours','horas','áuers'],['times','veces','táims'],['last','último / pasado','last'],['shop','tienda','shop'],['loves','ama (he/she)','lavs'],['washing','lavando','uáshing'],['opens','abre','óupens'],['opening','abriendo','óupening'],['calls','llama','cols'],['calling','llamando','cóling'],['closes','cierra','clóuses'],
+    // detectadas SIN pron por la auditoría de cobertura total (incluidas hello/hi de los saludos!)
+    ['hello','hola','jelóu'],['hi','hola (informal)','jái'],['great','genial / buenísimo','gréit'],['perfect','perfecto','pérfect'],['fruit','fruta','frut'],['wow','guau / ¡uy!','uáu'],['by','por / junto a','bái'],['once','una vez','uáns'],['twice','dos veces','tuáis'],['tapping','tocando (la pantalla)','táping'],['double-u','nombre de la letra W','dábliu'],['Alonso','Alonso (tu papá 👨)','Alónso'],['Tom','Tom (nombre)','Tam'],['united','unido(s)','iunáited'],['states','estados','stéits'],['anything','algo / cualquier cosa','énizing'],['Ana','Ana (nombre)','Ána'],
     // nombres propios (para que el toque-palabra también los explique)
     ['Mila','Mila (tu gata 🐈)','Míla'],['Jasper','Jasper (tu gato 🐈)','Yásper'],['Diego','Diego (tú 👤)','Diégo'],['Leidy','Leidy (tu esposa 💑)','Léidi'],['Soacha','Soacha (tu ciudad 🏙️)','Soácha'],['Bogotá','Bogotá (capital 🇨🇴)','Bogotá'],['Mosquera','Mosquera (ciudad 🏙️)','Mosquéra'],['Colombia','Colombia (tu país 🇨🇴)','Colómbia'],['Tolima','Tolima (departamento 🌄)','Tolíma']].forEach(p=>{ addG(p[0],p[1],'',p[2]); const k=norm(p[0]); if(GLOSSARY[k] && !GLOSSARY[k].pron && p[2]) GLOSSARY[k].pron=p[2]; });
+    // ============ CORRECCIONES DE FONÉTICA AMERICANA REAL (auditoría 200%) ============
+    // Regla clave: la "o corta" americana /ɑ/ suena "a" abierta (hot=jat, clock=clak) — igual que el audio.
+    // También: -o- átona que suena "a" (onion=ánion), y ajustes puntuales para que la escritura = lo que se OYE.
+    const PRON_GA={
+      hot:'jat', not:'nat', stop:'stap', stopped:'stapt', box:'baks', boxes:'bákses', boxing:'báksing',
+      clock:'clak', "o'clock":'oclák', job:'yab', shop:'shap', workshop:'uérkshap', sock:'sak', socks:'saks',
+      soccer:'sáker', doctor:'dákter', dollar:'dálar', dollars:'dálars', dolphin:'dálfin', chocolate:'cháklet',
+      closet:'cláset', comma:'cáma', crocodile:'crácodail', broccoli:'brácoli', biology:'baiálochi',
+      bottle:'bátol', because:'bicás', colombia:'Colámbia', fox:'faks', got:'gat', hospital:'jáspital',
+      helicopter:'jélicapter', holiday:'jálidei', honest:'ánest', laptop:'láptap', object:'ábyect',
+      october:'actóuber', octopus:'áctopus', on:'an', onion:'ánion', oven:'áven', pocket:'páket',
+      popcorn:'pápcorn', problem:'práblem', promise:'prámis', photo:'fóutou', photographer:'fotágrafer',
+      robot:'róubat', stomach:'stámak', tomorrow:'tumárou', volleyball:'válibol', moment:'móument',
+      motorcycle:'móutorsaicol', color:'cáler', colon:'cóulon', coconut:'cóukonat', wash:'uásh',
+      washing:'uáshing', was:'uás', watermelon:'uátermelon', catch:'cach', fridge:'frich', village:'vílach',
+      sheep:'shiip', yogurt:'yóugurt', does:'daz'
+    };
+    Object.keys(PRON_GA).forEach(w=>{ const k=norm(w); if(GLOSSARY[k]) GLOSSARY[k].pron=PRON_GA[w]; else addG(w,'','',PRON_GA[w]); });
+    // ===== CAPA FINAL: fonética AMERICANA REAL (General American) =====
+    // Corrige de un solo golpe las familias de sonidos que el "español fonético" tradicional escribe mal.
+    // 1) o corta americana /ɑ/ = A abierta: hot=jat (no "jot")   2) o débil /ʌ/ = a floja: from=fram
+    // 3) s sonora /z/ = z: is=iz, dogs=dogz   — así coincide EXACTO con el audio.
+    // FAMILIA 2: vocal floja /ʌ/ (from=fram, of=av) + s SONORA /z/ (is=iz, dogs=dogz) — gana sobre lo anterior
+    const PRON_GA2={
+      the:'da', body:'bádi', sorry:'sári', jobs:'yabs', washes:'uáshes',
+      from:'fram', of:'av', was:'uáz', does:'daz', is:'iz', his:'jiz', has:'jaz', hers:'jerz',
+      front:'frant', son:'san', mother:'máder', brother:'bráder', brothers:'bráders', other:'áder',
+      nothing:'názing', money:'máni', love:'lav', loves:'lavz', month:'manz', color:'cáler', colors:'cálers',
+      dogs:'dogz', lives:'livz', goes:'góuz', plays:'pléiz', reads:'ridz', comes:'camz', runs:'ranz',
+      says:'sez', said:'sed', what:'uát', because:'bicáz', jasper:'Yásper'
+    };
+    Object.keys(PRON_GA2).forEach(k=>{ const kk=norm(k); if(GLOSSARY[kk]) GLOSSARY[kk].pron=PRON_GA2[k]; });
   }catch(e){}
 }
 autoRegisterGlossary();

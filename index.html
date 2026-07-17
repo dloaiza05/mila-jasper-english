@@ -1326,6 +1326,14 @@ function composeGrammar(seed, fmt){
     if(words.length<3||words.length>8) return null;
     return Object.assign({formato:'ordenar', q:'Put the words in the correct order:', order:words}, base, {estructura:seed.est||'Subject + verb + complement'});
   }
+  if(fmt==='escucha'){
+    // 🎧 LISTENING: oyes la frase (sin verla) y eliges entre las opciones escritas cuál fue.
+    if(!seed.s || !seed.o||!seed.o.length || seed.s.indexOf(seed.a)<0) return null;
+    const seenW=new Set([seed.s]); const optsE=[{t:seed.s,c:1,r:'✅ ¡Buen oído! Eso fue exactamente lo que sonó.'}];
+    shuffle(seed.o.slice()).forEach(w=>{ if(optsE.length>=4)return; const cand=replaceWord(seed.s,seed.a,w); if(cand!==seed.s&&!seenW.has(cand)){ seenW.add(cand); optsE.push({t:cand,c:0,r:'❌ Sonó: "'+seed.s+'". '+(seed.f||'')}); } });
+    if(optsE.length<3) return null;
+    return Object.assign({formato:'escucha', q:'Listen and choose what you hear:', audio:seed.s, opts:shuffle(optsE)}, base, {estructura:'Escucha con atención y elige la frase exacta'});
+  }
   if(fmt==='vf'){
     // 50% frase correcta (True) / 50% frase con un error usando un distractor (False).
     // hintTxt (ej "(de él)") hace la respuesta DETERMINABLE en temas semánticos (posesivos, preposiciones, conectores, demostrativos).
@@ -1463,10 +1471,11 @@ function grammarAvail(pool){
   if(pool.some(s=>s.o&&s.o.length)) f.add('opcion');
   if(pool.some(s=>s.s&&s.s.indexOf(s.a)>=0)) f.add('completar');
   if(pool.some(s=>s.o&&s.o.length&&s.s&&s.s.indexOf(s.a)>=0)) f.add('huecos');
+  if(('speechSynthesis' in window) && pool.some(s=>s.o&&s.o.length&&s.s&&s.s.indexOf(s.a)>=0)) f.add('escucha');
   if(pool.some(s=>{const w=wc(s);return w>=3&&w<=8;})) f.add('ordenar');
   if(pool.length>=3) f.add('multiple');
   if(pool.filter(s=>s.s&&s.t).length>=3) f.add('emparejar');
-  return ['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar'].filter(x=>f.has(x));
+  return ['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar','escucha'].filter(x=>f.has(x));
 }
 function vocabAvail(list){
   const f=['opcion','vf','escribir','completar','huecos','ordenar']; if(list.length>=4){ f.push('multiple'); } if(list.length>=3){ f.push('emparejar'); } return f;
@@ -1597,6 +1606,7 @@ function instructionEs(q){
   if(/^Write in English:/.test(s)) return 'Escríbela en inglés';
   if(/^Write the correct word:/.test(s)) return 'Escribe la palabra correcta';
   if(/^Write the missing word:/.test(s)) return 'Escribe SOLO la palabra que falta en el espacio ___ (también vale la frase completa)';
+  if(/^Listen and choose/.test(s)) return 'Escucha el audio 🎧 y elige la frase EXACTA que oíste (puedes repetirlo las veces que quieras)';
   if(/ is called ___\.$/.test(s)) return '¿Cómo se llama esa letra en inglés?';
   if(/ is correct\.$/.test(s)) return '¿Es correcta esta oración? (Verdadero / Falso)';
   if(/ means ".*"\.$/.test(s)) return '¿Es correcta esta traducción? (Verdadero / Falso)';
@@ -2890,7 +2900,7 @@ const ui={ qText:document.getElementById('question-text'), area:document.getElem
   learnSent:document.getElementById('learn-sentence'), learnTrad:document.getElementById('learn-trad'), learnPron:document.getElementById('learn-pron'), learnCat:document.getElementById('learn-cat'), learnExtra:document.getElementById('learn-extra'), learnConcept:document.getElementById('learn-concept'),
   counter:document.getElementById('question-counter'), score:document.getElementById('score-counter'), progress:document.getElementById('progress-bar'), topicLabel:document.getElementById('topic-label') };
 function show(el,on){ el.style.display=on?'':'none'; }
-const FORMAT_LABELS={opcion:'🔘 Opción múltiple', multiple:'☑️ Varias correctas', vf:'✅❌ Verdadero / Falso', escribir:'⌨️ Escribe la respuesta', completar:'📝 Completa los espacios', huecos:'🧩 Completa con fichas', ordenar:'🔀 Ordena las palabras', emparejar:'🔗 Une las columnas', lectura:'📚 Lectura', dialogo:'💬 Diálogo'};
+const FORMAT_LABELS={opcion:'🔘 Opción múltiple', multiple:'☑️ Varias correctas', vf:'✅❌ Verdadero / Falso', escribir:'⌨️ Escribe la respuesta', completar:'📝 Completa los espacios', huecos:'🧩 Completa con fichas', ordenar:'🔀 Ordena las palabras', emparejar:'🔗 Une las columnas', escucha:'🎧 Escucha y elige', lectura:'📚 Lectura', dialogo:'💬 Diálogo'};
 /* Temas en inglés → español (para el badge tocable) */
 const TEMA_ES={'verb to be':'Verbo To Be','present simple':'Presente Simple','simple past':'Pasado Simple','past simple':'Pasado Simple','present continuous':'Presente Continuo','reading':'Lectura','reading comprehension':'Comprensión de lectura','word types':'Tipos de palabra','true or false':'Verdadero o Falso','writing':'Escritura','fill in the blanks':'Completar espacios','sentence order':'Orden de la frase','vocabulary':'Vocabulario','numbers':'Números','articles':'Artículos (a/an)','pronouns':'Pronombres','possessives':'Posesivos','prepositions':'Preposiciones','adjectives':'Adjetivos','plurals':'Plurales','questions':'Preguntas','wh questions':'Preguntas Wh-','family':'Familia','colors':'Colores','food':'Comida'};
 function temaEs(t){ if(!t) return ''; const k=norm(t); if(TEMA_ES[k]) return TEMA_ES[k]; const sp=lookupWord(t); return sp?sp.es:''; }
@@ -3113,17 +3123,18 @@ function showWordPopup(el){
     you:{frase:'ia (flojita)',sola:'iú'}, your:{frase:'ier (flojita)',sola:'iór'},
     at:{frase:'at',sola:'at'}, from:{frase:'fram',sola:'fram'}, some:{frase:'sam',sola:'sam'}, but:{frase:'bat',sola:'bat'}
   };
-  let dualNote='';
+  let dualNote='', extraBtns='';
   if(DUAL[lw]&&g){
     let nxt=''; try{ const all=[...el.parentElement.querySelectorAll('.wtap')]; const i=all.indexOf(el); if(i>=0&&all[i+1]) nxt=String(all[i+1].textContent).replace(/[^A-Za-z']/g,''); }catch(e){}
-    if(nxt){ sayWord=word+' '+nxt; }
+    // el audio principal dice la palabra SOLA (individual); el botón extra la dice EN FRASE con su vecina
+    if(nxt){ extraBtns=ttsBtnHTML(word+' '+nxt,'tts-mini')+'<span class="text-[10px] text-slate-400">en frase: '+escapeHtml(word+' '+nxt)+'</span>'; }
     const d=DUAL[lw]; const dif=d.sola!==d.frase;
     wpPron='🗣️ suena: '+d.frase+' (dentro de la frase)'+(dif?(' · "'+d.sola+'" cuando va SOLA o con énfasis'):'');
     if(lw==='a') dualNote='<div class="mb-1">• El artículo <b>a</b> en la frase suena "a" flojita (a pen). Cuando va SOLA se dice con su nombre: <b>éi</b> — por eso si el audio la dice sola, oyes "éi". Aquí te la decimos con la palabra siguiente para que suene natural.</div>';
     else if(lw==='the') dualNote='<div class="mb-1">• Dentro de la frase suena <b>da</b> (the book → da buk). Antes de vocal suena <b>di</b> (the apple → di ápol). Sola, el audio la dice <b>di</b>.</div>';
     else if(dif) dualNote='<div class="mb-1">• "<b>'+escapeHtml(lw)+'</b>" tiene DOS formas: en la frase se dice rapidito y flojito (<b>'+escapeHtml(d.frase)+'</b>); sola o con énfasis suena <b>'+escapeHtml(d.sola)+'</b>. Los gringos casi siempre usan la flojita — por eso te la decimos con su palabra vecina.</div>';
   }
-  document.getElementById('wp-pron').innerHTML = escapeHtml(wpPron)+(sayWord&&/^[a-zA-Z' ]+$/.test(sayWord)?ttsBtnHTML(sayWord):'');
+  document.getElementById('wp-pron').innerHTML = escapeHtml(wpPron)+(sayWord&&/^[a-zA-Z' ]+$/.test(sayWord)?ttsBtnHTML(sayWord):'')+(extraBtns?'<span class="block mt-1">'+extraBtns+'</span>':'');
   // 🔊 PREMIUM read-along: al tocar la palabra SUENA de una (como en las apps de pago)
   if(sayWord && /^[a-zA-Z' \-]+$/.test(sayWord)) speak(sayWord);
   // 🔊 fonética contextual de ESTA palabra (por qué suena así)
@@ -3152,7 +3163,7 @@ let lpTimer=null, lpFired=false;
 document.addEventListener('pointerdown', e=>{
   const w=e.target.closest('.wtap'); if(!w) return;
   lpFired=false; clearTimeout(lpTimer);
-  lpTimer=setTimeout(()=>{ lpFired=true; showWordPopup(w); }, 550);
+  lpTimer=setTimeout(()=>{ lpFired=true; showWordPopup(w); }, 400);
 });
 document.addEventListener('pointerup', ()=>clearTimeout(lpTimer));
 document.addEventListener('pointercancel', ()=>clearTimeout(lpTimer));
@@ -3495,7 +3506,7 @@ function playReadyD(){
 function addCustomTopic(){ const t=document.getElementById('gen-topic'); pushTopic(selTopics,'gen-chips',false,t.value); t.value=''; }
 function addCustomTopicD(){ const t=document.getElementById('gen-topic-d'); pushTopic(selTopicsD,'gen-chips-d',true,t.value); t.value=''; }
 /* Tipos de pregunta a practicar: uno, varios o todos */
-const GEN_FMTS=[['todos','🌟 Todos'],['opcion','🔘 Opción múltiple'],['multiple','☑️ Varias correctas'],['vf','⚖️ True / False'],['escribir','⌨️ Escribir'],['completar','✏️ Completar'],['huecos','🧩 Huecos con fichas'],['ordenar','🔀 Ordenar'],['emparejar','🔗 Emparejar'],['lectura','📚 Lectura con preguntas']];
+const GEN_FMTS=[['todos','🌟 Todos'],['opcion','🔘 Opción múltiple'],['multiple','☑️ Varias correctas'],['vf','⚖️ True / False'],['escribir','⌨️ Escribir'],['completar','✏️ Completar'],['huecos','🧩 Huecos con fichas'],['ordenar','🔀 Ordenar'],['emparejar','🔗 Emparejar'],['escucha','🎧 Escucha (listening)'],['lectura','📚 Lectura con preguntas']];
 const selFmts=new Set(['todos']);
 function buildFmtChips(){
   const box=document.getElementById('gen-fmts'); if(!box) return; box.innerHTML='';
@@ -3557,9 +3568,28 @@ function copyToClipboard(text, statusId){
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(fallback); } else { fallback(); }
 }
 /* Despacha el render según el formato, dentro del contexto dado (área + callback) */
+/* 🎧 ESCUCHA: panel de audio (normal + lento) y luego opciones normales */
+function renderEscucha(q,ctx){
+  const panel=document.createElement('div');
+  panel.className='mb-4 p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 text-center';
+  const big=document.createElement('button');
+  big.className='bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-extrabold py-3 px-8 rounded-full text-lg shadow-lg';
+  big.innerHTML='▶️ Escuchar';
+  big.onclick=()=>speak(q.audio);
+  const slow=document.createElement('button');
+  slow.className='ml-2 bg-white border-2 border-purple-300 text-purple-700 font-bold py-3 px-4 rounded-full text-lg';
+  slow.innerHTML='🐢'; slow.title='Escuchar lento';
+  slow.onclick=()=>speak(q.audio,true);
+  const tip=document.createElement('div'); tip.className='text-xs text-slate-500 mt-2'; tip.textContent='Repite las veces que quieras · 🐢 = lento';
+  panel.appendChild(big); panel.appendChild(slow); panel.appendChild(tip);
+  ctx.area.appendChild(panel);
+  renderChoice(q,ctx);
+  setTimeout(()=>speak(q.audio), 350); // suena solo al cargar
+}
 function dispatchRender(q, ctx){
   const fmt=q.formato||'opcion';
   if(fmt==='multiple') renderMultiple(q,ctx);
+  else if(fmt==='escucha') renderEscucha(q,ctx);
   else if(fmt==='vf') renderVF(q,ctx);
   else if(fmt==='completar') renderComplete(q,ctx);
   else if(fmt==='huecos') renderHuecos(q,ctx);

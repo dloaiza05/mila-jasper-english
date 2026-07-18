@@ -1029,7 +1029,16 @@ function learnDict(glossary, phrases){
   if(n){ try{ localStorage.setItem('mj_dict', JSON.stringify(LEARNED)); localStorage.setItem('mj_dict_fr', JSON.stringify(LEARNED_FR)); }catch(e){} }
   return n;
 }
-function lookupWord(w){ const k=norm(w); if(k){ const g=extraGlossary[k]||LEARNED[k]||GLOSSARY[k]; if(g) return g; } const ti=tokenInfo(String(w).trim()); return ti||null; }
+function lookupWord(w){ const k=norm(w); if(k){ const g=extraGlossary[k]||LEARNED[k]||GLOSSARY[k]; if(g) return g; } const ti=tokenInfo(String(w).trim()); if(ti) return ti;
+  // RESPALDO: si no está exacta, prueba quitando sufijos comunes (translations→translation, walking→walk, boxes→box)
+  if(k&&k.length>3){ const bases=[];
+    if(/ies$/.test(k)) bases.push(k.slice(0,-3)+'y');
+    if(/es$/.test(k)) bases.push(k.slice(0,-2));
+    if(/s$/.test(k)) bases.push(k.slice(0,-1));
+    if(/ing$/.test(k)) { bases.push(k.slice(0,-3)); bases.push(k.slice(0,-3)+'e'); }
+    if(/ed$/.test(k)) { bases.push(k.slice(0,-2)); bases.push(k.slice(0,-1)); }
+    for(const b of bases){ const g2=extraGlossary[b]||LEARNED[b]||GLOSSARY[b]; if(g2) return {es:g2.es, pron:g2.pron, tipo:g2.tipo, en:g2.en, base:b}; } }
+  return null; }
 /* Exporta lo aprendido para que Claude lo consolide en la biblioteca del código (GitHub) */
 function exportLearned(){
   const n=Object.keys(LEARNED).length, f=Object.keys(LEARNED_FR).length;
@@ -1290,6 +1299,8 @@ function audioBtns(onPlay, cls){
 }
 /* Parlantes que KARAOKEAN el contenedor (inglés + pron). getEl devuelve el root. */
 function karaokeBtnEl(getEl){ return audioBtns(slow=>{ const el=getEl(); if(el) speakKaraokeRoot(el, slow); }); }
+/* UN solo parlante compacto (para fichas pequeñas). Toque = normal · mantener = no aplica. */
+function oneSpk(onPlay){ const b=document.createElement('button'); b.type='button'; b.className='tts-btn tts-mini'; b.textContent='🔊'; b.title='Escuchar'; b.onclick=e=>{ e.stopPropagation(); onPlay(false); }; return b; }
 /* Genera las DOS líneas emparejadas: inglés (.wtap) + pronunciación (.pk), con el MISMO data-ki,
    para que el karaoke resalte ambas en verde sincronizadas. Devuelve {enHTML, pronHTML}. */
 function readAlongLines(text){
@@ -1472,6 +1483,11 @@ function composeVocab(list, fmt, tema){
   if(fmt==='escribir'){
     return {formato:'escribir', kind:'vocab', emoji:emojiFor(item.en), q:'Write in English: «'+item.es+'»', answer:item.en, respuestas:[item.en], sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Write the English word', concepto:cpt};
   }
+  if(fmt==='escucha'){
+    // 🎧 oye la palabra en inglés y elígela entre 4 (con su significado en la explicación)
+    const d=vocabDistract(list,item,'en'); const pronOf=w=>{ const it=list.find(x=>x.en===w); return it?it.p:''; };
+    return {formato:'escucha', kind:'vocab', audio:item.en, q:'Listen and choose what you hear:', opts:shuffle([{t:item.en,c:1,pron:item.p||'',emoji:emojiFor(item.en),r:'✅ Sonó "'+item.en+'" = '+item.es+'.'}].concat(d.map(x=>({t:x,c:0,pron:pronOf(x),emoji:emojiFor(x),r:'❌ Sonó "'+item.en+'" ('+item.es+'), no "'+x+'".'})))), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'Escucha la palabra y elígela', concepto:cpt};
+  }
   if(fmt==='vf'){
     const other=pick(list); const same=Math.random()<0.5||other===item; const shown=same?item.es:other.es;
     return {formato:'vf', kind:'vocab', emoji:emojiFor(item.en), q:'"'+item.en+'" means "'+shown+'".', answer:same, r:same?('✅ True: "'+item.en+'" = '+item.es+'.'):('❌ False: "'+item.en+'" = '+item.es+', not "'+shown+'".'), sentence:item.en, trad:item.en+' = '+item.es, pron:item.p||'', form:'', cat:item.c||'', extra:item.n||'', tema:T, estructura:'True or False', concepto:cpt};
@@ -1547,7 +1563,9 @@ function grammarAvail(pool){
   return ['opcion','vf','escribir','completar','huecos','ordenar','multiple','emparejar','escucha'].filter(x=>f.has(x));
 }
 function vocabAvail(list){
-  const f=['opcion','vf','escribir','completar','huecos','ordenar']; if(list.length>=4){ f.push('multiple'); } if(list.length>=3){ f.push('emparejar'); } return f;
+  const f=['opcion','vf','escribir','completar','huecos','ordenar']; if(list.length>=4){ f.push('multiple'); } if(list.length>=3){ f.push('emparejar'); }
+  if(('speechSynthesis' in window) && list.length>=4){ f.push('escucha'); } // oír la palabra y elegirla
+  return f;
 }
 /* Motor de un tema: devuelve qué formatos puede producir y una función compose(fmt) */
 function topicEngine(topicLabel){
@@ -2624,6 +2642,8 @@ function autoRegisterGlossary(){
     if(typeof LETTER_Q!=='undefined') LETTER_Q.forEach(x=>addG(x.name,'nombre de la letra '+x.L,'letra',(typeof LETTER_PRON!=='undefined'&&LETTER_PRON[x.L.toLowerCase()])||x.name));
     // palabras con SU PRONUNCIACIÓN (3er campo). Se fuerza el pron aunque la palabra ya exista sin él.
     [['after','después','áfter'],['afternoon','tarde','afternún'],['morning','mañana','mórning'],['before','antes','bifór'],['behind','detrás de','bijáind'],['please','por favor','plis'],['up','arriba','ap'],['each','cada','ich'],['means','significa','mins'],['meaning','significado','míning'],['later','después','léiter'],['half','media / mitad','jaf'],['past','pasada (la hora)','past'],['quarter','cuarto','cuórter'],["o'clock",'en punto','oclák'],['noon','mediodía','nun'],['outside','afuera','áutsaid'],['room','cuarto / habitación','rum'],['words','palabras','uérds'],['word','palabra','uérd'],['order','orden','órder'],['called','se llama','cold'],['front','frente','front'],['next','siguiente / próximo','nekst'],['double','doble','dábol'],['back','de vuelta / atrás','bak'],['breakfast','desayuno','brékfast'],['lunch','almuerzo','lanch'],['dinner','cena','díner'],['shower','ducha','sháuer'],['police','policía','polís'],['officer','oficial','ófiser'],['together','juntos','tuguéder'],['learning','aprendiendo','lérning'],['little','poco','lítol'],['very','muy','véri'],['too','también','tú'],['name','nombre','néim'],['pet','mascota','pet'],['pets','mascotas','pets'],['big','grande','big'],['small','pequeño','smol'],['friendly','amable','fréndli'],['beautiful','hermoso','biútiful'],['their','su (de ellos)','der'],['names','nombres','néims'],['number','número','námber'],['phone','teléfono','fóun'],['zero','cero','síro'],['sofa','sofá','sóufa'],['night','noche','náit'],['every','cada / todos','évri'],['here','aquí','jíar'],['home','casa','jóum'],['work','trabajo / trabajar','uérk'],['from','de / desde','from'],['call','llamar','col'],['can','poder','can'],["can't",'no poder','cant'],['clock','reloj','clok'],['close','cerrar','clóus'],["doesn't",'no (con he/she/it)','dásent'],["don't",'no','dóunt'],['listen','escuchar','lísen'],['movies','películas','múvis'],['music','música','miúsic'],['office','oficina','ófis'],['open','abrir','óupen'],['tea','té','ti'],['wake','despertar','uéik'],['wash','lavar','uásh'],['weekends','fines de semana','uíkends'],['brush','cepillar','brash'],['come','venir','kam'],['cook','cocinar / cocinero','cuk'],['fish','pez / pescado','fish'],['chicken','pollo / gallina','chíken'],['hot','caliente / caluroso','jot'],['thirsty','con sed','zérsti'],['hungry','con hambre','jángri'],['all','todo','ol'],['any','algún / nada','éni'],['apples','manzanas','ápols'],['best','mejor','best'],['children','niños','chíldren'],['date','fecha','déit'],['else','más','els'],['family','familia','fámili'],['families','familias','fámilis'],['kilo','kilo','kílo'],['kilos','kilos','kílos'],['much','mucho','mach'],['per','por','per'],['person','persona','pérson'],['some','algo de','sam'],['thank','gracias','zénk'],['thousand','mil','záusand'],['fresh','fresco','fresh'],['hair','cabello','jéer'],['eyes','ojos','áis'],['shirt','camisa','shert'],['brown','marrón','bráun'],['long','largo','long'],['tall','alto','tol'],['box','caja','box'],['city','ciudad','síti'],['foot','pie','fut'],['knife','cuchillo','náif'],['man','hombre','man'],['tomato','tomate','toméito'],['tooth','diente','tuz'],['woman','mujer','uúman'],['leaf','hoja','lif'],['mouse','ratón','máus'],['pesos','pesos','pésos'],['dog','perro','dog'],['cat','gato','cat'],
+    // palabras inglesas que faltaban (detectadas por la auditoría)
+    ['missing','que falta','mísing'],['translations','traducciones','transléishons'],['exact','exacta / exacto','egzáct'],['listen','escucha / escuchar','lísen'],['hear','oír / escuchar','jíar'],['meaning','significado','míning'],['order','orden','órder'],['each','cada','ich'],['choose','elige / escoger','chus'],['put','pon / poner','put'],['what','qué','uát'],['you','tú / usted','iú'],
     // vocabulario de INSTRUCCIONES (para que tocar "Match", "sentence", etc. sí explique)
     ['match','une / empareja','mach'],['sentence','frase / oración','séntens'],['sentences','frases / oraciones','séntenses'],['translation','traducción','transléishon'],['its','su (de eso)','its'],['with','con','uíd'],['mark','marca','marc'],['choose','elige','chus'],['complete','completa','complít'],['blank','espacio en blanco','blanc'],['true','verdadero','tru'],['false','falso','fols'],['spell','deletrear','spel'],['put','pon','put'],['tap','toca','tap'],['correct','correcto(a)','corréct'],['english','inglés','ínglish'],['letter','letra','léter'],['letters','letras','léters'],['decide','decide','disáid'],['write','escribe','ráit'],['blanks','espacios','blancs'],
     // palabras A2 detectadas sin pronunciación por la auditoría
@@ -3798,7 +3818,7 @@ function renderHuecos(q,ctx){
   const sentWrap=document.createElement('div'); sentWrap.className='text-base md:text-lg leading-loose mb-3'; const bankWrap=document.createElement('div'); bankWrap.className='flex flex-wrap gap-2 mb-3';
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; attachHoldSelect(slot, ()=>{ if(ctx.answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }, 600); sentWrap.appendChild(slot); } }); }
-  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML='<span class="chip-w">'+wordSpanify(tok.w)+'</span>'; b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm inline-flex items-center gap-1 '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; const kb=audioBtns(slow=>speakKaraokeText(tok.w,[b.querySelectorAll('.chip-w .wtap')],slow),'tts-mini'); b.appendChild(kb); attachHoldSelect(b, ()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }, 600); bankWrap.appendChild(b); }); }
+  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML='<span class="chip-w">'+wordSpanify(tok.w)+'</span>'; b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm inline-flex items-center gap-1 '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; b.appendChild(oneSpk(slow=>speakKaraokeText(tok.w,[b.querySelectorAll('.chip-w .wtap')],slow))); attachHoldSelect(b, ()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }, 600); bankWrap.appendChild(b); }); }
   ctx.area.appendChild(sentWrap); ctx.area.appendChild(bankWrap); ctx.area.appendChild(chk);
   chk.onclick=()=>{ if(ctx.answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const valid=[].concat(q.answers[i]||[]); const good=valid.some(v=>norm(s.w)===norm(v)); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, valía: '+valid.join(' / ')); } }); chk.disabled=true; chk.classList.add('btn-disabled'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Ejemplo correcto: "'+q.sentence+'".'), q); };
   drawSentence(); drawBank();
@@ -3811,7 +3831,7 @@ function renderOrder(q,ctx){
   const checkBtn=document.createElement('button'); checkBtn.textContent='Comprobar ✅'; checkBtn.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   const hint=document.createElement('p'); hint.className='text-xs text-slate-500 mb-1'; hint.textContent='👆 toca una palabra para oírla · ✋ mantén presionado para ponerla en orden';
   ctx.area.appendChild(hint); ctx.area.appendChild(ansRow); ctx.area.appendChild(bankRow); ctx.area.appendChild(checkBtn);
-  function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm inline-flex items-center gap-1 '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML='<span class="chip-w">'+wordSpanify(w)+'</span>'; const kb=audioBtns(slow=>speakKaraokeText(w,[b.querySelectorAll('.chip-w .wtap')],slow),'tts-mini'); b.appendChild(kb); return b; }
+  function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm inline-flex items-center gap-1 '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML='<span class="chip-w">'+wordSpanify(w)+'</span>'; b.appendChild(oneSpk(slow=>speakKaraokeText(w,[b.querySelectorAll('.chip-w .wtap')],slow))); return b; }
   function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); attachHoldSelect(c, ()=>{ if(ctx.answered)return; ans.splice(pos,1); bank.push(it); draw(); }, 600); ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); attachHoldSelect(c, ()=>{ if(ctx.answered)return; bank.splice(pos,1); ans.push(it); draw(); }, 600); bankRow.appendChild(c); }); }
   checkBtn.onclick=()=>{ if(ctx.answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const userOrder=ans.map(a=>a.w).join(' '); const ok=userOrder.toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true; ctx.done(ok, ok?'¡Excelente orden!':('Tu orden: "'+userOrder+'" → está mal. El correcto es: "'+correct.join(' ')+'".'), q); };
   draw();

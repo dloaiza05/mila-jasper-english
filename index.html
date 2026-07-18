@@ -19,7 +19,9 @@
   .ka-on { background:#22c55e; color:#fff!important; border-bottom-color:transparent!important; box-shadow:0 2px 8px rgba(34,197,94,.4); transform:scale(1.04); display:inline-block; border-radius:5px; padding:0 2px; font-style:normal!important; }
   .ka-done { background:#dcfce7; color:#166534!important; border-bottom-color:transparent!important; border-radius:5px; padding:0 2px; }
   .pk { border-radius:5px; transition:background .12s, color .12s; }
-  .hold-fill { position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg,rgba(99,102,241,.18),rgba(139,92,246,.28)); border-radius:inherit; pointer-events:none; z-index:0; }
+  .hold-fill { position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg,rgba(52,211,153,.35),rgba(34,197,94,.5)); border-radius:inherit; pointer-events:none; z-index:0; }
+  .btn-option.holding { border-color:#22c55e!important; box-shadow:0 0 0 3px rgba(34,197,94,.25); }
+  .chip.holding, .hold-select.holding { border-color:#22c55e!important; }
   .btn-option > * { position:relative; z-index:1; }
   .opt-hint { font-size:.62rem; color:#94a3b8; font-weight:700; margin-top:2px; }
   .btn-option.nudge { animation:nudge .4s ease; }
@@ -1222,15 +1224,20 @@ function initTTS(){
   }catch(e){}
 }
 if('speechSynthesis' in window){ initTTS(); try{ speechSynthesis.onvoiceschanged=initTTS; }catch(e){} }
+let _ttsWarm=false;
+function warmTTS(){ if(_ttsWarm||!('speechSynthesis' in window))return; _ttsWarm=true; try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; if(TTS_VOICE)u.voice=TTS_VOICE; speechSynthesis.speak(u); }catch(e){} }
+// Quita el hueco ___ y símbolos que el TTS leería en voz ("guion bajo, guion bajo…")
+function cleanSay(text){ return String(text||'').replace(/_{1,}/g,' ').replace(/[«»"“”]/g,' ').replace(/\s+/g,' ').trim(); }
+// Chrome/Android a veces "pausa" el motor y el audio tarda: lo reanudamos siempre antes de hablar
 function speak(text, slow){
   try{
-    if(!('speechSynthesis' in window)||!text) return;
-    speechSynthesis.cancel();
+    if(!('speechSynthesis' in window)) return; text=cleanSay(text); if(!text) return;
+    warmTTS(); speechSynthesis.resume(); speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(String(text));
     if(TTS_VOICE) u.voice=TTS_VOICE;
     u.lang=(TTS_VOICE&&TTS_VOICE.lang)||'en-US';
-    u.rate=slow?0.6:0.85; u.pitch=1;
-    speechSynthesis.speak(u);
+    u.rate=slow?0.62:0.95; u.pitch=1;
+    speechSynthesis.speak(u); speechSynthesis.resume();
   }catch(e){}
 }
 /* 🎤 KARAOKE: lee la frase y va marcando en VERDE cada palabra Y su pronunciación a medida que suena.
@@ -1245,9 +1252,9 @@ let _kaTimer=null;
 function _kaCore(text, spanSets, slow){
   try{
     if(!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel(); clearKaraoke(); clearTimeout(_kaTimer);
+    warmTTS(); speechSynthesis.resume(); speechSynthesis.cancel(); clearKaraoke(); clearTimeout(_kaTimer);
     spanSets=(spanSets||[]).map(s=>Array.prototype.slice.call(s||[])).filter(a=>a.length);
-    const words=String(text).trim().split(/\s+/).filter(Boolean);
+    const words=cleanSay(text).split(/\s+/).filter(Boolean); // sin guiones bajos ___ ni comillas
     if(!words.length) return;
     // offsets en caracteres (para onboundary) y tiempos estimados (para el respaldo)
     let t=''; const starts=[]; const rate=slow?0.62:0.9;
@@ -1277,7 +1284,7 @@ function _kaCore(text, spanSets, slow){
     function tick(){ if(ended)return; const el=Date.now()-t0; let pos=0; for(let i=0;i<wordStartMs.length;i++){ if(wordStartMs[i]<=el) pos=i; else break; }
       if(!boundaryOK) go(pos); // si onboundary funciona, él manda; si no, avanza el estimado
       if(el < totalMs+400){ _kaTimer=setTimeout(tick, 40); } else { endClean(); } }
-    speechSynthesis.speak(u);
+    speechSynthesis.speak(u); speechSynthesis.resume();
     _kaTimer=setTimeout(tick, 60);
   }catch(e){}
 }
@@ -1291,8 +1298,9 @@ function speakKaraoke(spans, slow){ const a=Array.prototype.slice.call(spans||[]
 function audioBtns(onPlay, cls){
   const w=document.createElement('span'); w.className='audio-ctl '+(cls||'');
   if(!('speechSynthesis' in window)) return w;
-  const n=document.createElement('button'); n.type='button'; n.className='tts-btn'; n.textContent='🔊'; n.title='Escuchar (velocidad normal)';
-  const s=document.createElement('button'); s.type='button'; s.className='tts-btn tts-slow'; s.textContent='🐢'; s.title='Escuchar lento (fluido)';
+  // <span role=button> (NO <button>) para poder ir DENTRO de los botones de opción sin romper el HTML
+  const n=document.createElement('span'); n.setAttribute('role','button'); n.className='tts-btn'; n.textContent='🔊'; n.title='Escuchar (velocidad normal)';
+  const s=document.createElement('span'); s.setAttribute('role','button'); s.className='tts-btn tts-slow'; s.textContent='🐢'; s.title='Escuchar lento (fluido)';
   n.onclick=e=>{ e.stopPropagation(); onPlay(false); };
   s.onclick=e=>{ e.stopPropagation(); onPlay(true); };
   w.appendChild(n); w.appendChild(s); return w;
@@ -1300,7 +1308,7 @@ function audioBtns(onPlay, cls){
 /* Parlantes que KARAOKEAN el contenedor (inglés + pron). getEl devuelve el root. */
 function karaokeBtnEl(getEl){ return audioBtns(slow=>{ const el=getEl(); if(el) speakKaraokeRoot(el, slow); }); }
 /* UN solo parlante compacto (para fichas pequeñas). Toque = normal · mantener = no aplica. */
-function oneSpk(onPlay){ const b=document.createElement('button'); b.type='button'; b.className='tts-btn tts-mini'; b.textContent='🔊'; b.title='Escuchar'; b.onclick=e=>{ e.stopPropagation(); onPlay(false); }; return b; }
+function oneSpk(onPlay){ const b=document.createElement('span'); b.setAttribute('role','button'); b.className='tts-btn tts-mini'; b.textContent='🔊'; b.title='Escuchar'; b.onclick=e=>{ e.stopPropagation(); onPlay(false); }; return b; }
 /* Genera las DOS líneas emparejadas: inglés (.wtap) + pronunciación (.pk), con el MISMO data-ki,
    para que el karaoke resalte ambas en verde sincronizadas. Devuelve {enHTML, pronHTML}. */
 function readAlongLines(text){
@@ -3197,8 +3205,8 @@ function showWordPopup(el){
   document.getElementById('wp-es').textContent = esMsg;
   document.getElementById('wp-tipo').textContent = (g&&g.tipo)?('🏷️ '+g.tipo) : ((sp&&sp.tipo)?('🏷️ '+sp.tipo):'');
   let wpPron=(g&&g.pron)?('🗣️ suena: '+g.pron) : ((sp&&sp.pron)?('🗣️ suena: '+sp.pron):'');
-  // audio de la palabra: si es palabra en inglés habla la palabra; si buscó español→inglés habla el inglés
-  let sayWord=g?word:(sp?sp.en:'');
+  // audio: SIEMPRE reproduce algo al tocar (palabra inglesa, o el inglés del español, o la palabra tal cual)
+  let sayWord=g?word:(sp?sp.en:(/^[A-Za-z' \-]+$/.test(word)?word:''));
   // ===== PALABRAS CON DOS FORMAS (débil en frase / fuerte sola): a, an, the =====
   // El TTS dice la forma FUERTE si la palabra va sola ("a"→"éi"). Para que suene NATURAL,
   // la decimos JUNTO A LA PALABRA SIGUIENTE de la frase ("a pen") → así oyes la forma débil real.
@@ -3720,18 +3728,21 @@ function finalizeSub(ok, exp, sq, fb){
 }
 
 /* Un TOQUE en una palabra = oír + traducir. Para ELEGIR: mantener presionado (barra que se llena). */
-const HOLD_MS=900;
+const HOLD_MS=1600; // presión deliberada (no se dispara de un toque rápido)
 function attachHoldSelect(btn, onSelect, ms){
   ms=ms||HOLD_MS;
   btn.classList.add('hold-select');
   const fill=document.createElement('div'); fill.className='hold-fill'; btn.insertBefore(fill, btn.firstChild);
   btn.style.position='relative';
-  let timer=null;
-  const reset=()=>{ clearTimeout(timer); timer=null; fill.style.transition='width .18s ease'; fill.style.width='0%'; };
-  const start=e=>{ if(btn.disabled) return; if(e.target.closest('.tts-btn')) return; // el parlante hace lo suyo
+  let timer=null, sx=0, sy=0;
+  const reset=()=>{ clearTimeout(timer); timer=null; fill.style.transition='width .18s ease'; fill.style.width='0%'; btn.classList.remove('holding'); };
+  const start=e=>{ if(btn.dataset.locked||btn.disabled) return; if(e.target.closest('.tts-btn')) return; // el parlante hace lo suyo
+    sx=e.clientX||0; sy=e.clientY||0; btn.classList.add('holding');
     fill.style.transition='none'; fill.style.width='0%'; void fill.offsetWidth; fill.style.transition='width '+ms+'ms linear'; fill.style.width='100%';
-    timer=setTimeout(()=>{ window._holdCommitted=true; onSelect(); reset(); }, ms); };
+    timer=setTimeout(()=>{ window._holdCommitted=true; btn.classList.remove('holding'); onSelect(); reset(); setTimeout(()=>{ window._holdCommitted=false; },350); }, ms); };
+  const move=e=>{ if(!timer)return; if(Math.abs((e.clientX||0)-sx)>12||Math.abs((e.clientY||0)-sy)>12) reset(); }; // si desliza (scroll), cancela
   btn.addEventListener('pointerdown', start);
+  btn.addEventListener('pointermove', move);
   btn.addEventListener('pointerup', reset);
   btn.addEventListener('pointerleave', reset);
   btn.addEventListener('pointercancel', reset);
@@ -3749,7 +3760,7 @@ function renderChoice(q,ctx){
     btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para elegir</span></span></span><span class="hidden icon-status text-lg"></span>';
     // parlantes (normal 🔊 + lento 🐢) que karaokean inglés + pron de ESTA opción
     const kb=audioBtns(slow=>speakKaraokeText(opt.t, [btn.querySelectorAll('.opt-t .wtap'), btn.querySelectorAll('.opt-pron .pk')], slow), 'tts-mini'); const enBox=btn.querySelector('.opt-en'); if(enBox)enBox.appendChild(kb);
-    const commit=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.disabled=true;});
+    const commit=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.dataset.locked='1';});
       if(opt.c===1){ btn.classList.add('btn-selected-correct'); btn.querySelector('.icon-status').textContent='✅'; }
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
       btn.querySelector('.icon-status').classList.remove('hidden'); ctx.answered=true; ctx.done(opt.c===1, opt.r, q);
@@ -3774,7 +3785,7 @@ function renderMultiple(q,ctx){
   ctx.area.appendChild(box);
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   chk.onclick=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); let ok=true; const falto=[], sobro=[];
-    opts.forEach((opt,i)=>{ const b=buttons[i]; b.disabled=true; b.classList.add('btn-disabled'); const chosen=sel.has(i);
+    opts.forEach((opt,i)=>{ const b=buttons[i]; b.dataset.locked='1'; b.classList.add('btn-disabled'); const chosen=sel.has(i);
       if(opt.c===1){ b.classList.add('bg-green-100','border-green-400'); b.querySelector('.check-box').textContent=chosen?'✅':'✔️'; if(!chosen){ok=false; falto.push(opt.t);} }
       else if(chosen){ b.classList.add('bg-red-100','border-red-400'); b.querySelector('.check-box').textContent='❌'; ok=false; sobro.push(opt.t); } });
     chk.disabled=true; chk.classList.add('btn-disabled');

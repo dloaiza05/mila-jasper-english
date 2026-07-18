@@ -20,8 +20,8 @@
   .ka-done { background:#dcfce7; color:#166534!important; border-bottom-color:transparent!important; border-radius:5px; padding:0 2px; }
   .pk { border-radius:5px; transition:background .12s, color .12s; }
   .hold-fill { position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg,rgba(52,211,153,.35),rgba(34,197,94,.5)); border-radius:inherit; pointer-events:none; z-index:0; }
-  .btn-option.holding { border-color:#22c55e!important; box-shadow:0 0 0 3px rgba(34,197,94,.25); }
-  .chip.holding, .hold-select.holding { border-color:#22c55e!important; }
+  .btn-option, .chip, .hold-select, .match-t, .opt-t, .opt-pron { user-select:none; -webkit-user-select:none; -moz-user-select:none; -webkit-touch-callout:none; }
+  .btn-option:active, .chip:active, .hold-select:active { transform:scale(.99); }
   .btn-option > * { position:relative; z-index:1; }
   .opt-hint { font-size:.62rem; color:#94a3b8; font-weight:700; margin-top:2px; }
   .btn-option.nudge { animation:nudge .4s ease; }
@@ -3260,15 +3260,13 @@ function showWordPopup(el){
 function hideWordPopup(){ document.getElementById('word-popup').classList.add('hidden'); }
 let lpFired=false; // (compat) ya no se usa long-press para la burbuja: un toque simple la abre
 document.addEventListener('contextmenu', e=>{ if(e.target.closest('.wtap')) e.preventDefault(); });
+// bloquea la SELECCIÓN de texto (el azul molesto del celular) en botones/opciones/fichas
+document.addEventListener('selectstart', e=>{ if(e.target.closest('.btn-option,.chip,.hold-select,.match-t,.opt-t,.opt-pron,.wtap')) e.preventDefault(); });
 document.addEventListener('click', e=>{
-  if(window._holdCommitted){ window._holdCommitted=false; e.preventDefault(); e.stopPropagation(); return; } // acabó de elegir por presión: no abrir burbuja
-  if(lpFired){ e.preventDefault(); e.stopPropagation(); lpFired=false; return; } // el long-press NO responde la pregunta
   const w=e.target.closest('.wtap');
-  // UN SOLO TOQUE en una palabra = oír + traducir, SIEMPRE que no rompa una acción:
-  //  · texto normal (pregunta, diálogo, lectura) → burbuja
-  //  · opciones/match (elegir = mantener presionado) → burbuja
-  //  · fichas de huecos/ordenar (tocar = colocar) → NO burbuja (el toque coloca la ficha)
-  if(w && (!w.closest('button') || w.closest('.hold-select'))){ showWordPopup(w); e.stopPropagation(); e.preventDefault(); return; }
+  // UN SOLO TOQUE en una palabra = oír + traducir, SOLO en TEXTO LIBRE (pregunta, diálogo, lectura, tarjeta).
+  // En botones (opciones/match/fichas) el toque es la ACCIÓN (elegir/colocar); el audio va en el parlante 🔊.
+  if(w && !w.closest('button')){ showWordPopup(w); e.stopPropagation(); return; }
   // burbuja abierta: tocar EN CUALQUIER LADO la cierra (menos sus parlantes 🔊🐢). Nada molesto.
   const pop=document.getElementById('word-popup');
   if(pop && !pop.classList.contains('hidden')){ if(!e.target.closest('.tts-btn')) hideWordPopup(); }
@@ -3728,26 +3726,10 @@ function finalizeSub(ok, exp, sq, fb){
 }
 
 /* Un TOQUE en una palabra = oír + traducir. Para ELEGIR: mantener presionado (barra que se llena). */
-const HOLD_MS=1600; // presión deliberada (no se dispara de un toque rápido)
-function attachHoldSelect(btn, onSelect, ms){
-  ms=ms||HOLD_MS;
+// UN SOLO TOQUE para elegir (ágil). El parlante 🔊 hace su parte aparte.
+function attachHoldSelect(btn, onSelect){
   btn.classList.add('hold-select');
-  const fill=document.createElement('div'); fill.className='hold-fill'; btn.insertBefore(fill, btn.firstChild);
-  btn.style.position='relative';
-  let timer=null, sx=0, sy=0;
-  const reset=()=>{ clearTimeout(timer); timer=null; fill.style.transition='width .18s ease'; fill.style.width='0%'; btn.classList.remove('holding'); };
-  const start=e=>{ if(btn.dataset.locked||btn.disabled) return; if(e.target.closest('.tts-btn')) return; // el parlante hace lo suyo
-    sx=e.clientX||0; sy=e.clientY||0; btn.classList.add('holding');
-    fill.style.transition='none'; fill.style.width='0%'; void fill.offsetWidth; fill.style.transition='width '+ms+'ms linear'; fill.style.width='100%';
-    timer=setTimeout(()=>{ window._holdCommitted=true; btn.classList.remove('holding'); onSelect(); reset(); setTimeout(()=>{ window._holdCommitted=false; },350); }, ms); };
-  const move=e=>{ if(!timer)return; if(Math.abs((e.clientX||0)-sx)>12||Math.abs((e.clientY||0)-sy)>12) reset(); }; // si desliza (scroll), cancela
-  btn.addEventListener('pointerdown', start);
-  btn.addEventListener('pointermove', move);
-  btn.addEventListener('pointerup', reset);
-  btn.addEventListener('pointerleave', reset);
-  btn.addEventListener('pointercancel', reset);
-  // click "normal" (mouse rápido) en zona vacía: NO selecciona; le recuerda que debe mantener presionado
-  btn.addEventListener('click', e=>{ if(!window._holdCommitted && !e.target.closest('.wtap') && !e.target.closest('.tts-btn')){ btn.classList.add('nudge'); setTimeout(()=>btn.classList.remove('nudge'),400); } });
+  btn.onclick=e=>{ if(e.target.closest('.tts-btn')) return; if(btn.dataset.locked||btn.disabled) return; onSelect(); };
 }
 /* opción múltiple (1 correcta) */
 function renderChoice(q,ctx){
@@ -3757,7 +3739,7 @@ function renderChoice(q,ctx){
     const btn=document.createElement('button'); btn.className='w-full text-left p-3 md:p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
     const ra=readAlongLines(opt.t); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
     const pr=ra.pronHTML||escapeHtml(opt.pron||'');
-    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para elegir</span></span></span><span class="hidden icon-status text-lg"></span>';
+    btn.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca para elegir · 🔊 para oírla</span></span></span><span class="hidden icon-status text-lg"></span>';
     // parlantes (normal 🔊 + lento 🐢) que karaokean inglés + pron de ESTA opción
     const kb=audioBtns(slow=>speakKaraokeText(opt.t, [btn.querySelectorAll('.opt-t .wtap'), btn.querySelectorAll('.opt-pron .pk')], slow), 'tts-mini'); const enBox=btn.querySelector('.opt-en'); if(enBox)enBox.appendChild(kb);
     const commit=()=>{ if(ctx.answered)return; const buttons=box.querySelectorAll('button'); buttons.forEach(b=>{b.classList.add('btn-disabled');b.dataset.locked='1';});
@@ -3765,7 +3747,7 @@ function renderChoice(q,ctx){
       else { btn.classList.add('btn-selected-incorrect'); btn.querySelector('.icon-status').textContent='❌'; const cr=q.opts.find(o=>o.c===1); buttons.forEach(b=>{ if(b.querySelector('.opt-t').textContent===cr.t){ b.classList.add('bg-green-100','border-green-400'); const ic=b.querySelector('.icon-status'); ic.textContent='✔️'; ic.classList.remove('hidden'); } }); }
       btn.querySelector('.icon-status').classList.remove('hidden'); ctx.answered=true; ctx.done(opt.c===1, opt.r, q);
     };
-    attachHoldSelect(btn, commit);
+    btn.onclick=e=>{ if(e.target.closest('.tts-btn'))return; commit(); };
     box.appendChild(btn);
   });
   ctx.area.appendChild(box);
@@ -3777,9 +3759,9 @@ function renderMultiple(q,ctx){
   opts.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium btn-option flex items-center justify-between text-sm md:text-base';
     const ra=readAlongLines(opt.t); const letter='abcdefgh'[i]||'•'; const em=opt.emoji?'<span class="text-xl mr-1">'+opt.emoji+'</span>':'';
     const pr=ra.pronHTML||escapeHtml(opt.pron||'');
-    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca una palabra para oírla · ✋ mantén presionado para marcar</span></span></span><span class="check-box text-lg">⬜</span>';
+    b.innerHTML='<span class="flex items-start gap-2 flex-1"><span class="opt-letter lc'+(i%4)+'">'+letter+'</span><span class="flex-1"><span class="opt-en block">'+em+'<span class="opt-t">'+ra.enHTML+'</span></span>'+(pr?'<span class="opt-pron block text-xs text-purple-600 italic font-normal">🗣️ '+pr+'</span>':'')+'<span class="block opt-hint">👆 toca para marcar/desmarcar · 🔊 para oírla</span></span></span><span class="check-box text-lg">⬜</span>';
     const kb=audioBtns(slow=>speakKaraokeText(opt.t, [b.querySelectorAll('.opt-t .wtap'), b.querySelectorAll('.opt-pron .pk')], slow), 'tts-mini'); const enBox=b.querySelector('.opt-en'); if(enBox)enBox.appendChild(kb);
-    attachHoldSelect(b, ()=>{ if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } });
+    b.onclick=e=>{ if(e.target.closest('.tts-btn'))return; if(ctx.answered)return; if(sel.has(i)){ sel.delete(i); b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='⬜'; } else { sel.add(i); b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); b.querySelector('.check-box').textContent='☑️'; } };
     box.appendChild(b);
   });
   ctx.area.appendChild(box);
@@ -3861,7 +3843,7 @@ function renderMatch(q,ctx){
       const kb=karaokeBtnEl(()=>b); if(kb){ kb.classList.add('tts-mini','align-middle'); const mt=b.querySelector('.match-en'); if(mt)mt.appendChild(kb); }
     } else { b.innerHTML='<span class="match-t block">'+escapeHtml(item.t)+'</span>'; }
     b.className='w-full p-3 rounded-xl border-2 border-slate-200 bg-white font-medium btn-option text-sm';
-    b.insertAdjacentHTML('beforeend','<span class="block opt-hint">'+(side==='L'?'👆 toca una palabra para oírla · ':'')+'✋ mantén presionado para unir</span>');
+    b.insertAdjacentHTML('beforeend','<span class="block opt-hint">👆 toca para unir'+(side==='L'?' · 🔊 para oírla':'')+'</span>');
     // ELEGIR/UNIR = mantener presionado (tocar una palabra abre su burbuja + audio)
     attachHoldSelect(b, ()=>{ if(ctx.answered||b.disabled)return;
       if(side==='L'){ if(selBtn)selBtn.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'); selBtn=b; selId=item.id; b.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }

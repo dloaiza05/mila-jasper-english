@@ -1230,27 +1230,46 @@ function speak(text, slow){
 let _kaClear=null;
 function clearKaraoke(){ if(_kaClear){ try{_kaClear();}catch(e){} _kaClear=null; } }
 /* Núcleo universal: habla `text` (inglés) y resalta en VERDE, palabra por palabra, TODOS los
-   conjuntos de spans en `spanSets` a la vez (inglés y/o pronunciación). Usa onboundary. */
+   conjuntos de spans en `spanSets`. Usa onboundary SI el dispositivo lo soporta, y SIEMPRE un
+   temporizador estimado como respaldo (muchos Android no disparan onboundary → así SÍ se ve). */
+let _kaTimer=null;
 function _kaCore(text, spanSets, slow){
   try{
     if(!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel(); clearKaraoke();
+    speechSynthesis.cancel(); clearKaraoke(); clearTimeout(_kaTimer);
     spanSets=(spanSets||[]).map(s=>Array.prototype.slice.call(s||[])).filter(a=>a.length);
     const words=String(text).trim().split(/\s+/).filter(Boolean);
     if(!words.length) return;
-    let t=''; const starts=[]; words.forEach(w=>{ starts.push(t.length); t+=w+' '; });
-    _kaClear=()=>spanSets.forEach(a=>a.forEach(s=>s.classList.remove('ka-on','ka-done')));
-    const u=new SpeechSynthesisUtterance(t.trim());
-    if(TTS_VOICE) u.voice=TTS_VOICE; u.lang=(TTS_VOICE&&TTS_VOICE.lang)||'en-US';
-    u.rate=slow?0.6:0.85; u.pitch=1; // normal moderado / lento fluido
+    // offsets en caracteres (para onboundary) y tiempos estimados (para el respaldo)
+    let t=''; const starts=[]; const rate=slow?0.62:0.9;
+    const cps=12.5*rate; // caracteres por segundo aprox. de la voz
+    let accChars=0; const wordStartMs=[];
+    words.forEach(w=>{ starts.push(t.length); t+=w+' ';
+      wordStartMs.push(accChars/cps*1000);
+      accChars += w.length+1 + (/[.,;:!?]$/.test(w)?4:0); }); // pausa extra en puntuación
+    const maxLen=spanSets.reduce((m,a)=>Math.max(m,a.length),0);
     const on=i=>spanSets.forEach(a=>{ if(a[i])a[i].classList.add('ka-on'); });
     const off=i=>spanSets.forEach(a=>{ if(a[i]){a[i].classList.remove('ka-on');a[i].classList.add('ka-done');} });
-    let last=-1;
-    u.onboundary=e=>{ if(e.name&&e.name!=='word') return; const ci=e.charIndex; let pos=0;
-      for(let i=0;i<starts.length;i++){ if(starts[i]<=ci) pos=i; else break; }
-      if(pos!==last){ if(last>=0)off(last); on(pos); last=pos; } };
-    u.onend=u.onerror=()=>{ spanSets.forEach(a=>a.forEach(s=>s.classList.remove('ka-on'))); const snap=spanSets; setTimeout(()=>snap.forEach(a=>a.forEach(s=>s.classList.remove('ka-done'))),1400); _kaClear=null; };
+    const clearAll=()=>spanSets.forEach(a=>a.forEach(s=>s.classList.remove('ka-on','ka-done')));
+    _kaClear=clearAll;
+    let last=-1; let boundaryOK=false;
+    const go=pos=>{ if(pos===last)return; if(last>=0)off(last); on(pos); last=pos; };
+    const u=new SpeechSynthesisUtterance(t.trim());
+    if(TTS_VOICE) u.voice=TTS_VOICE; u.lang=(TTS_VOICE&&TTS_VOICE.lang)||'en-US';
+    u.rate=rate; u.pitch=1;
+    const totalMs=(accChars/cps)*1000;
+    let ended=false;
+    const endClean=()=>{ if(ended)return; ended=true; clearTimeout(_kaTimer); spanSets.forEach(a=>a.forEach(s=>s.classList.remove('ka-on'))); const snap=spanSets; setTimeout(()=>snap.forEach(a=>a.forEach(s=>s.classList.remove('ka-done'))),1200); if(_kaClear===clearAll)_kaClear=null; };
+    u.onboundary=e=>{ if(e.name&&e.name!=='word') return; boundaryOK=true; // el evento real refina el resaltado
+      const ci=e.charIndex; let pos=0; for(let i=0;i<starts.length;i++){ if(starts[i]<=ci) pos=i; else break; } go(pos); };
+    u.onend=u.onerror=()=>{ setTimeout(endClean, 60); };
+    // TEMPORIZADOR (respaldo universal): arranca YA y avanza el verde palabra por palabra
+    const t0=Date.now();
+    function tick(){ if(ended)return; const el=Date.now()-t0; let pos=0; for(let i=0;i<wordStartMs.length;i++){ if(wordStartMs[i]<=el) pos=i; else break; }
+      if(!boundaryOK) go(pos); // si onboundary funciona, él manda; si no, avanza el estimado
+      if(el < totalMs+400){ _kaTimer=setTimeout(tick, 40); } else { endClean(); } }
     speechSynthesis.speak(u);
+    _kaTimer=setTimeout(tick, 60);
   }catch(e){}
 }
 // karaoke sobre un ROOT con .wtap (inglés) y opcional .pk (pron): habla el inglés visible y resalta ambos
@@ -3300,15 +3319,16 @@ function loadQuestion(){
   // tema (en inglés) encima de la pregunta; al tocarlo muestra el español
   const tb=document.getElementById('tema-badge');
   if(q.tema){ tb.textContent='📗 '+q.tema; tb.setAttribute('data-en',q.tema); tb.setAttribute('data-es',temaEs(q.tema)); tb.setAttribute('data-open','0'); tb.classList.remove('hidden'); tb.classList.add('cursor-pointer'); tb.title='Toca para ver el significado en español'; tb.onclick=()=>tapTema(tb); } else tb.classList.add('hidden');
-  ui.qText.innerHTML='<span class="qnum">'+(idx+1)+'</span> '+(q.emoji?'<span class="text-3xl align-middle mr-1" title="pista visual">'+q.emoji+'</span> ':'')+wordSpanify(q.q);
+  ui.qText.innerHTML='<span class="qnum">'+(idx+1)+'</span> '+(q.emoji?'<span class="text-3xl align-middle mr-1" title="pista visual">'+q.emoji+'</span> ':'')+'<span class="qmain">'+wordSpanify(q.q)+'</span>';
   // La instrucción en inglés lleva SU pronunciación visible + traducción oculta tras "Ver traducción" (pedido de Diego)
   const instrEs=instructionEs(q);
   if(instrEs){
-    const ipron=phon(String(q.q));
+    const raI=readAlongLines(String(q.q)); const ipron=raI.pronHTML;
     ui.qText.innerHTML+='<div class="text-xs font-normal mt-1 space-y-0.5">'
-      +(ipron?'<div class="text-purple-600 italic">🗣️ '+escapeHtml(ipron)+ttsBtnHTML(String(q.q))+'</div>':'')
+      +(ipron?'<div class="instr-pron text-purple-600 italic">🗣️ '+ipron+'</div>':'')
       +'<div><button class="text-blue-500 font-bold underline decoration-dotted" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">📖 Ver traducción</button><span class="hidden text-blue-700 ml-1">'+escapeHtml(instrEs)+'</span></div>'
       +'</div>';
+    if(ipron){ const ip=ui.qText.querySelector('.instr-pron'); const kb=audioBtns(slow=>speakKaraokeText(String(q.q),[ui.qText.querySelectorAll('.qmain .wtap'), ip.querySelectorAll('.pk')],slow)); if(ip)ip.appendChild(kb); }
   }
   // ARRIBA (bajo el enunciado): solo en opción/VF, donde el enunciado ES una frase en inglés (el hueco ___ no revela).
   // En completar/huecos/ordenar/escribir, la pronunciación+traducción de la ORACIÓN van ABAJO, junto a la respuesta (appendSentenceRef).
@@ -3322,7 +3342,7 @@ function loadQuestion(){
   if(topFmt && q.kind!=='vocab'){
     const raQ=readAlongLines(q.q); let pr=raQ.pronHTML; if(!pr && q.pron) pr=escapeHtml(q.pron);
     if(pr){ qp.innerHTML='🗣️ '+pr; // parlantes que karaokean pregunta (#question-text) + esta pron
-      const kb=audioBtns(slow=>speakKaraokeText(Array.prototype.map.call(ui.qText.querySelectorAll('.wtap'),s=>s.textContent).join(' '), [ui.qText.querySelectorAll('.wtap'), qp.querySelectorAll('.pk')], slow));
+      const kb=audioBtns(slow=>speakKaraokeText(Array.prototype.map.call(ui.qText.querySelectorAll('.qmain .wtap'),s=>s.textContent).join(' '), [ui.qText.querySelectorAll('.qmain .wtap'), qp.querySelectorAll('.pk')], slow));
       qp.appendChild(kb); qp.classList.remove('hidden'); } else qp.classList.add('hidden');
     if(q.trad){ qt.textContent='📖 '+q.trad; qt.classList.add('hidden'); qtBtn.textContent='📖 Ver traducción'; qtWrap.classList.remove('hidden'); } else qtWrap.classList.add('hidden');
   } else { qp.classList.add('hidden'); qtWrap.classList.add('hidden'); }
@@ -3778,7 +3798,7 @@ function renderHuecos(q,ctx){
   const sentWrap=document.createElement('div'); sentWrap.className='text-base md:text-lg leading-loose mb-3'; const bankWrap=document.createElement('div'); bankWrap.className='flex flex-wrap gap-2 mb-3';
   const chk=document.createElement('button'); chk.textContent='Comprobar ✅'; chk.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   function drawSentence(){ sentWrap.innerHTML=''; parts.forEach((part,i)=>{ const sp=document.createElement('span'); sp.innerHTML=wordSpanify(part); sentWrap.appendChild(sp); if(i<parts.length-1){ const slot=document.createElement('button'); slot.className='inline-block mx-1 px-3 py-1 rounded-lg border-2 border-dashed '+(slots[i]?'border-indigo-400 bg-indigo-100 text-indigo-800 font-bold':'border-slate-300 bg-slate-50 text-slate-400'); slot.textContent=slots[i]?slots[i].w:'____'; attachHoldSelect(slot, ()=>{ if(ctx.answered)return; if(slots[i]){ slots[i].used=false; slots[i]=null; drawSentence(); drawBank(); } }, 600); sentWrap.appendChild(slot); } }); }
-  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML=wordSpanify(tok.w); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; attachHoldSelect(b, ()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }, 600); bankWrap.appendChild(b); }); }
+  function drawBank(){ bankWrap.innerHTML=''; bank.forEach(tok=>{ const b=document.createElement('button'); b.innerHTML='<span class="chip-w">'+wordSpanify(tok.w)+'</span>'; b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm inline-flex items-center gap-1 '+(tok.used?'opacity-30 bg-slate-100 border-slate-200 text-slate-400':'bg-white border-slate-300 text-slate-700'); b.disabled=tok.used; const kb=audioBtns(slow=>speakKaraokeText(tok.w,[b.querySelectorAll('.chip-w .wtap')],slow),'tts-mini'); b.appendChild(kb); attachHoldSelect(b, ()=>{ if(ctx.answered||tok.used)return; const idx2=slots.findIndex(s=>s===null); if(idx2<0)return; slots[idx2]=tok; tok.used=true; drawSentence(); drawBank(); }, 600); bankWrap.appendChild(b); }); }
   ctx.area.appendChild(sentWrap); ctx.area.appendChild(bankWrap); ctx.area.appendChild(chk);
   chk.onclick=()=>{ if(ctx.answered)return; if(slots.some(s=>s===null)){ alert('Llena todos los espacios.'); return; } let ok=true; const detail=[]; slots.forEach((s,i)=>{ const valid=[].concat(q.answers[i]||[]); const good=valid.some(v=>norm(s.w)===norm(v)); if(!good){ ok=false; detail.push('Espacio '+(i+1)+': pusiste "'+s.w+'" → está mal, valía: '+valid.join(' / ')); } }); chk.disabled=true; chk.classList.add('btn-disabled'); ctx.answered=true; ctx.done(ok, ok?'¡Perfecto!':(detail.join(' · ')+'. Ejemplo correcto: "'+q.sentence+'".'), q); };
   drawSentence(); drawBank();
@@ -3791,7 +3811,7 @@ function renderOrder(q,ctx){
   const checkBtn=document.createElement('button'); checkBtn.textContent='Comprobar ✅'; checkBtn.className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-full text-sm w-full md:w-auto';
   const hint=document.createElement('p'); hint.className='text-xs text-slate-500 mb-1'; hint.textContent='👆 toca una palabra para oírla · ✋ mantén presionado para ponerla en orden';
   ctx.area.appendChild(hint); ctx.area.appendChild(ansRow); ctx.area.appendChild(bankRow); ctx.area.appendChild(checkBtn);
-  function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML=wordSpanify(w); return b; }
+  function chip(w,inBank){ const b=document.createElement('button'); b.className='chip px-3 py-2 rounded-lg border-2 font-bold text-sm inline-flex items-center gap-1 '+(inBank?'bg-white border-slate-300 text-slate-700':'bg-indigo-100 border-indigo-300 text-indigo-800'); b.innerHTML='<span class="chip-w">'+wordSpanify(w)+'</span>'; const kb=audioBtns(slow=>speakKaraokeText(w,[b.querySelectorAll('.chip-w .wtap')],slow),'tts-mini'); b.appendChild(kb); return b; }
   function draw(){ ansRow.innerHTML=''; bankRow.innerHTML=''; ans.forEach((it,pos)=>{ const c=chip(it.w,false); attachHoldSelect(c, ()=>{ if(ctx.answered)return; ans.splice(pos,1); bank.push(it); draw(); }, 600); ansRow.appendChild(c); }); bank.forEach((it,pos)=>{ const c=chip(it.w,true); attachHoldSelect(c, ()=>{ if(ctx.answered)return; bank.splice(pos,1); ans.push(it); draw(); }, 600); bankRow.appendChild(c); }); }
   checkBtn.onclick=()=>{ if(ctx.answered)return; if(ans.length!==correct.length){ alert('Usa TODAS las palabras.'); return; } const userOrder=ans.map(a=>a.w).join(' '); const ok=userOrder.toLowerCase()===correct.join(' ').toLowerCase(); checkBtn.disabled=true; checkBtn.classList.add('btn-disabled'); ansRow.classList.remove('border-slate-300','bg-slate-50'); ansRow.classList.add(ok?'border-green-500':'border-red-500', ok?'bg-green-50':'bg-red-50'); ctx.answered=true; ctx.done(ok, ok?'¡Excelente orden!':('Tu orden: "'+userOrder+'" → está mal. El correcto es: "'+correct.join(' ')+'".'), q); };
   draw();
